@@ -1,8 +1,7 @@
 package object_orienters.techspot;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.awt.image.BufferedImage;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,10 +20,14 @@ public class User {
     private String email;
     private Gender gender;
     private LocalDate dob;
+    @OneToMany
     private List<User> followers;
+    @OneToMany
     private List<User> following;
-    // private List<Post> publishedPosts;
-    // private List<Post> sharedPosts;
+    @OneToMany
+    private List<Post> publishedPosts;
+    @OneToMany
+    private List<Post> sharedPosts;
 }
 
 enum Privacy {

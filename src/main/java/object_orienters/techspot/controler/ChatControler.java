@@ -1,29 +1,32 @@
 package object_orienters.techspot.controler;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import object_orienters.techspot.model.Chat;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/profiles")
 public class ChatControler {
-    @GetMapping("/{userName}/inbox/chats/{chatId}/messages/{messageId}")
-    public String getSpicifecMessage(@PathVariable String userName, @PathVariable Long chatId, @PathVariable Long messageId) {
-        return "Retrieving message with id " + messageId + " for user " + userName + " in chat " + chatId;
+    /////////////////////////////////////////////
+    // Does this methods the same??????????????
+    @GetMapping("/{userName}/inbox/chats")
+    public Set<Chat> getAllChats(@PathVariable String userName) {
+        return null;
     }
-    @GetMapping("/{userName}/inbox/chats/{chatId}/messages/{messageId}")
-    public String getAllMessages(@PathVariable String userName, @PathVariable Long chatId, @PathVariable Long messageId) {
-        return "Retrieving message with id " + messageId + " for user " + userName + " in chat " + chatId;
+    // I think it's should return Inbox object
+    @GetMapping("/{userName}/inbox")
+    public Set<Chat> getInbox(@PathVariable String userName) {return null;}
+    /////////////////////////////////////////////
+    @GetMapping("/{userName}/inbox/chats/{chatId}")
+    public Chat getSpecificChat(@PathVariable String userName) {
+        return null;
     }
 
-    @GetMapping("/{userName}/inbox/chats")
-    public String getAllChats(@PathVariable String userName) {
-        return "Fetching chats for user: " + userName;
-    }
-    @GetMapping("/{userName}/inbox/chats/{chatId}")
-    public String getSpicifecChat(@PathVariable String userName) {
-        return "Fetching chats for user: " + userName;
-    }
+    @PostMapping("/{userName}/inbox/chats")
+    public String createChat(@PathVariable String userName, @RequestBody Chat newChat) {return null;}
+    @DeleteMapping("/{userName}/inbox/chats/{chatId}")
+    public String deleteChat(@PathVariable String userName, @PathVariable Long chatId) {return null;}
+
 
 }

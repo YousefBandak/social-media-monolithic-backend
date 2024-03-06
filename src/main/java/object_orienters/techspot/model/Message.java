@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.model;
 
 
 import jakarta.persistence.Entity;
@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 @Table(name = "Message")
 public class Message {
+    private Long messageId;
     private User sender;
     // private ?? content (unknown datatype) 
     private boolean isSeen;

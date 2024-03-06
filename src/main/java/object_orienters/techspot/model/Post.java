@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.model;
 
 
 import jakarta.persistence.Entity;

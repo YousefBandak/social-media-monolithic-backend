@@ -28,6 +28,7 @@ public class User {
     private List<Post> publishedPosts;
     @OneToMany
     private List<Post> sharedPosts;
+    private Inbox inbox;
 }
 
 enum Privacy {

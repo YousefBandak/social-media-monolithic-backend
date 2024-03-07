@@ -1,9 +1,6 @@
 package object_orienters.techspot;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -12,10 +9,10 @@ public class Reaction {
     @Id
     private String reactionId;
     @OneToOne
-    User reactor;
+    private User reactor;
     ReactionType type;
     @OneToOne
-    Content contentReactedTo;
+    private Content contentReactedTo;
 
 
     enum ReactionType {

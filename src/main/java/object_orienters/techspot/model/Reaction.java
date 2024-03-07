@@ -1,6 +1,9 @@
-package object_orienters.techspot;
+package object_orienters.techspot.model;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 
 @Entity

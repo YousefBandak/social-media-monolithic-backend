@@ -1,6 +1,9 @@
-package object_orienters.techspot;
+package object_orienters.techspot.controler;
 
 
+import object_orienters.techspot.PostModelAssembler;
+import object_orienters.techspot.PostRepository;
+import object_orienters.techspot.model.Post;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -25,10 +28,10 @@ public class PostController {
 
     @GetMapping("/profiles/{username}/posts")
     public CollectionModel<EntityModel<Post>> getTimelinePosts(@PathVariable String username) {
-        List<EntityModel<Post>> posts = postRepository.findByUsername(username).stream()
-                .map(p -> assembler.toModel(p))
-                .collect(Collectors.toList());
+//        List<EntityModel<Post>> posts = .stream()
+//                .map(p -> assembler.toModel(p))
+//                .collect(Collectors.toList());
 
-        return assembler.toCollectionModel(posts);
+        return assembler.toCollectionModel(postRepository.findByUsername(username));
     }
 }

@@ -1,5 +1,6 @@
 package object_orienters.techspot;
 
+import object_orienters.techspot.model.Post;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

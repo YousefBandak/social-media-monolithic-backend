@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.model;
 
 import jakarta.persistence.*;
 
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @Table(name = "User")
 public class User {
-    private @Id String username;
+    private @Id String userName;
     private BufferedImage profilePic;
     private String name;
     private String proffesion; // could be enum?
@@ -28,6 +28,7 @@ public class User {
     private List<Post> publishedPosts;
     @OneToMany
     private List<Post> sharedPosts;
+    private Inbox inbox;
 }
 
 enum Privacy {

@@ -28,7 +28,7 @@ public class User {
     private List<Post> publishedPosts;
     @OneToMany
     private List<Post> sharedPosts;
-    private Inbox inbox;
+    private Set<Chat> Inbox;
 }
 
 enum Privacy {
@@ -36,7 +36,3 @@ enum Privacy {
     PRIVATE
 }
 
-@Data
-class Inbox {
-    private Set<Chat> conversations;
-}

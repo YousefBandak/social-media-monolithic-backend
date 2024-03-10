@@ -30,13 +30,13 @@ public class ImpleChatService implements ChatService {
 
         // Check if the chat already exists in the repository
         if (chatRepository.findById(chat.getChatId()).isPresent()) {
-            throw new ChatAlreadyExistsException("Chat already exists in the repository");
+            throw new ChatAlreadyExistsException(chat.getChatId());
         }
 
         // Check if there is already a chat between the sender and receiver
         if (sender.getInbox().stream()
                 .anyMatch(c -> c.getReceiver().getName().equals(receiver.getName()) || c.getSender().getName().equals(receiver.getName()))) {
-            throw new ChatAlreadyExistsException("Chat already exists between the sender and receiver");
+            throw new ChatAlreadyExistsException(chat.getChatId());
         }
         return chatRepository.save(chat);
     }
@@ -45,7 +45,7 @@ public class ImpleChatService implements ChatService {
     @Override
     public Chat getChat(Long chatId){
         return chatRepository.findById(chatId)
-                .orElseThrow(() -> new ChatNotFoundException("Chat not found with ID: " + chatId));
+                .orElseThrow(() -> new ChatNotFoundException(chatId));
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ImpleChatService implements ChatService {
             chatRepository.deleteById(chatId);
             return "Chat with ID: " + chatId + " ,deleted successfully";
         } else {
-            throw new ChatNotFoundException("Chat not found with ID: " + chatId);
+            throw new ChatNotFoundException(chatId);
         }
     }
 
@@ -63,8 +63,4 @@ public class ImpleChatService implements ChatService {
         return null;
     }
 
-    @Override
-    public User getUserByUsername(String userName) throws UserNotFoundException {
-        return userRepository.findById(userName).orElseThrow(() -> new UserNotFoundException("User not found"));
-    }
 }

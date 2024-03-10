@@ -13,7 +13,5 @@ public interface ChatService {
     public Chat getChat(Long chatId);
     public String deleteChat(Long chatId);
     public Set<Chat> getAllChats(String userName);
-    public User getUserByUsername(String userName) throws UserNotFoundException;
-
 
 }

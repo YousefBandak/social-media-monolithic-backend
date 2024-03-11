@@ -11,19 +11,19 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "User")
-public class User {
-    private @Id String userName;
+@Table(name = "Profile")
+public class Profile {
+    private @Id String username;
     private BufferedImage profilePic;
     private String name;
-    private String proffesion; // could be enum?
+    private String proffesion; 
     private String email;
     private Gender gender;
     private LocalDate dob;
     @OneToMany
-    private List<User> followers;
+    private List<Profile> followers;
     @OneToMany
-    private List<User> following;
+    private List<Profile> following;
     @OneToMany
     private List<Post> publishedPosts;
     @OneToMany

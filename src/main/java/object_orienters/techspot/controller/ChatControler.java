@@ -4,7 +4,7 @@ import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
-import object_orienters.techspot.model.User;
+import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.service.ImpleChatService;
 import object_orienters.techspot.service.ImpleUserService;
 import org.springframework.http.HttpStatus;
@@ -23,26 +23,19 @@ public class ChatControler {
         this.chatService = chatService;
         this.userService = userService;
     }
-
-
-    // Does this methods the same??????????????
-
-
-    @GetMapping("/{userName}/inbox/chats")
-    public Set<Chat> getAllChats(@PathVariable String userName) {
-        return null;
-    }
-
+    
     // I think it's should return Inbox object
 
-    @GetMapping("/{userName}/inbox")
-    public Set<Chat> getInbox(@PathVariable String userName) {return null;}
+    @GetMapping("/{userName}/chats")
+    public Set<Chat> getInbox(@PathVariable String userName) {
+        return null;
+    }
     /////////////////////////////////////////////
     @GetMapping("/{userName}/inbox/chats/{chatId}")
     public ResponseEntity<String> getSpecificChat(@PathVariable String userName, @PathVariable Long chatId) {
         try {
 
-            User user = userService.getUserByUsername(userName);
+            Profile user = userService.getUserByUsername(userName);
             Chat chat = chatService.getChat(chatId);
             return ResponseEntity.ok(chat.toString());
 
@@ -68,7 +61,7 @@ public class ChatControler {
     public ResponseEntity<String> deleteChat(@PathVariable String userName, @PathVariable Long chatId) {
         try {
 
-            User user = userService.getUserByUsername(userName);
+            Profile user = userService.getUserByUsername(userName);
             chatService.deleteChat(chatId);
             return ResponseEntity.ok("Chat deleted successfully");
         } catch (UserNotFoundException | ChatNotFoundException e) {

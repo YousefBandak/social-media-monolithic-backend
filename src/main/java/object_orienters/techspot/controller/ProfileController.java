@@ -2,7 +2,9 @@ package object_orienters.techspot.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import object_orienters.techspot.model.User;
+import object_orienters.techspot.exception.ChatNotFoundException;
+import object_orienters.techspot.exception.UserNotFoundException;
+import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ProfileModelAssembler;
 import object_orienters.techspot.repository.ProfileRepo;
 
@@ -34,26 +36,29 @@ public class ProfileController {
         this.assembler = assembler;
     }
 
+    //@RamHusam111 here the assembler returns links to self and to the followers 
     // get user profile
     @GetMapping("/profiles/{userName}")
-    public EntityModel<User> one(@PathVariable String userName) {
-        User user = repo.findById(userName).orElseThrow();
+    public EntityModel<Profile> one(@PathVariable String userName) {
+        Profile user = repo.findById(userName).orElseThrow();
         return assembler.toModel(user);
     }
 
     // create new user profile
     @PostMapping("/profiles")
-    public ResponseEntity<EntityModel<User>> createUser(@PathVariable User newUser) {
-        EntityModel<User> entityModel = assembler.toModel(repo.save(newUser));
+    public ResponseEntity<EntityModel<Profile>> createUser(@RequestBody Profile newUser) {
+        EntityModel<Profile> entityModel = assembler.toModel(repo.save(newUser));
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(entityModel);
     }
 
+    //@RamHusam111 here when we use the assembler how will it return a link to the followers of the user?
     // update user profile
     @PutMapping("/profiles/{userName}")
-    ResponseEntity<EntityModel<User>> updateProfile(@RequestBody User newUser, @PathVariable String userName) {
-        User updatedUser = repo.findById(userName).map(user -> {
-            user.setUserName(newUser.getUserName());
+    ResponseEntity<EntityModel<Profile>> updateProfile(@RequestBody Profile newUser, @PathVariable String userName)
+            throws Exception {
+        Profile updatedUser = repo.findById(userName).map(user -> {
+            user.setUsername(newUser.getUsername());
             user.setProfilePic(newUser.getProfilePic());
             user.setDob(newUser.getDob());
             user.setEmail(newUser.getEmail());
@@ -65,19 +70,15 @@ public class ProfileController {
             user.setPublishedPosts(newUser.getPublishedPosts());
             user.setSharedPosts(newUser.getSharedPosts());
             return repo.save(user);
-        })
-                .orElseGet(() -> {
-                    newUser.setUserName(userName);
-                    return repo.save(newUser);
-                });
-        EntityModel<User> entityModel = assembler.toModel(updatedUser);
+        }).orElseThrow(() -> new UserNotFoundException(userName));
+        EntityModel<Profile> entityModel = assembler.toModel(updatedUser);
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     };
 
     // get user followers
-    @GetMapping("localhost:8080/profiles/{userName}/followers")
-    public ResponseEntity<CollectionModel<EntityModel<User>>> getFollowers(@PathVariable String userName) {
-        List<EntityModel<User>> followers = repo.findFollowersByUserId(userName).stream()
+    @GetMapping("/profiles/{userName}/followers")
+    public ResponseEntity<CollectionModel<EntityModel<Profile>>> getFollowers(@PathVariable String userName) {
+        List<EntityModel<Profile>> followers = repo.findFollowersByUserId(userName).stream()
                 .map(userModel -> assembler.toModel(userModel))
                 .collect(Collectors.toList());
 
@@ -87,16 +88,16 @@ public class ProfileController {
 
     // get specific user follower
     @GetMapping("/profiles/{userName}/followers/{followerUserName}")
-    public EntityModel<User> GetFollower(@PathVariable String userName, @PathVariable String followerUserName) {
-        Optional<User> follower = repo.findFollowerByUsername(userName, followerUserName);
+    public EntityModel<Profile> GetFollower(@PathVariable String userName, @PathVariable String followerUserName) {
+        Optional<Profile> follower = repo.findFollowerByUsername(userName, followerUserName);
         return assembler.toModel(follower.get());
 
     }
 
     // get user followers
     @GetMapping("/profiles/{userName}/following")
-    public ResponseEntity<CollectionModel<EntityModel<User>>> getFollowing(@PathVariable String userName) {
-        List<EntityModel<User>> following = repo.findFollowingByUserId(userName).stream()
+    public ResponseEntity<CollectionModel<EntityModel<Profile>>> getFollowing(@PathVariable String userName) {
+        List<EntityModel<Profile>> following = repo.findFollowingByUserId(userName).stream()
                 .map(userModel -> assembler.toModel(userModel))
                 .collect(Collectors.toList());
 
@@ -104,42 +105,42 @@ public class ProfileController {
                 linkTo(methodOn(ProfileController.class).one(userName)).withSelfRel()));
     }
 
-    // get specific user following 
+    // get specific user following
     @GetMapping("/profiles/{userName}/following/{userName}")
-    public EntityModel<User> getspecificFollowing(@PathVariable String userName,
+    public EntityModel<Profile> getspecificFollowing(@PathVariable String userName,
             @PathVariable String followingUserName) {
-        Optional<User> follower = repo.findFollowingByUsername(userName, followingUserName);
+        Optional<Profile> follower = repo.findFollowingByUsername(userName, followingUserName);
         return assembler.toModel(follower.get());
     }
 
     // add new follower to user
     @PostMapping("/profiles/{userName}/followers")
-    public EntityModel<User> addNewFollower(@PathVariable String userName, @RequestBody User newFollower) {
-        Optional<User> user = repo.findById(userName);
+    public EntityModel<Profile> addNewFollower(@PathVariable String userName, @RequestBody Profile newFollower) {
+        Optional<Profile> user = repo.findById(userName);
         user.get().getFollowers().add(newFollower);
-        EntityModel<User> entityModel = assembler.toModel(repo.save(user.get()));
+        EntityModel<Profile> entityModel = assembler.toModel(repo.save(user.get()));
         return entityModel;
     }
 
-    // delete follower from user 
+    // delete follower from user
     @DeleteMapping("/profiles/{userName}/followers/{UserName}")
-    ResponseEntity<User> deleteFollower(@PathVariable String userName) {
+    ResponseEntity<Profile> deleteFollower(@PathVariable String userName) {
         repo.deleteById(userName);
         return ResponseEntity.noContent().build();
     }
 
     // add new following to user
     @PostMapping("/profiles/{userName}/following")
-    public EntityModel<User> addNewFollowing(@PathVariable String userName, @RequestBody User newFollowing) {
-        Optional<User> user = repo.findById(userName);
+    public EntityModel<Profile> addNewFollowing(@PathVariable String userName, @RequestBody Profile newFollowing) {
+        Optional<Profile> user = repo.findById(userName);
         user.get().getFollowers().add(newFollowing);
-        EntityModel<User> entityModel = assembler.toModel(repo.save(user.get()));
+        EntityModel<Profile> entityModel = assembler.toModel(repo.save(user.get()));
         return entityModel;
     }
 
     // delete following from user
     @DeleteMapping("/profiles/{userName}/following/{delUserName}")
-    ResponseEntity<User> deleteFollowing(@PathVariable String userName, @PathVariable String delUserName) {
+    ResponseEntity<Profile> deleteFollowing(@PathVariable String userName, @PathVariable String delUserName) {
         repo.deleteById(delUserName);
         return ResponseEntity.noContent().build();
     }

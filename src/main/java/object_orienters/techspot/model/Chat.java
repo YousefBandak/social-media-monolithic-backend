@@ -13,7 +13,7 @@ import lombok.Data;
 public class Chat {
     @Id
     private Long chatId;
-    private User sender;
-    private User receiver;
+    private Profile sender;
+    private Profile receiver;
     private List<Message> messages;
 }

@@ -1,4 +1,4 @@
-package object_orienters.techspot.controler;
+package object_orienters.techspot.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 

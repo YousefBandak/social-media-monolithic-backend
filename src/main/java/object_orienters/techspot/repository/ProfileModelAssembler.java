@@ -6,7 +6,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
-import object_orienters.techspot.controler.ProfileController;
+import object_orienters.techspot.controller.ProfileController;
 import object_orienters.techspot.model.User;
 
 @Component

@@ -1,18 +1,18 @@
 package object_orienters.techspot.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
-public class Post implements Content{
+public class Post extends Content{
     @Id
-    private String postId;
+    private long postId;
 
     @OneToOne
     private User author;
@@ -21,6 +21,8 @@ public class Post implements Content{
     private Privacy privacy;
     private int numOfComments;
     private int numOfLikes;
-
+   // private int numOfShares;
+   @OneToMany(mappedBy ="post", fetch = FetchType.EAGER)
+   private List<Comment> comments;
 
 }

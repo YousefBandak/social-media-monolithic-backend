@@ -1,14 +1,11 @@
-package object_orienters.techspot.controler;
+package object_orienters.techspot.controller;
 
-import object_orienters.techspot.model.Content;
 import object_orienters.techspot.model.Reaction;
-import object_orienters.techspot.model.User;
 import object_orienters.techspot.service.ReactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/posts")

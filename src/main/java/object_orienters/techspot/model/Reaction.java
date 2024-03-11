@@ -12,7 +12,7 @@ public class Reaction {
     @Id
     private String reactionId;
     @OneToOne
-    private User reactor;
+    private Profile reactor;
     ReactionType type;
     @OneToOne
     private Content contentReactedTo;

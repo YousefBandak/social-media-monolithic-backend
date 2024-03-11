@@ -6,16 +6,15 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Data
-public class Post extends Content{
+public class Post implements Content{
     @Id
     private long postId;
 
     @OneToOne
-    private User author;
+    private Profile author;
     private Timestamp timestamp;
     private String content;
     private Privacy privacy;

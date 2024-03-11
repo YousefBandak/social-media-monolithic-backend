@@ -7,7 +7,7 @@ import object_orienters.techspot.exception.PostNotFoundException;
 import object_orienters.techspot.exception.PostUnrelatedToUserException;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Post;
-import object_orienters.techspot.model.User;
+import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ProfileRepo;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -34,7 +34,7 @@ public class PostController {
 
     @PostMapping("/profiles/{username}/posts")
     public EntityModel<Post> addTimelinePosts(@PathVariable String username, @RequestBody Post post) throws UserNotFoundException {
-        User user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         post.setAuthor(user);
         postRepository.save(post);
 
@@ -47,7 +47,7 @@ public class PostController {
 
     @PutMapping("/profiles/{username}/posts/{postId}")
     public EntityModel<Post> editTimelinePost(@PathVariable String username, @PathVariable long postId, @RequestBody Post newPost) throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
-        User user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         if ((!post.getAuthor().equals(user) || !user.getPublishedPosts().contains(post)) && !user.getSharedPosts().contains(post)) {
@@ -72,7 +72,7 @@ public class PostController {
 
     @DeleteMapping("/profiles/{username}/posts/{postId}")
     public void deleteTimelinePost(@PathVariable String username, @PathVariable long postId) throws UserNotFoundException, PostNotFoundException {
-        User user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         //TODO: Maybe we should mark the post for deletion instead of deleting it immediately

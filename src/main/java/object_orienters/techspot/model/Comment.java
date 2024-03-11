@@ -8,15 +8,15 @@ import java.sql.Timestamp;
 
 @Entity
 @Data
-public class Comment extends Content {
+public class Comment implements Content {
     @Id
     private String commentId;
     @OneToOne
-    private User Commenter;
+    private Profile Commenter;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    @JsonIgnore
+    @OneToMany
+    // @JoinColumn(name = "post_id")
+    // @JsonIgnore
     private Content commentedOn;
     private String comment;
     private int numOfReactions;

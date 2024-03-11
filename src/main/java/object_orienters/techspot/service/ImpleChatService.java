@@ -4,9 +4,9 @@ import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
-import object_orienters.techspot.model.User;
+import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ChatRepository;
-import object_orienters.techspot.repository.UserRepository;
+import object_orienters.techspot.repository.ProfileRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -14,8 +14,8 @@ import java.util.Set;
 @Service
 public class ImpleChatService implements ChatService {
     ChatRepository chatRepository;
-    UserRepository userRepository;
-    public ImpleChatService(ChatRepository chatRepository, UserRepository userRepository) {
+    ProfileRepository userRepository;
+    public ImpleChatService(ChatRepository chatRepository, ProfileRepository userRepository) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
     }
@@ -23,8 +23,8 @@ public class ImpleChatService implements ChatService {
     @Override
     public Chat createChat(Chat chat) {
         Objects.requireNonNull(chat, "Chat cannot be null");
-        User sender = chat.getSender();
-        User receiver = chat.getReceiver();
+        Profile sender = chat.getSender();
+        Profile receiver = chat.getReceiver();
         Objects.requireNonNull(sender, "Sender cannot be null");
         Objects.requireNonNull(receiver, "Receiver cannot be null");
 

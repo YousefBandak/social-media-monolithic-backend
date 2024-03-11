@@ -1,4 +1,4 @@
-package object_orienters.techspot.controler;
+package object_orienters.techspot.controller;
 
 import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;

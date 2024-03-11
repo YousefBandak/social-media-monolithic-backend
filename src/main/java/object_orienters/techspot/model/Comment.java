@@ -1,20 +1,22 @@
 package object_orienters.techspot.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Timestamp;
 
 @Entity
 @Data
-public class Comment implements Content {
+public class Comment extends Content {
     @Id
     private String commentId;
     @OneToOne
     private User Commenter;
-    @OneToOne
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    @JsonIgnore
     private Content commentedOn;
     private String comment;
     private int numOfReactions;

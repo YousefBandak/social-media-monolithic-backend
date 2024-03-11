@@ -1,15 +1,13 @@
-package object_orienters.techspot.controler;
+package object_orienters.techspot.controller;
 
 import object_orienters.techspot.exception.ChatNotFoundException;
 import object_orienters.techspot.exception.MessageNotFoundException;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Message;
-import object_orienters.techspot.repository.UserRepository;
 import object_orienters.techspot.service.ImpleChatService;
 import object_orienters.techspot.service.ImpleMessageService;
 import object_orienters.techspot.service.ImpleUserService;
-import object_orienters.techspot.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

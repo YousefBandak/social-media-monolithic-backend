@@ -7,7 +7,7 @@ import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Message;
 import object_orienters.techspot.service.ImpleChatService;
 import object_orienters.techspot.service.ImpleMessageService;
-import object_orienters.techspot.service.ImpleUserService;
+import object_orienters.techspot.service.ImpleProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +19,7 @@ import java.util.List;
 public class MessageControler {
     ImpleMessageService messageService;
     ImpleChatService chatService;
-    ImpleUserService userService;
+    ImpleProfileService userService;
 
     @GetMapping("/{userName}/inbox/chats/{chatId}/messages/{messageId}")
     public ResponseEntity<String> getSpecificMessageForSpecificChat(@PathVariable String userName, @PathVariable Long chatId, @PathVariable Long messageId) {

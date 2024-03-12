@@ -6,7 +6,7 @@ import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.service.ImpleChatService;
-import object_orienters.techspot.service.ImpleUserService;
+import object_orienters.techspot.service.ImpleProfileService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +17,9 @@ import java.util.Set;
 @RequestMapping("/profiles")
 public class ChatControler {
     ImpleChatService chatService;
-    ImpleUserService userService;
+    ImpleProfileService userService;
 
-    public ChatControler(ImpleChatService chatService, ImpleUserService userService) {
+    public ChatControler(ImpleChatService chatService, ImpleProfileService userService) {
         this.chatService = chatService;
         this.userService = userService;
     }

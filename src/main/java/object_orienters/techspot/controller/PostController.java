@@ -1,10 +1,11 @@
 package object_orienters.techspot.controller;
 
+import object_orienters.techspot.controller.assemblers.PostModelAssembler;
 import object_orienters.techspot.exception.PostNotFoundException;
 import object_orienters.techspot.exception.PostUnrelatedToUserException;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Post;
-import object_orienters.techspot.service.PostService;
+import object_orienters.techspot.service.interfaces.PostService;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;

@@ -1,8 +1,8 @@
 package object_orienters.techspot.controller;
 
+import object_orienters.techspot.controller.assemblers.ChatModelAssembler;
 import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;
-import object_orienters.techspot.exception.ErrorResponse;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Profile;

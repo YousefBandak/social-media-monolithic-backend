@@ -6,6 +6,7 @@ import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Message;
 import object_orienters.techspot.repository.ChatRepository;
 import object_orienters.techspot.repository.MessageRepository;
+import object_orienters.techspot.service.interfaces.MessageService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class ImpleMessageService implements MessageService{
+public class ImpleMessageService implements MessageService {
     MessageRepository messageRepository;
     ChatRepository chatRepository;
     @Override

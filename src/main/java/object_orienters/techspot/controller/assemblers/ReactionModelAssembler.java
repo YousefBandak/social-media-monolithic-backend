@@ -1,4 +1,4 @@
-package object_orienters.techspot.controller;
+package object_orienters.techspot.controller.assemblers;
 
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Reaction;

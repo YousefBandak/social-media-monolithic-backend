@@ -1,4 +1,4 @@
-package object_orienters.techspot.service;
+package object_orienters.techspot.service.interfaces;
 
 
 import object_orienters.techspot.model.Message;

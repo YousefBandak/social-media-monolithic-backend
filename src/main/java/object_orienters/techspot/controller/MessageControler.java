@@ -1,5 +1,6 @@
 package object_orienters.techspot.controller;
 
+import object_orienters.techspot.controller.assemblers.MessageModelAssembler;
 import object_orienters.techspot.exception.ChatNotFoundException;
 import object_orienters.techspot.exception.ErrorResponse;
 import object_orienters.techspot.exception.MessageNotFoundException;

@@ -1,7 +1,7 @@
 package object_orienters.techspot.controller;
 
 import object_orienters.techspot.model.Reaction;
-import object_orienters.techspot.service.ReactionService;
+import object_orienters.techspot.service.interfaces.ReactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

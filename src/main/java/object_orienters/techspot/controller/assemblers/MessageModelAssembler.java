@@ -1,9 +1,12 @@
-package object_orienters.techspot.controller;
+package object_orienters.techspot.controller.assemblers;
 
+import object_orienters.techspot.controller.ChatController;
+import object_orienters.techspot.controller.MessageControler;
 import object_orienters.techspot.model.Message;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Component;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -13,8 +16,8 @@ public class MessageModelAssembler implements RepresentationModelAssembler<Messa
     @Override
     public EntityModel<Message> toModel(Message entity) {
         return EntityModel.of(entity, //
-                linkTo(methodOn(MessageControler.class).getMessage(entity.getSender().getUsername(),entity.getChat().getChatId(),entity.getMessageId())).withSelfRel(),
-                linkTo(methodOn(ChatController.class).getChat(entity.getSender().getUsername(),entity.getChat().getChatId())).withRel("chat"));
+                WebMvcLinkBuilder.linkTo(methodOn(MessageControler.class).getMessage(entity.getSender().getUsername(),entity.getChat().getChatId(),entity.getMessageId())).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(methodOn(ChatController.class).getChat(entity.getSender().getUsername(),entity.getChat().getChatId())).withRel("chat"));
     }
 
     @Override

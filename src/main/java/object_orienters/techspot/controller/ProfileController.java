@@ -1,5 +1,6 @@
 package object_orienters.techspot.controller;
 
+import object_orienters.techspot.controller.assemblers.ProfileModelAssembler;
 import org.springframework.web.bind.annotation.RestController;
 
 import object_orienters.techspot.exception.UserNotFoundException;

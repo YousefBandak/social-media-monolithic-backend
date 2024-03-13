@@ -1,4 +1,4 @@
-package object_orienters.techspot.service;
+package object_orienters.techspot.service.interfaces;
 
 import java.util.List;
 

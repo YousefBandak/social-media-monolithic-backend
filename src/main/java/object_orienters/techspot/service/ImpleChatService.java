@@ -7,6 +7,7 @@ import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ChatRepository;
 import object_orienters.techspot.repository.ProfileRepository;
+import object_orienters.techspot.service.interfaces.ChatService;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;

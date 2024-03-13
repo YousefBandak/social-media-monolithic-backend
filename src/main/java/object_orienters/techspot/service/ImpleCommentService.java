@@ -8,6 +8,7 @@ import object_orienters.techspot.exception.PostNotFoundException;
 import object_orienters.techspot.model.Comment;
 import object_orienters.techspot.model.Post;
 import object_orienters.techspot.repository.CommentRepository;
+import object_orienters.techspot.service.interfaces.CommentService;
 
 public class ImpleCommentService implements CommentService {
     private CommentRepository commentRepository;

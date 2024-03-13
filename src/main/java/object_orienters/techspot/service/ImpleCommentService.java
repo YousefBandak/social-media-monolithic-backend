@@ -13,6 +13,11 @@ public class ImpleCommentService implements CommentService {
     private CommentRepository commentRepository;
     private PostRepository postRepository;
 
+    public ImpleCommentService(CommentRepository commentRepository, PostRepository postRepository) {
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+    }
+
     @Override
     public List<Comment> getCommentsOfPost(Long postId) throws PostNotFoundException {
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));

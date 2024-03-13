@@ -10,6 +10,10 @@ import object_orienters.techspot.repository.ProfileRepo;
 public class ImpleProfileService implements ProfileService {
     private ProfileRepo repo;
 
+    public ImpleProfileService(ProfileRepo repo) {
+        this.repo = repo;
+    }
+
     @Override
     public Profile getUserByUsername(String username) throws UserNotFoundException {
         return repo.findById(username).orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -59,7 +63,7 @@ public class ImpleProfileService implements ProfileService {
         return repo.findFollowingByUsername(username, followingUsername);
     }
 
-    //TODO: REVISION NEEDED
+    // TODO: REVISION NEEDED
     @Override
     public Profile addNewFollower(String username, Profile newFollower) throws UserNotFoundException {
         Optional<Profile> user = repo.findById(username);
@@ -68,14 +72,14 @@ public class ImpleProfileService implements ProfileService {
         return repo.save(user.get());
     }
 
-    //TODO: REVISION NEEDED
+    // TODO: REVISION NEEDED
     @Override
     public void deleteFollower(String username) throws UserNotFoundException {
         repo.deleteById(username);
 
     }
 
-    //TODO: REVISION NEEDED
+    // TODO: REVISION NEEDED
     @Override
     public Profile addNewFollowing(String username, Profile newFollowing) throws UserNotFoundException {
         Optional<Profile> user = repo.findById(username);
@@ -84,7 +88,7 @@ public class ImpleProfileService implements ProfileService {
         return repo.save(user.get());
     }
 
-    //TODO: REVISION NEEDED
+    // TODO: REVISION NEEDED
     @Override
     public void deleteFollowing(String username) throws UserNotFoundException {
         repo.deleteById(username);

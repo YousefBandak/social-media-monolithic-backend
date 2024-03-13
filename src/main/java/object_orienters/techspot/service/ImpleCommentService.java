@@ -2,7 +2,7 @@ package object_orienters.techspot.service;
 
 import java.util.List;
 
-import object_orienters.techspot.PostRepository;
+import object_orienters.techspot.repository.PostRepository;
 import object_orienters.techspot.exception.CommentNotFoundException;
 import object_orienters.techspot.exception.PostNotFoundException;
 import object_orienters.techspot.model.Comment;

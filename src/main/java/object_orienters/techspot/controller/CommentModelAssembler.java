@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.controller;
 
 import object_orienters.techspot.model.Comment;
 import org.springframework.hateoas.CollectionModel;

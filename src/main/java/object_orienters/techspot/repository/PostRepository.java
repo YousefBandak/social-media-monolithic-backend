@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.repository;
 
 import object_orienters.techspot.model.Post;
 import object_orienters.techspot.model.Profile;

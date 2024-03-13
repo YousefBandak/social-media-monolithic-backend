@@ -4,7 +4,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Profile;
-import object_orienters.techspot.repository.ProfileModelAssembler;
 import object_orienters.techspot.service.ImpleProfileService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;

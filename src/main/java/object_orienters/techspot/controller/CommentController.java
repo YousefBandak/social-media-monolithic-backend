@@ -1,6 +1,5 @@
 package object_orienters.techspot.controller;
 
-import object_orienters.techspot.CommentModelAssembler;
 import object_orienters.techspot.exception.CommentNotFoundException;
 import object_orienters.techspot.exception.PostNotFoundException;
 import object_orienters.techspot.model.Comment;

@@ -1,4 +1,4 @@
-package object_orienters.techspot.repository;
+package object_orienters.techspot.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 

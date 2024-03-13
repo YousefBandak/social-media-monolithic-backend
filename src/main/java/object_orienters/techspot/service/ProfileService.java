@@ -22,10 +22,6 @@ public interface ProfileService {
 
     public Profile addNewFollower(String username, Profile newFollower) throws UserNotFoundException;
 
-    public void deleteFollower(String username) throws UserNotFoundException;
-
-    public Profile addNewFollowing(String username, Profile newFollowing) throws UserNotFoundException;
-
-    public void deleteFollowing(String username) throws UserNotFoundException;
+    public void deleteFollower(String username, Profile deletedUser) throws UserNotFoundException;
 
 }

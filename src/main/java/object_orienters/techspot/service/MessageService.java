@@ -1,12 +1,10 @@
 package object_orienters.techspot.service;
 
-import object_orienters.techspot.exception.UserNotFoundException;
-import object_orienters.techspot.model.Chat;
+
 import object_orienters.techspot.model.Message;
-import object_orienters.techspot.model.Profile;
 
 import java.util.List;
-import java.util.Set;
+
 
 public interface MessageService {
     public Message createMessage(Message message);

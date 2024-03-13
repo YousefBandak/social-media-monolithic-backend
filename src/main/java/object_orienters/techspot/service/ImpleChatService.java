@@ -2,7 +2,6 @@ package object_orienters.techspot.service;
 
 import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;
-import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ChatRepository;

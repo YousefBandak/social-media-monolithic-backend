@@ -1,8 +1,6 @@
 package object_orienters.techspot.service;
 
-import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
-import object_orienters.techspot.model.Profile;
 
 
 import java.util.Set;

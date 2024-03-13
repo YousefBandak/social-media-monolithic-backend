@@ -35,7 +35,7 @@ public class ImplePostService implements PostService {
         user.getPublishedPosts().add(post);
         profileRepository.save(user);
         return post;
-    }
+    } 
 
     @Override
     public Post editTimelinePost(String username, long postId, Post newPost)

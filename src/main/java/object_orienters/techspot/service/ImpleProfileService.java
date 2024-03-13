@@ -63,35 +63,19 @@ public class ImpleProfileService implements ProfileService {
         return repo.findFollowingByUsername(username, followingUsername);
     }
 
-    // TODO: REVISION NEEDED
     @Override
     public Profile addNewFollower(String username, Profile newFollower) throws UserNotFoundException {
         Optional<Profile> user = repo.findById(username);
-        user.get().getFollowers().add(newFollower);
-        newFollower.getFollowing().add(user.get());
+        user.get().getFollowing().add(newFollower);
+        newFollower.getFollowers().add(user.get());
         return repo.save(user.get());
     }
 
-    // TODO: REVISION NEEDED
     @Override
-    public void deleteFollower(String username) throws UserNotFoundException {
-        repo.deleteById(username);
-
-    }
-
-    // TODO: REVISION NEEDED
-    @Override
-    public Profile addNewFollowing(String username, Profile newFollowing) throws UserNotFoundException {
-        Optional<Profile> user = repo.findById(username);
-        user.get().getFollowing().add(newFollowing);
-        newFollowing.getFollowers().add(user.get());
-        return repo.save(user.get());
-    }
-
-    // TODO: REVISION NEEDED
-    @Override
-    public void deleteFollowing(String username) throws UserNotFoundException {
-        repo.deleteById(username);
+    public void deleteFollower(String username, Profile deletedUser) throws UserNotFoundException {
+        Optional<Profile> profile = repo.findById(username);
+        profile.get().getFollowers().remove(deletedUser);
+        deletedUser.getFollowing().remove(profile.get());
     }
 
 }

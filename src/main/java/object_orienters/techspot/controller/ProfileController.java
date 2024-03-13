@@ -5,14 +5,13 @@ import org.springframework.web.bind.annotation.RestController;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ProfileModelAssembler;
-import object_orienters.techspot.repository.ProfileRepo;
 import object_orienters.techspot.service.ImpleProfileService;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
-import java.util.Optional;
+
 import java.util.stream.Collectors;
 
 import org.springframework.hateoas.CollectionModel;
@@ -28,12 +27,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 public class ProfileController {
-    private final ProfileRepo repo;
     private final ProfileModelAssembler assembler;
     private final ImpleProfileService profileService;
 
-    public ProfileController(ProfileRepo repo, ProfileModelAssembler assembler, ImpleProfileService profileService) {
-        this.repo = repo;
+    public ProfileController(ProfileModelAssembler assembler, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.profileService = profileService;
     }
@@ -139,12 +136,11 @@ public class ProfileController {
         return assembler.toModel(profileService.addNewFollowing(username, newFollowing));
     }
 
-    // TODO
     // delete following from user
     @DeleteMapping("/profiles/{userName}/following/{delUserName}")
     ResponseEntity<Profile> deleteFollowing(@PathVariable String username, @PathVariable String delUserName)
             throws UserNotFoundException {
-                profileService.deleteFollowing(username);
+        profileService.deleteFollowing(username);
         return ResponseEntity.noContent().build();
     }
 }

@@ -24,12 +24,13 @@ public class ImpleMessageService implements MessageService{
     }
 
     @Override
-    public String deleteMessage(Long messageId) {
+    public Message deleteMessage(Long messageId) {
         Optional<Message> optionalMessage = messageRepository.findById(messageId);
 
         if (optionalMessage.isPresent()) {
+            Message message = messageRepository.findById(messageId).get();
             messageRepository.deleteById(messageId);
-            return "Message deleted successfully.";
+            return message;
         } else {
             throw new MessageNotFoundException(messageId);
         }

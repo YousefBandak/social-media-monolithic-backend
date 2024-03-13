@@ -6,7 +6,9 @@ import java.util.Optional;
 import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ProfileRepo;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ImpleProfileService implements ProfileService {
     private ProfileRepo repo;
 

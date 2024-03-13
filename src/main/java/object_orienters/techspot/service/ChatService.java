@@ -9,7 +9,7 @@ import java.util.Set;
 public interface ChatService {
     public Chat createChat(Chat chat);
     public Chat getChat(Long chatId);
-    public String deleteChat(Long chatId);
+    public Chat deleteChat(Long chatId);
     public Set<Chat> getAllChats(String userName);
 
 }

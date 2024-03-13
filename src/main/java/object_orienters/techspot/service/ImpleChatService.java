@@ -2,6 +2,7 @@ package object_orienters.techspot.service;
 
 import object_orienters.techspot.exception.ChatAlreadyExistsException;
 import object_orienters.techspot.exception.ChatNotFoundException;
+import object_orienters.techspot.exception.UserNotFoundException;
 import object_orienters.techspot.model.Chat;
 import object_orienters.techspot.model.Profile;
 import object_orienters.techspot.repository.ChatRepository;
@@ -48,10 +49,11 @@ public class ImpleChatService implements ChatService {
     }
 
     @Override
-    public String deleteChat(Long chatId) {
+    public Chat deleteChat(Long chatId) {
         if (chatRepository.existsById(chatId)) {
+            Chat deletedChat = chatRepository.findById(chatId).get();
             chatRepository.deleteById(chatId);
-            return "Chat with ID: " + chatId + " ,deleted successfully";
+            return deletedChat;
         } else {
             throw new ChatNotFoundException(chatId);
         }
@@ -59,7 +61,8 @@ public class ImpleChatService implements ChatService {
 
     @Override
     public Set<Chat> getAllChats(String userName) {
-        return null;
+        Profile user = userRepository.findById(userName).orElseThrow(() -> new UserNotFoundException(userName));
+        return user.getInbox();
     }
 
 }

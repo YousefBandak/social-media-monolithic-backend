@@ -18,7 +18,7 @@ public class Profile {
     private @Id String username;
     private BufferedImage profilePic;
     private String name;
-    private String proffesion; 
+    private String proffesion;
     private String email;
     private Gender gender;
     private LocalDate dob;
@@ -31,10 +31,9 @@ public class Profile {
     @OneToMany
     private List<Post> sharedPosts;
     private Set<Chat> Inbox;
-}
 
-enum Privacy {
-    PUBLIC,
-    PRIVATE
+    enum Gender {
+        MALE,
+        FEMALE
+    }
 }
-

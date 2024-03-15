@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.Content;
-import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
 import java.sql.Timestamp;
@@ -27,5 +26,9 @@ public class Post implements Content {
    // private int numOfShares;
    @OneToMany(mappedBy ="post", fetch = FetchType.EAGER)
    private List<Comment> comments;
+    enum Privacy {
+        PUBLIC,
+        PRIVATE
+    }
 
 }

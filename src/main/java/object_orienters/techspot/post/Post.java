@@ -8,7 +8,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.PostBase;

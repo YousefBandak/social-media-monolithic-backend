@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.profile.Profile;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @Entity
 @Data

@@ -27,7 +27,7 @@ public class LocalDatabase {
 
             return args -> {
                 log.info("hello world");
-                Profile prof = new Profile("johndoe", "John Doe", "Software Engineer", "ff", "ff");
+                Profile prof = new Profile("johndoe", "John Doe", "Software Engineer", "ff", "ff", Profile.Gender.MALE);
 
                 log.info("Preloading " + repository.save(prof));
 

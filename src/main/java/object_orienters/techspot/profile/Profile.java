@@ -9,7 +9,6 @@ import java.util.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import object_orienters.techspot.chat.Chat;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
 
@@ -46,14 +45,14 @@ public class Profile {
 //   private Set<Chat> Inbox;
 
 
-    public Profile(String username, String name, String profession, String email, String profilePic) {
+    public Profile(String username, String name, String profession, String email, String profilePic, Gender gender) {
         this.username = username;
         this.profilePic = profilePic;
         this.name = name;
         this.profession = profession;
         this.email = email;
         this.profilePic = profilePic;
-        this.gender = Gender.FEMALE;
+        this.gender = gender;
         this.followers = new ArrayList<>();
         this.following = new ArrayList<>();
         this.publishedPosts = new ArrayList<>();
@@ -63,10 +62,12 @@ public class Profile {
         return "Username: " + username + " Name: " + name + " Profession: " + profession + " Email: " + email;
     }
 
+    public enum Gender {
+        MALE,
+        FEMALE
+    }
+
 }
 
 
-enum Gender {
-    MALE,
-    FEMALE
-}
+

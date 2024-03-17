@@ -7,7 +7,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
-public class ReactionControler {
+public class ReactionController {
     private ReactionService reactionService;
 
 

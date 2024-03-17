@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class ImpleProfileService implements ProfileService {
             user.setFollowers(newUser.getFollowers());
             user.setFollowing(newUser.getFollowing());
             user.setName(newUser.getName());
+
             user.setProfession(newUser.getProfession());
             user.setGender(newUser.getGender());
             user.setPublishedPosts(newUser.getPublishedPosts());
@@ -49,6 +51,7 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException {
+
         return null;
     }
 
@@ -59,11 +62,13 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public List<Profile> getUserFollowingByUsername(String username) throws UserNotFoundException {
+
         return null;
     }
 
     @Override
     public Profile getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException {
+
         return null;
     }
 

@@ -30,6 +30,7 @@ public class ImpleChatService implements ChatService {
         }
 
         // Check if there is already a chat between the sender and receiver
+
 //        if (sender.getInbox().stream()
 //                .anyMatch(c -> c.getReceiver().getName().equals(receiver.getName()) || c.getSender().getName().equals(receiver.getName()))) {
 //            throw new ChatAlreadyExistsException(chat.getChatId());
@@ -58,6 +59,7 @@ public class ImpleChatService implements ChatService {
 
     @Override
     public Set<Chat> getAllChats(String userName) {
+
 //        Profile user = userRepository.findById(userName).orElseThrow(() -> new UserNotFoundException(userName));
 //        return user.getInbox();
         return null;

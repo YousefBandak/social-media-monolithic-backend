@@ -2,11 +2,13 @@ package object_orienters.techspot.comment;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.profile.Profile;
 
 import java.sql.Timestamp;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -29,6 +31,7 @@ public class Comment extends Content {
     private int numOfReactions;
     private int numOfReplies;
     private Timestamp timestamp;
+
 
     public Comment(String comment) {
         this.comment = comment;

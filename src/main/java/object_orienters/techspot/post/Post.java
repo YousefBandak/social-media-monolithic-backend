@@ -1,6 +1,7 @@
 package object_orienters.techspot.post;
 
 
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -35,6 +36,7 @@ public class Post  extends Content implements PostBase {
     private Privacy privacy;
     private int numOfComments;
     private int numOfLikes;
+
     //private int numOfShares;
 
     public Post(String content) {

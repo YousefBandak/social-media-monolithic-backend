@@ -42,6 +42,7 @@ public class ProfileController {
     // return new String();
     // }
 
+
     // get user profile
     @GetMapping("/profiles/{username}")
     public EntityModel<Profile> one(@PathVariable String username) throws UserNotFoundException {
@@ -55,6 +56,7 @@ public class ProfileController {
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(entityModel);
     }
+
 
     // update user profile
     @PutMapping("/profiles/{username}")

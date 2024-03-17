@@ -2,6 +2,8 @@ package object_orienters.techspot.profile;
 
 import jakarta.persistence.*;
 
+
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.*;

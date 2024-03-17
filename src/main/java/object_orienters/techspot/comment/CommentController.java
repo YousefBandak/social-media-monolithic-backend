@@ -6,6 +6,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 public class CommentController {
 
@@ -16,6 +17,7 @@ public class CommentController {
         this.commentModelAssembler = commentModelAssembler;
         this.commentService = commentService;
     }
+
 
         //TODO: Change to /posts/{ContentID}/comments
 
@@ -32,6 +34,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/posts/{postId}/comments/{commentId}")
+
     public void deleteComment(@PathVariable long postId, @PathVariable Long commentId)
             throws PostNotFoundException, CommentNotFoundException {
         commentService.deletePostComment(postId, commentId);

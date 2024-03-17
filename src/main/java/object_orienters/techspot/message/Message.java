@@ -1,5 +1,6 @@
 package object_orienters.techspot.message;
 
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -12,6 +13,7 @@ import object_orienters.techspot.profile.Profile;
 public class Message {
     @Id
     private Long messageId;
+
     @OneToOne
     private Profile sender;
     private String content;

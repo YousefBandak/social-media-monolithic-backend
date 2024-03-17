@@ -2,6 +2,7 @@ package object_orienters.techspot.chat;
 
 import java.util.List;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.message.Message;
@@ -13,6 +14,7 @@ import object_orienters.techspot.profile.Profile;
 public class Chat {
     @Id
     private Long chatId;
+
     @OneToOne
     private Profile sender;
     @OneToOne

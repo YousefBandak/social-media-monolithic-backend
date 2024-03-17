@@ -4,9 +4,13 @@ import object_orienters.techspot.profile.UserNotFoundException;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.mediatype.problem.Problem;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/profiles")
 public class PostController {
     // private static final Logger log =
     // LoggerFactory.getLogger(LoadDatabase.class);
@@ -19,41 +23,64 @@ public class PostController {
         this.postService = postService;
     }
 
-    @GetMapping("/profiles/{username}/posts")
-    public CollectionModel<EntityModel<Post>> getTimelinePosts(@PathVariable String username)
-            throws UserNotFoundException {
-        return assembler.toCollectionModel(postService.getTimelinePosts(username));
+    @GetMapping("/{username}/posts")
+    public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(assembler.toCollectionModel(postService.getTimelinePosts(username)));
+        } catch (UserNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
     }
 
-    @PostMapping("/profiles/{username}/posts")
-    public EntityModel<Post> addTimelinePosts(@PathVariable String username, @RequestBody Post post)
-            throws UserNotFoundException {
-        return assembler.toModel(postService.addTimelinePosts(username, post));
+    @PostMapping("/{username}/posts")
+    public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(assembler.toModel(postService.addTimelinePosts(username, post)));
+        } catch (UserNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
     }
 
-    @PutMapping("/profiles/{username}/posts/{postId}")
-    public EntityModel<Post> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-            @RequestBody Post newPost)
-            throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
-        return assembler.toModel(postService.editTimelinePost(username, postId, newPost));
+    @PutMapping("/{username}/posts/{postId}")
+    public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
+            @RequestBody Post newPost) {
+        try {
+            return ResponseEntity.ok(assembler.toModel(postService.editTimelinePost(username, postId, newPost)));
+        } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
 
     }
 
-    @DeleteMapping("/profiles/{username}/posts/{postId}")
-    public void deleteTimelinePost(@PathVariable String username, @PathVariable long postId)
-            throws UserNotFoundException, PostNotFoundException {
-        postService.deleteTimelinePost(username, postId);
+    @DeleteMapping("/{username}/posts/{postId}")
+    public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
+        try {
+            postService.deleteTimelinePost(username, postId);
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException | PostNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
 
     }
 
     @GetMapping("/posts/{postId}")
-    public EntityModel<Post> getPost(@PathVariable long postId) throws PostNotFoundException {
-        return assembler.toModel(postService.getPost(postId));
+    public ResponseEntity<?> getPost(@PathVariable long postId) {
+        try {
+            return ResponseEntity.ok(assembler.toModel(postService.getPost(postId)));
+        } catch (PostNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        }
+
     }
 
-
-    //        //TODO: make sure the post has the same author as the user, otherwise anyone can edit any post and make themselves the author
-    //        //TODO: Specify if post is shared or authored
-
+    // //TODO: make sure the post has the same author as the user, otherwise anyone
+    // can edit any post and make themselves the author
+    // //TODO: Specify if post is shared or authored
 
 }

@@ -15,10 +15,4 @@ public class CommentModelAssembler implements RepresentationModelAssembler<Comme
     public EntityModel<Comment> toModel(@NonNull Comment entity) {
         return EntityModel.of(entity);
     }
-
-    @Override
-    @NonNull
-    public CollectionModel<EntityModel<Comment>> toCollectionModel(Iterable<? extends Comment> entities) {
-        return RepresentationModelAssembler.super.toCollectionModel(entities);
-    }
 }

@@ -5,7 +5,10 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.lang.NonNull;
 
+import org.springframework.stereotype.Component;
 
+
+@Component
 public class CommentModelAssembler implements RepresentationModelAssembler<Comment, EntityModel<Comment>>{
     @Override
     @NonNull

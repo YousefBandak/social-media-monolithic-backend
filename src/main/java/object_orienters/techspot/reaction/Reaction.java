@@ -1,26 +1,32 @@
 package object_orienters.techspot.reaction;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Data;
-import object_orienters.techspot.Content;
+import object_orienters.techspot.content.Content;
 import object_orienters.techspot.profile.Profile;
 
 @Entity
 @Data
+
+@Table(name = "reaction")
 public class Reaction {
     @Id
     private String reactionId;
     @OneToOne
     private Profile reactor;
     ReactionType type;
-    @OneToOne
-    private Content contentReactedTo;
+
+    @ManyToOne
+    @JoinColumn(name = "content_id")
+    @JsonBackReference
+    private Content content;
 
 
     enum ReactionType {
         LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
     }
+
 }

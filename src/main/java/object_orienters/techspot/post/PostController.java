@@ -51,4 +51,9 @@ public class PostController {
         return assembler.toModel(postService.getPost(postId));
     }
 
+
+    //        //TODO: make sure the post has the same author as the user, otherwise anyone can edit any post and make themselves the author
+    //        //TODO: Specify if post is shared or authored
+
+
 }

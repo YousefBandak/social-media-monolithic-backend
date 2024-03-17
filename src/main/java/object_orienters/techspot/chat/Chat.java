@@ -2,9 +2,8 @@ package object_orienters.techspot.chat;
 
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+
+import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.message.Message;
 import object_orienters.techspot.profile.Profile;
@@ -15,7 +14,12 @@ import object_orienters.techspot.profile.Profile;
 public class Chat {
     @Id
     private Long chatId;
+
+    @OneToOne
     private Profile sender;
+    @OneToOne
+
     private Profile receiver;
+    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     private List<Message> messages;
 }

@@ -28,7 +28,8 @@ public class ReactionControler {
         return null;
     }
     @GetMapping("/users/{userId}/posts/{postId}")
-    public ResponseEntity<Reaction> getReactionForUserAndPost(@PathVariable String userName, @PathVariable String postId) {
+
+    public ResponseEntity<Reaction> getReactionForUserAndPost(@PathVariable String userId, @PathVariable String postId) {
 //        User user = userService.getUserById(userName);
 //        Content post = contentService.getPostById(postId);
 //

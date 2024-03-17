@@ -42,7 +42,7 @@ public class ProfileController {
     // return new String();
     // }
 
-    // @RamHusam111 here the assembler returns links to self and to the followers
+
     // get user profile
     @GetMapping("/profiles/{username}")
     public EntityModel<Profile> one(@PathVariable String username) throws UserNotFoundException {
@@ -57,8 +57,7 @@ public class ProfileController {
                 .body(entityModel);
     }
 
-    // @RamHusam111 here when we use the assembler how will it return a link to the
-    // followers of the user?
+
     // update user profile
     @PutMapping("/profiles/{username}")
     ResponseEntity<EntityModel<Profile>> updateProfile(@RequestBody Profile newUser, @PathVariable String username)

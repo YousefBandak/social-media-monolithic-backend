@@ -2,15 +2,19 @@ package object_orienters.techspot.post;
 
 import java.util.Collection;
 
+
+
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
-import object_orienters.techspot.profile.ProfileRepo;
+import object_orienters.techspot.profile.ProfileRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ImplePostService implements PostService {
     private PostRepository postRepository;
-    private ProfileRepo profileRepository;
+    private ProfileRepository profileRepository;
 
-    public ImplePostService(PostRepository postRepository, ProfileRepo profileRepository) {
+    public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
     }

@@ -51,25 +51,22 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException {
-
-        return null;
+        return repo.findFollowersByUserId(username);
     }
 
     @Override
-    public Profile getFollowerByUsername(String username, String followerUsername) throws UserNotFoundException {
-        return null;
+    public Profile getFollowerByUsername(String username, String followerUserName) throws UserNotFoundException {
+        return repo.findFollowerByUsername(username, followerUserName);
     }
 
     @Override
     public List<Profile> getUserFollowingByUsername(String username) throws UserNotFoundException {
-
-        return null;
+        return repo.findFollowingByUserId(username);
     }
 
     @Override
     public Profile getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException {
-
-        return null;
+        return repo.findFollowingByUsername(username, followingUsername);
     }
 
     @Override

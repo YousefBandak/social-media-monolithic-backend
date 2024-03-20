@@ -59,7 +59,7 @@ public class ProfileController {
     }
 
     // create new user profile
-    @PostMapping("/profiles")
+    @PostMapping("")
     public ResponseEntity<EntityModel<Profile>> createUser(@RequestBody Profile newUser) {
         EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewUser(newUser));
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())

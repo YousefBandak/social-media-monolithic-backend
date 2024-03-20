@@ -34,7 +34,7 @@ public class ImpleCommentService implements CommentService {
         }
     }
 
-    @Override
+    @Override //FIXME: save by order of the content
     public Comment addComment(Long contentId, Comment newComment) throws ContentNotFoundException {
         if (newComment == null) {
             throw new IllegalArgumentException("Comment object cannot be null.");

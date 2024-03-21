@@ -44,7 +44,7 @@ public class ImpleReactionService implements ReactionService {
     @Override
     public List<Reaction> getReactions(Long contentId) {
         Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
-        return reactionRepository.findByContent(content);
+        return content.getReactions();
     }
 
     @Override

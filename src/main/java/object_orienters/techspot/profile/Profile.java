@@ -3,9 +3,13 @@ package object_orienters.techspot.profile;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.*;
 
 import lombok.Data;
@@ -22,12 +26,21 @@ public class Profile {
 
     @Id
     @Column(name = "profile_id")
+    @NotNull(message = "Username shouldn't be null.")
+    @Size(min = 4, max = 20, message = "Name size should be between 4 and 20 characters.")
     private String username;
     private String profilePic;
+    @NotNull(message = "Name shouldn't be null.")
+    @NotBlank(message = "Name cannot be left blank.")
+    @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
     private String name;
     private String profession;
+    @NotNull(message = "Email shouldn't be null.")
+    @Email
     private String email;
     private Gender gender;
+    @NotNull(message = "Date of Birth shouldn't be null.")
+    @Past
     private LocalDate dob;
 
     @JsonIgnore

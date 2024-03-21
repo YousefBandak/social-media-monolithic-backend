@@ -45,8 +45,8 @@ public class ReactionController {
     public ResponseEntity<?> getReactions(@PathVariable Long contentID) {
         try {
             List<Reaction> reactionList = reactionService.getReactions(contentID);
-            CollectionModel<EntityModel<Reaction>> reactionModel = CollectionModel.of(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(ReactionController.class).getReactions(contentID)).withSelfRel(), linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
-            return ResponseEntity.ok(reactionModel);
+            //CollectionModel<EntityModel<Reaction>> reactionModel = CollectionModel.of(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(ReactionController.class).getReactions(contentID)).withSelfRel(), linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
+            return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
         } catch (ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }

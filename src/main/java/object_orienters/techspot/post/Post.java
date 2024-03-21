@@ -37,6 +37,7 @@ public class Post extends Content {
     //private int numOfShares;
 
     public Post(String content, Privacy privacy){
+
         this.content = content;
         this.privacy = privacy;
     }

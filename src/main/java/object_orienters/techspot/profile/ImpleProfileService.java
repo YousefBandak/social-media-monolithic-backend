@@ -72,8 +72,8 @@ public class ImpleProfileService implements ProfileService {
     @Override
     public Profile addNewFollower(String username, Profile newFollower) throws UserNotFoundException {
         Optional<Profile> user = repo.findById(username);
-        user.get().getFollowing().add(newFollower);
-        newFollower.getFollowers().add(user.get());
+        user.get().getFollowers().add(newFollower);
+        newFollower.getFollowing().add(user.get());
         return repo.save(user.get());
     }
 

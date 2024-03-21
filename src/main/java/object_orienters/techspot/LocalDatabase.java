@@ -31,7 +31,7 @@ public class LocalDatabase {
 
                 log.info("Preloading " + repository.save(prof));
 
-                Post post = new Post("hello");
+                Post post = new Post("hello", prof);
                 log.info("Preloading " + postRepository.save(post));
                 log.info("Preloading " + repository.save(prof));
 

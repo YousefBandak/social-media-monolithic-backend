@@ -19,36 +19,12 @@ public class LocalDatabase {
     @Configuration
     class LoadDatabase {
 
-        private static final Logger log = LoggerFactory.getLogger(LoadDatabase.class);
-
         @Bean
         CommandLineRunner initDatabase(ProfileRepository repository, ReactionRepository reactionRepository, PostRepository postRepository,
                                        CommentRepository commentRepository) {
 
             return args -> {
-                log.info("hello world");
-                Profile prof = new Profile("johndoe", "John Doe", "Software Engineer", "ff", "ff", Profile.Gender.MALE);
 
-                log.info("Preloading " + repository.save(prof));
-
-                Post post = new Post("hello", prof);
-                log.info("Preloading " + postRepository.save(post));
-                log.info("Preloading " + repository.save(prof));
-
-//                Profile prof2 = new Profile("janedoe", "Jane Doe", "Software Engineer", "ff", "ff   ");
-//
-//                prof2.getFollowing().add(prof);
-//                repository.save(prof2);
-//
-//                prof.getFollowers().add(prof2);
-//                repository.save(prof);
-//
-//
-//
-//
-//
-//
-//                log.info("Preloading " + prof2);
 
             };
         }

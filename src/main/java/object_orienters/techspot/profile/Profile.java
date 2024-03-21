@@ -1,6 +1,8 @@
 package object_orienters.techspot.profile;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,25 +42,31 @@ public class Profile {
     @NotNull(message = "Date of Birth shouldn't be null.")
     @Past
     private LocalDate dob;
+
+    @JsonIgnore
     @ManyToOne
     private Profile master;
 
     @OneToMany(mappedBy = "master", fetch = FetchType.EAGER)
+    @JsonIgnore//NOTE: These are present in hateos links no need to include them in the response
     private List<Profile> followers;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "master", fetch = FetchType.EAGER)
     private List<Profile> following;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
     private List<Post> publishedPosts;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER)
     private List<SharedPost> sharedPosts; //TODO: Change to Post or SharedPost or Content
 //   @OneToMany(mappedBy = "profile", fetch = FetchType.EAGER)
 //   private Set<Chat> Inbox;
 
 
-    public Profile(String username, String name, String profession, String email, String profilePic, Gender gender) {
+    public Profile(String username, String name, String profession, String email, String profilePic, Gender gender, String dob) {
         this.username = username;
         this.profilePic = profilePic;
         this.name = name;
@@ -69,10 +77,18 @@ public class Profile {
         this.followers = new ArrayList<>();
         this.following = new ArrayList<>();
         this.publishedPosts = new ArrayList<>();
+        this.dob = LocalDate.parse(dob);
     }
 
     public String toString() {
         return "Username: " + username + " Name: " + name + " Profession: " + profession + " Email: " + email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Profile)) return false;
+        return username != null && username.equals(((Profile) o).getUsername());
     }
 
     public enum Gender {

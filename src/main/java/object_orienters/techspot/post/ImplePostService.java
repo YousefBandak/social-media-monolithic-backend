@@ -3,20 +3,26 @@ package object_orienters.techspot.post;
 import java.util.Collection;
 
 
-
+import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ImplePostService implements PostService {
-    private PostRepository postRepository;
-    private ProfileRepository profileRepository;
+    private final PostRepository postRepository;
+    private final ProfileRepository profileRepository;
+    private final SharedPostRepository sharedPostRepository;
 
-    public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository) {
+    private final Logger logger = LoggerFactory.getLogger(ImplePostService.class);
+
+    public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository, SharedPostRepository sharedPostRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
+        this.sharedPostRepository = sharedPostRepository;
     }
 
     @Override
@@ -31,25 +37,39 @@ public class ImplePostService implements PostService {
         post.setAuthor(user);
         postRepository.save(post);
 
-        // TODO: Specify if post is shared or authored
+        logger.info("Post added to the timeline: " + post);
+
         user.getPublishedPosts().add(post);
         profileRepository.save(user);
         return post;
-    } 
+    }
+
+    //Todo: add shared post implementation
+    public SharedPost addSharedPost(String username, Post post, Privacy privacy) throws UserNotFoundException {
+        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        SharedPost sharedPost = new SharedPost(user, post, privacy);
+        sharedPostRepository.save(sharedPost);
+        user.getSharedPosts().add(sharedPost);
+        profileRepository.save(user);
+
+
+        return sharedPost;
+    }
 
     @Override
     public Post editTimelinePost(String username, long postId, Post newPost)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
+
         Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
-        if ((!post.getAuthor().equals(user) || !user.getPublishedPosts().contains(post))
-                && !user.getSharedPosts().contains(post)) {
+        if ((!post.getAuthor().equals(user) ||
+                !user.getPublishedPosts().contains(post))
+//                && user.getSharedPosts().stream().map(SharedPost::getPost).noneMatch(e -> e.equals(post))
+               ) {
             throw new PostUnrelatedToUserException(username, postId);
         }
 
-        // TODO: make sure the post has the same author as the user, otherwise anyone
-        // can edit any post and make themselves the author
 
         // post.setAuthor(user);
         post.setContent(newPost.getContent());

@@ -33,7 +33,15 @@ public class Reaction {
         this.type = type;
     }
 
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Reaction)) return false;
+        return reactionId != null && reactionId.equals(((Reaction) o).getReactionId());
+    }
+
     public enum ReactionType {
+
         LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
     }
 

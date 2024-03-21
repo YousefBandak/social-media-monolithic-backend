@@ -30,12 +30,10 @@ public class Comment extends Content {
     private String comment;
     private int numOfReactions;
     private int numOfReplies;
-    private Timestamp timestamp;
 
 
     public Comment(String comment) {
         this.comment = comment;
-        this.timestamp = new Timestamp(System.currentTimeMillis());
     }
 
 }

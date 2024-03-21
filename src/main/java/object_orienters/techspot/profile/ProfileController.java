@@ -2,6 +2,8 @@ package object_orienters.techspot.profile;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -60,7 +62,7 @@ public class ProfileController {
 
     // create new user profile
     @PostMapping("")
-    public ResponseEntity<EntityModel<Profile>> createUser(@RequestBody Profile newUser) {
+    public ResponseEntity<EntityModel<Profile>> createUser(@Valid @RequestBody Profile newUser) {
         EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewUser(newUser));
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                 .body(entityModel);
@@ -68,7 +70,7 @@ public class ProfileController {
 
     // update user profile
     @PutMapping("/{username}")
-    public ResponseEntity<?> updateProfile(@RequestBody Profile newUser, @PathVariable String username) {
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody Profile newUser, @PathVariable String username) {
         try {
             Profile updatedUser = profileService.updateUserProfile(newUser, username);
             EntityModel<Profile> entityModel = assembler.toModel(updatedUser);

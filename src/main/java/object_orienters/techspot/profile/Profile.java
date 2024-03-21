@@ -1,11 +1,13 @@
 package object_orienters.techspot.profile;
 
 import jakarta.persistence.*;
-
-
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.*;
 
 import lombok.Data;
@@ -22,12 +24,21 @@ public class Profile {
 
     @Id
     @Column(name = "profile_id")
+    @NotNull
+    @Size(min = 4, max = 20)
     private String username;
     private String profilePic;
+    @NotNull
+    @NotBlank
+    @Size(min = 3, max = 30)
     private String name;
     private String profession;
+    @NotNull
+    @Email
     private String email;
     private Gender gender;
+    @NotNull
+    @Past
     private LocalDate dob;
     @ManyToOne
     private Profile master;

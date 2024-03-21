@@ -34,6 +34,11 @@ public class Reaction {
         this.content = content;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Reaction)) return false;
+        return reactionId != null && reactionId.equals(((Reaction) o).getReactionId());
+    }
     enum ReactionType {
         LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
     }

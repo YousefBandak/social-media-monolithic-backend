@@ -9,6 +9,7 @@ import object_orienters.techspot.post.PostNotFoundException;
 
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionController;
+import org.slf4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
@@ -30,6 +31,8 @@ public class CommentController {
 
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
+
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService) {
         this.assembler = commentModelAssembler;
@@ -70,9 +73,10 @@ public class CommentController {
         }
     }
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Comment newComment) {
+    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Comment newComment, @RequestParam String username) {
         try {
-            Comment createdComment = commentService.addComment(contentID, newComment);
+            Comment createdComment = commentService.addComment(contentID, newComment, username);
+            logger.info("Comment added to the post: " + createdComment);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);
         } catch ( IllegalArgumentException | ContentNotFoundException e) {

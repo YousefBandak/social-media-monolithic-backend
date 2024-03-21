@@ -9,6 +9,9 @@ import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.post.PostNotFoundException;
 import object_orienters.techspot.post.Post;
 
+import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.reaction.ReactionNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +20,13 @@ public class ImpleCommentService implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final ContentRepository contentRepository;
+    private final ProfileRepository profileRepository;
 
-    public ImpleCommentService(CommentRepository commentRepository, PostRepository postRepository, ContentRepository contentRepository) {
+    public ImpleCommentService(CommentRepository commentRepository, PostRepository postRepository, ContentRepository contentRepository, ProfileRepository profileRepository) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.contentRepository = contentRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Override
@@ -35,14 +40,18 @@ public class ImpleCommentService implements CommentService {
     }
 
     @Override //FIXME: save by order of the content
-    public Comment addComment(Long contentId, Comment newComment) throws ContentNotFoundException {
+    public Comment addComment(Long contentId, Comment newComment, String username) throws ContentNotFoundException {
         if (newComment == null) {
             throw new IllegalArgumentException("Comment object cannot be null.");
         } else {
             Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
+            Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
             newComment.setCommentedOn(content);
+            newComment.setCommenter(user);
+            commentRepository.save(newComment);
             content.getComments().add(newComment);
-            return commentRepository.save(newComment);
+            contentRepository.save(content);
+            return newComment;
         }
     }
 

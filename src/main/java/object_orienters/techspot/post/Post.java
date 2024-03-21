@@ -39,7 +39,8 @@ public class Post  extends Content implements PostBase {
 
     //private int numOfShares;
 
-    public Post(String content) {
+    public Post(String content , Profile author) {
+        this.author = author;
         this.content = content;
         this.timestamp = new Timestamp(System.currentTimeMillis());
         this.privacy = Privacy.PUBLIC;

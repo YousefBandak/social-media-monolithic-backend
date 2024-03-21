@@ -24,20 +24,20 @@ public class Profile {
 
     @Id
     @Column(name = "profile_id")
-    @NotNull
-    @Size(min = 4, max = 20)
+    @NotNull(message = "Username shouldn't be null.")
+    @Size(min = 4, max = 20, message = "Name size should be between 4 and 20 characters.")
     private String username;
     private String profilePic;
-    @NotNull
-    @NotBlank
-    @Size(min = 3, max = 30)
+    @NotNull(message = "Name shouldn't be null.")
+    @NotBlank(message = "Name cannot be left blank.")
+    @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
     private String name;
     private String profession;
-    @NotNull
+    @NotNull(message = "Email shouldn't be null.")
     @Email
     private String email;
     private Gender gender;
-    @NotNull
+    @NotNull(message = "Date of Birth shouldn't be null.")
     @Past
     private LocalDate dob;
     @ManyToOne

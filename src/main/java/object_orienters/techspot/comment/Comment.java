@@ -1,6 +1,8 @@
 package object_orienters.techspot.comment;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import lombok.NoArgsConstructor;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "comment")
 @NoArgsConstructor
 
+@Valid
 public class Comment extends Content {
         //    @Id
         //    private String commentId;
@@ -27,8 +30,10 @@ public class Comment extends Content {
     @JoinColumn(name = "comment_id")
     @JsonIgnore
     private Content commentedOn;
+    @NotBlank(message = "Comment content cannot be empty")
     private String comment;
     private int numOfReactions;
+    //Note: numOfReplies can be validated to set a limit
     private int numOfReplies;
 
 

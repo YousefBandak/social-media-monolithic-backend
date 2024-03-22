@@ -3,12 +3,8 @@ package object_orienters.techspot.profile;
 import java.util.List;
 import java.util.Optional;
 
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-
 
 @Service
 public class ImpleProfileService implements ProfileService {
@@ -43,7 +39,7 @@ public class ImpleProfileService implements ProfileService {
             user.setProfession(newUser.getProfession());
             user.setGender(newUser.getGender());
             user.setPublishedPosts(newUser.getPublishedPosts());
-            //user.setSharedPosts(newUser.getSharedPosts());
+            // user.setSharedPosts(newUser.getSharedPosts());
             return repo.save(user);
         }).orElseThrow(() -> new UserNotFoundException(username));
         return updatedUser;
@@ -74,7 +70,9 @@ public class ImpleProfileService implements ProfileService {
         Optional<Profile> user = repo.findById(username);
         user.get().getFollowers().add(newFollower);
         newFollower.getFollowing().add(user.get());
-        return repo.save(user.get());
+        Profile savedUser = repo.save(user.get());
+        repo.save(newFollower);
+        return savedUser;
     }
 
     @Override
@@ -82,6 +80,8 @@ public class ImpleProfileService implements ProfileService {
         Optional<Profile> profile = repo.findById(username);
         profile.get().getFollowers().remove(deletedUser);
         deletedUser.getFollowing().remove(profile.get());
+        repo.save(profile.get());
+        repo.save(deletedUser);
     }
 
 }

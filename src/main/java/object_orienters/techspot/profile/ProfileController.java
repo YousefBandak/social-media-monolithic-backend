@@ -151,7 +151,7 @@ public class ProfileController {
     }
 
     // delete follower from user
-    @DeleteMapping("/{username}/followers/{UserName}")
+    @DeleteMapping("/{username}/followers")
     ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody Profile deletedUser) {
         try {
             profileService.deleteFollower(username, deletedUser);

@@ -4,7 +4,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import object_orienters.techspot.post.PostController;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 

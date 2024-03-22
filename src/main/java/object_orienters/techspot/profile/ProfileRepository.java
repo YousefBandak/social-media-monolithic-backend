@@ -21,4 +21,6 @@ public interface ProfileRepository extends JpaRepository<Profile, String> {
     @Query("SELECT f FROM Profile u JOIN u.following f WHERE f.username = :username AND u.username = :accountUsername")
     Profile findFollowingByUsername(String accountUsername, String username);
 
+    Profile findByEmail(String email);
+
 }

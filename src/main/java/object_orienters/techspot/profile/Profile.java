@@ -47,13 +47,20 @@ public class Profile {
     @ManyToOne
     private Profile master;
 
-    @OneToMany(mappedBy = "master", fetch = FetchType.EAGER)
-    @JsonIgnore//NOTE: These are present in hateos links no need to include them in the response
-    private List<Profile> followers;
 
+
+    @ManyToMany
+    @JoinTable(
+            name = "followship",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
     @JsonIgnore
-    @OneToMany(mappedBy = "master", fetch = FetchType.EAGER)
     private List<Profile> following;
+
+    @ManyToMany(mappedBy = "following", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<Profile> followers;
 
     @JsonIgnore
     @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
@@ -62,6 +69,7 @@ public class Profile {
     @JsonIgnore
     @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER)
     private List<SharedPost> sharedPosts; //TODO: Change to Post or SharedPost or Content
+
 //   @OneToMany(mappedBy = "profile", fetch = FetchType.EAGER)
 //   private Set<Chat> Inbox;
 

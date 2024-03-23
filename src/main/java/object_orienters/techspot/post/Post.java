@@ -40,10 +40,11 @@ public class Post extends Content {
 
     //private int numOfShares;
 
-    public Post(String content, Privacy privacy){
+    public Post(String content, Privacy privacy, Profile author){
 
         this.content = content;
         this.privacy = privacy;
+        this.author = author;
     }
 
 

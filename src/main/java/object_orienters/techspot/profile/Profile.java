@@ -37,7 +37,7 @@ public class Profile {
     private String profession;
     @NotNull(message = "Email shouldn't be null.")
     @Email
-    @UniqueEmail
+    //@UniqueEmail
     private String email;
     private Gender gender;
     @NotNull(message = "Date of Birth shouldn't be null.")
@@ -71,7 +71,6 @@ public class Profile {
     public Profile(String username, String name, String profession, String email, String profilePic, Gender gender,
             String dob) {
         this.username = username;
-        this.profilePic = profilePic;
         this.name = name;
         this.profession = profession;
         this.email = email;

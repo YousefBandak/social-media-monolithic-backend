@@ -4,6 +4,7 @@
 package object_orienters.techspot.reaction;
 
 
+import jakarta.validation.Valid;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.post.PostController;
 import org.springframework.hateoas.CollectionModel;
@@ -20,7 +21,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/posts/{contentID}")
+@RequestMapping("/profiles/{username}/posts/{contentID}")
 public class ReactionController {
     private final ImpleReactionService reactionService;
     private final ReactionModelAssembler assembler;
@@ -31,7 +32,7 @@ public class ReactionController {
     }
 
     @GetMapping("/reactions/{reactionId}")
-    public ResponseEntity<?> getReaction(@PathVariable String reactionId, @PathVariable Long contentID) {
+    public ResponseEntity<?> getReaction(@PathVariable Long reactionId, @PathVariable Long contentID, @PathVariable String username) {
         try {
             Reaction reaction = reactionService.getReaction(reactionId);
             EntityModel<Reaction> reactionModel = assembler.toModel(reaction);
@@ -52,10 +53,21 @@ public class ReactionController {
         }
     }
 
+//    @PostMapping("/reactions")
+//    public ResponseEntity<?> createReaction(@Valid @RequestBody Reaction reaction) {
+//        try {
+//            Reaction createdReaction = reactionService.createReaction(reaction);
+//            EntityModel<Reaction> reactionModel = assembler.toModel(createdReaction);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(reactionModel);
+//        } catch (IllegalArgumentException | ContentNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+//        }
+//
+//    }
     @PostMapping("/reactions")
-    public ResponseEntity<?> createReaction(@PathVariable Long contentID, @RequestBody Reaction reaction) {
+    public ResponseEntity<?> createReaction(@Valid @RequestBody ReactionRequest request, @PathVariable Long contentID, @PathVariable String username) {
         try {
-            Reaction createdReaction = reactionService.createReaction(reaction, contentID);
+            Reaction createdReaction = reactionService.createReaction(request.getReactorId(), request.getReactionType(), contentID);
             EntityModel<Reaction> reactionModel = assembler.toModel(createdReaction);
             return ResponseEntity.status(HttpStatus.CREATED).body(reactionModel);
         } catch (IllegalArgumentException | ContentNotFoundException e) {
@@ -65,7 +77,7 @@ public class ReactionController {
     }
 
     @PutMapping("/reactions/{reactionId}")
-    public ResponseEntity<?> updateReactionOnComment(@PathVariable String reactionId, @RequestBody Reaction updatedReaction, @PathVariable Long contentID) {
+    public ResponseEntity<?> updateReactionOnComment(@PathVariable Long reactionId, @Valid @RequestBody Reaction updatedReaction, @PathVariable Long contentID) {
         try {
             Reaction reaction = reactionService.updateReaction(reactionId, updatedReaction);
             EntityModel<Reaction> reactionModel = assembler.toModel(reaction);
@@ -77,7 +89,7 @@ public class ReactionController {
 
 
     @DeleteMapping("/reactions/{reactionId}")
-    public ResponseEntity<?> deleteReactionOnComment(@PathVariable String reactionId, @PathVariable Long contentID) {
+    public ResponseEntity<?> deleteReactionOnComment(@PathVariable Long reactionId, @PathVariable String contentID, @PathVariable String username) {
         try {
             reactionService.deleteReaction(reactionId);
             return ResponseEntity.ok("Reaction deleted successfully");

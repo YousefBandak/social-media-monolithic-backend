@@ -18,7 +18,7 @@ public class Reaction {
     @Id
     //@GeneratedValue(strategy = GenerationType.AUTO)
     private String reactionId;
-    @OneToOne
+    @ManyToOne
     private Profile reactor;
     ReactionType type;
 

@@ -40,10 +40,12 @@ public class ImpleCommentService implements CommentService {
     }
 
     @Override //FIXME: save by order of the content
-    public Comment addComment(Long contentId, Comment newComment, String username) throws ContentNotFoundException {
-        if (newComment == null) {
+    public Comment addComment(Long contentId, String comment, String username) throws ContentNotFoundException {
+
+        if (comment == null || comment.isBlank() || comment.isEmpty()) {
             throw new IllegalArgumentException("Comment object cannot be null.");
         } else {
+            Comment newComment = new Comment(comment);
             Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
             Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
             newComment.setCommentedOn(content);

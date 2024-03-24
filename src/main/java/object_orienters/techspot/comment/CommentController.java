@@ -7,6 +7,9 @@ import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostNotFoundException;
 
+import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionController;
 import org.slf4j.Logger;
@@ -18,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,12 +35,14 @@ public class CommentController {
 
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
+    private final ProfileRepository profileRepository;
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService) {
+    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService, ProfileRepository profileRepository) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
+        this.profileRepository = profileRepository;
     }
 
     @GetMapping("/comments")
@@ -73,12 +79,15 @@ public class CommentController {
         }
     }
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Comment newComment, @RequestParam String username) {
+    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Map<String,String> newComment) {
+        logger.info(newComment.toString());
+
+
         try {
-            Comment createdComment = commentService.addComment(contentID, newComment, username);
+            Comment createdComment = commentService.addComment(contentID, newComment.get("comment"), newComment.get("commentor"));
             logger.info("Comment added to the post: " + createdComment);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newComment);
         } catch ( IllegalArgumentException | ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }

@@ -23,10 +23,12 @@ public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reactionId;
+
     //@JsonIgnore
-    @OneToOne
+    @ManyToOne
     @NotNull(message = "Reactor profile should not be null.")
     private Profile reactor;
+
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Type shouldn't be null.")
     private ReactionType type;

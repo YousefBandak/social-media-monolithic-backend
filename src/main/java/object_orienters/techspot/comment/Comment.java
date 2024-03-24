@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.ManyToAny;
 
 @Data
 @Entity
@@ -21,13 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Valid
 public class Comment extends Content {
-        //    @Id
-        //    private String commentId;
-    @OneToOne
+
+    @ManyToOne
     private Profile Commenter;
 
     @ManyToOne
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "commented_on")
     @JsonIgnore
     private Content commentedOn;
     @NotBlank(message = "Comment content cannot be empty")

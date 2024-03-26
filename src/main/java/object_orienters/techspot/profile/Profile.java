@@ -58,7 +58,7 @@ public class Profile {
     private List<Profile> followers;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER)
     private List<Post> publishedPosts;
 
     @JsonIgnore

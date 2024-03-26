@@ -27,14 +27,14 @@ public class ImplePostService implements PostService {
 
     @Override
     public Collection<Post> getTimelinePosts(String username) throws UserNotFoundException {
-        return postRepository.findByAuthor(
+        return postRepository.findByContentAuthor(
                 profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username)));
     }
 
     @Override
     public Post addTimelinePosts(String username, Post post) throws UserNotFoundException {
         Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
-        post.setAuthor(user);
+        post.setContentAuthor(user);
         postRepository.save(post);
 
         logger.info("Post added to the timeline: " + post);
@@ -63,7 +63,7 @@ public class ImplePostService implements PostService {
         Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
-        if ((!post.getAuthor().equals(user) ||
+        if ((!post.getContentAuthor().equals(user) ||
                 !user.getPublishedPosts().contains(post))
 //                && user.getSharedPosts().stream().map(SharedPost::getPost).noneMatch(e -> e.equals(post))
                ) {

@@ -41,7 +41,7 @@ public class ReactionController {
     }
 
     @GetMapping("/reactions")
-    public ResponseEntity<?> getReactions(@PathVariable Long contentID) {
+    public ResponseEntity<?> getReactions(@PathVariable Long contentID, @PathVariable String username) {
         try {
             List<Reaction> reactionList = reactionService.getReactions(contentID);
             //CollectionModel<EntityModel<Reaction>> reactionModel = CollectionModel.of(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(ReactionController.class).getReactions(contentID)).withSelfRel(), linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
@@ -52,7 +52,7 @@ public class ReactionController {
     }
 
     @PostMapping("/reactions")
-    public ResponseEntity<?> createReaction(@Valid @RequestBody Map<String,String> reaction, @PathVariable Long contentID) {
+    public ResponseEntity<?> createReaction(@Valid @RequestBody Map<String,String> reaction, @PathVariable Long contentID, @PathVariable String username) {
         try {
             Reaction createdReaction = reactionService.createReaction(reaction.get("reactorID"),reaction.get("reactionType"),contentID);
             EntityModel<Reaction> reactionModel = assembler.toModel(createdReaction);
@@ -75,7 +75,7 @@ public class ReactionController {
 //    }
 
     @PutMapping("/reactions/{reactionId}")
-    public ResponseEntity<?> updateReaction(@PathVariable Long reactionId, @Valid @RequestBody Map<String,String> newReaction, @PathVariable Long contentID) {
+    public ResponseEntity<?> updateReaction(@PathVariable Long reactionId, @Valid @RequestBody Map<String,String> newReaction, @PathVariable Long contentID, @PathVariable String username) {
         try {
             Reaction reaction = reactionService.updateReaction(reactionId, newReaction.get("reactionType"));
             EntityModel<Reaction> reactionModel = assembler.toModel(reaction);

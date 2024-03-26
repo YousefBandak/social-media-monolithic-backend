@@ -18,9 +18,9 @@ public class CommentModelAssembler implements RepresentationModelAssembler<Comme
     @NonNull
     public EntityModel<Comment> toModel(@NonNull Comment entity) {
                 return EntityModel.of(entity, //
-                linkTo(methodOn(CommentController.class).getComment(entity.getContentID())).withSelfRel(),
-                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentID())).withRel("Post"),
-                linkTo(methodOn(ProfileController.class).one(entity.getCommenter().getUsername())).withRel("Commenter"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentID())).withRel("comments"));
+                linkTo(methodOn(CommentController.class).getComment(entity.getContentID(),entity.getCommentedOn().getContentID(),entity.getCommentedOn().getContentAuthor().getUsername())).withSelfRel(),
+                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentID(),entity.getCommentedOn().getContentAuthor().getUsername())).withRel("Post"),
+                linkTo(methodOn(ProfileController.class).one(entity.getContentAuthor().getUsername())).withRel("Commenter"),
+                linkTo(methodOn(CommentController.class).getComments(entity.getCommentedOn().getContentID(),entity.getCommentedOn().getContentAuthor().getUsername())).withRel("comments"));
     }
 }

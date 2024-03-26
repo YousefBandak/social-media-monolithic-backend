@@ -39,11 +39,11 @@ public class ImpleCommentService implements CommentService {
         if (comment == null || comment.isBlank() || comment.isEmpty()) {
             throw new IllegalArgumentException("Comment object cannot be null.");
         } else {
-            Comment newComment = new Comment(comment);
             Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
             Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+            Comment newComment = new Comment(comment,user,content);
             newComment.setCommentedOn(content);
-            newComment.setCommenter(user);
+            newComment.setContentAuthor(user);
             commentRepository.save(newComment);
             content.getComments().add(newComment);
             contentRepository.save(content);

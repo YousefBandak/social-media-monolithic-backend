@@ -87,7 +87,7 @@ public class ProfileController {
     public ResponseEntity<?> Followers(@PathVariable String username) {
         try {
             List<EntityModel<Profile>> followers = profileService.getUserFollowersByUsername(username).stream()
-                    .map(userModel -> assembler.toModel(userModel))
+                    .map(assembler::toModel)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(CollectionModel.of(followers,
                     linkTo(methodOn(ProfileController.class).one(username)).withSelfRel()));

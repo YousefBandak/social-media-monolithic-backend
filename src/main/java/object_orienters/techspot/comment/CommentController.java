@@ -34,11 +34,14 @@ public class CommentController {
     }
 
     @GetMapping("/comments")
-    public ResponseEntity<?> getComments(@PathVariable long contentID) {
+    public ResponseEntity<?> getComments(@PathVariable long contentID, @PathVariable String username) {
 
         try {
             List<Comment> commentList = commentService.getComments(contentID);
-            CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(commentList.stream().map(assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(CommentController.class).getComments(contentID)).withSelfRel(), linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
+            CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(commentList.stream().
+                    map(assembler::toModel).collect(Collectors.toList()),
+                    linkTo(methodOn(CommentController.class).getComments(contentID,username)).withSelfRel(),
+                    linkTo(methodOn(PostController.class).getPost(contentID,username)).withRel("post"));
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
@@ -46,7 +49,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{commentID}")
-    public ResponseEntity<?> getComment(@PathVariable Long commentID) {
+    public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID, @PathVariable String username) {
         try {
             Comment comment = commentService.getComment(commentID);
             EntityModel<Comment> commentModel = assembler.toModel(comment);

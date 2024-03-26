@@ -18,8 +18,8 @@ public class ReactionModelAssembler implements RepresentationModelAssembler<Reac
                 return EntityModel.of(entity, //
                 linkTo(methodOn(ReactionController.class).getReaction(entity.getReactionID(),entity.getContent().getContentID(),entity.getReactor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getReactor().getUsername())).withRel("reactor"),
-                linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID())).withRel("post"),
-                linkTo(methodOn(ReactionController.class).getReactions(entity.getContent().getContentID())).withRel("reactions"));
+                linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID(),entity.getContent().getContentAuthor().getUsername())).withRel("post"),
+                linkTo(methodOn(ReactionController.class).getReactions(entity.getContent().getContentID(),entity.getContent().getContentAuthor().getUsername())).withRel("reactions"));
     }
 
 }

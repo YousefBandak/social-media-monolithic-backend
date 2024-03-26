@@ -73,7 +73,7 @@ public class PostController {
 
     //Todo: the path need to be changed
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<?> getPost(@PathVariable long postId) {
+    public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.getPost(postId)));
         } catch (PostNotFoundException exception) {

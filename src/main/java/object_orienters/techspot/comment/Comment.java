@@ -24,9 +24,6 @@ import org.hibernate.annotations.ManyToAny;
 public class Comment extends Content {
 
     @ManyToOne
-    private Profile Commenter;
-
-    @ManyToOne
     @JoinColumn(name = "commented_on")
     @JsonIgnore
     private Content commentedOn;
@@ -37,8 +34,10 @@ public class Comment extends Content {
     private int numOfReplies;
 
 
-    public Comment(String comment) {
+    public Comment(String comment, Profile commentor, Content commentedOn) {
         this.comment = comment;
+        this.setContentAuthor(commentor);
+        this.commentedOn = commentedOn;
     }
 
 }

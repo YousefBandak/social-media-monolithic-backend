@@ -1,5 +1,6 @@
 package object_orienters.techspot.profile;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -152,9 +153,9 @@ public class ProfileController {
     // TODO: IS IT POST MAPPING OR PUT?
     // add new follower to user
     @PostMapping("/{username}/followers")
-    public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody Profile newFollower) {
+    public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
-            return ResponseEntity.ok(assembler.toModel(profileService.addNewFollower(username, newFollower)));
+            return ResponseEntity.ok(assembler.toModel(profileService.addNewFollower(username, followerUserName.get("username").asText())));
         } catch (UserNotFoundException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));

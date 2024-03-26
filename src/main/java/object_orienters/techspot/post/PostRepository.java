@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Collection;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
+
+   // Collection<Post> findBySharer(Profile user); //TODO: add shared post implementation so that the user can see the shared posts
     Collection<Post> findByContentAuthor(Profile user);
 }

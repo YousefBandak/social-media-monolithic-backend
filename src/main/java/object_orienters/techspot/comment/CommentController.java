@@ -71,12 +71,12 @@ public class CommentController {
         }
     }
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Map<String,String> newComment) {
-        logger.info(newComment.toString());
+    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Map<String,String> jsonMap) {
+        logger.info(jsonMap.toString());
 
 
         try {
-            Comment createdComment = commentService.addComment(contentID, newComment.get("comment"), newComment.get("commentor"));
+            Comment createdComment = commentService.addComment(contentID, jsonMap.get("comment"), jsonMap.get("commentor"));
             logger.info("Comment added to the post: " + createdComment);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);

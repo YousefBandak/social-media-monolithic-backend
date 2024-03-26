@@ -62,10 +62,21 @@ public class ProfileController {
 
     // create new user profile
     @PostMapping("")
-    public ResponseEntity<EntityModel<Profile>> createUser(@Valid @RequestBody Profile newUser) {
-        EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewUser(newUser));
-        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+    public ResponseEntity<?> createUser(@Valid @RequestBody Profile newUser)
+            throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
+        try {
+            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewUser(newUser));
+            return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                    .body(entityModel);
+        } catch (EmailAlreadyUsedException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Problem.create().withTitle("Email Already Used.")
+                            .withDetail(exception.getMessage() + ", Email must be unique."));
+        } catch (UsernameAlreadyUsedExeption exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Problem.create().withTitle("Username Already Used.")
+                            .withDetail(exception.getMessage() + ", Username must be unique."));
+        }
     }
 
     // update user profile

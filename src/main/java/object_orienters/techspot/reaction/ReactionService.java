@@ -11,10 +11,10 @@ public interface ReactionService {
 
     public List<Reaction> getReactions(Long contentId);
 
-    public Reaction updateReaction(Long reactionId, Reaction reaction);
+    public Reaction updateReaction(Long reactionId, String reactionType);
 
     public void deleteReaction(Long reactionId);
-    public Reaction createReaction(String reactorId, Reaction.ReactionType reactionType, Long contentId);
+    public Reaction createReaction(String reactorId, String reactionType, Long contentId);
 
 
 

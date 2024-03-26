@@ -3,12 +3,8 @@ package object_orienters.techspot.reaction;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.Content;
@@ -22,7 +18,7 @@ import object_orienters.techspot.profile.Profile;
 public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reactionId;
+    private Long reactionID;
 
     //@JsonIgnore
     @ManyToOne
@@ -48,7 +44,7 @@ public class Reaction {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Reaction)) return false;
-        return reactionId != null && reactionId.equals(((Reaction) o).getReactionId());
+        return reactionID != null && reactionID.equals(((Reaction) o).getReactionID());
     }
 
     public enum ReactionType {

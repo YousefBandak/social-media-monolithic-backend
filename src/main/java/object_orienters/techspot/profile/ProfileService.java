@@ -17,7 +17,7 @@ public interface ProfileService {
 
     public Profile getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException;
 
-    public Profile addNewFollower(String username, Profile newFollower) throws UserNotFoundException;
+    public Profile addNewFollower(String username, String newFollower) throws UserNotFoundException;
 
     public void deleteFollower(String username, Profile deletedUser) throws UserNotFoundException;
 

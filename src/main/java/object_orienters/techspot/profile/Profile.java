@@ -48,7 +48,7 @@ public class Profile {
     @ManyToOne
     private Profile master;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "followship", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
     @JsonIgnore
     private List<Profile> following;

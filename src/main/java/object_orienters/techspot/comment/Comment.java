@@ -24,6 +24,7 @@ import org.hibernate.annotations.ManyToAny;
 public class Comment extends Content {
 
     @ManyToOne
+    @JsonIgnore
     private Profile Commenter;
 
     @ManyToOne

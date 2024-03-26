@@ -14,14 +14,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @Component
-public class CommentModelAssembler implements RepresentationModelAssembler<Comment, EntityModel<Comment>>{
+public class CommentModelAssembler implements RepresentationModelAssembler<Comment, EntityModel<Comment>> {
     @Override
     @NonNull
     public EntityModel<Comment> toModel(@NonNull Comment entity) {
-                return EntityModel.of(entity, //
+        EntityModel<Comment> commentModel = EntityModel.of(entity,
                 linkTo(methodOn(CommentController.class).getComment(entity.getContentId())).withSelfRel(),
-                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentId())).withRel("Post"),
-                linkTo(methodOn(ProfileController.class).one(entity.getCommenter().getUsername())).withRel("Commenter"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentId())).withRel("comments"));
+                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentId())).withRel("post"),
+                linkTo(methodOn(ProfileController.class).one(entity.getCommenter().getUsername())).withRel("commenter"));
+
+        if (entity.getComments() != null && !entity.getComments().isEmpty())
+            commentModel.add(linkTo(methodOn(CommentController.class).getComments(entity.getContentId())).withRel("comments"));
+
+
+        return commentModel;
+
     }
 }

@@ -21,7 +21,13 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
-    public Profile createNewUser(Profile newUser) throws UserNotFoundException {
+    public Profile createNewUser(Profile newUser) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
+        if (repo.findByEmail(newUser.getEmail()) != null) {
+            throw new EmailAlreadyUsedException(newUser.getEmail());
+        }
+        if (repo.findById(newUser.getUsername()) != null) {
+            throw new UsernameAlreadyUsedExeption(newUser.getUsername());
+        }
         return repo.save(newUser);
     }
 

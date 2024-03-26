@@ -2,7 +2,6 @@ package object_orienters.techspot.reaction;
 
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.profile.ProfileController;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.lang.NonNull;
@@ -17,10 +16,10 @@ public class ReactionModelAssembler implements RepresentationModelAssembler<Reac
     @NonNull
     public EntityModel<Reaction> toModel(@NonNull Reaction entity) {
                 return EntityModel.of(entity, //
-                linkTo(methodOn(ReactionController.class).getReaction(entity.getReactionId(),entity.getContent().getContentId(),entity.getReactor().getUsername())).withSelfRel(),
+                linkTo(methodOn(ReactionController.class).getReaction(entity.getReactionID(),entity.getContent().getContentID(),entity.getReactor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getReactor().getUsername())).withRel("reactor"),
-                linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentId())).withRel("post"),
-                linkTo(methodOn(ReactionController.class).getReactions(entity.getContent().getContentId())).withRel("reactions"));
+                linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID(),entity.getContent().getContentAuthor().getUsername())).withRel("post"),
+                linkTo(methodOn(ReactionController.class).getReactions(entity.getContent().getContentID(),entity.getContent().getContentAuthor().getUsername())).withRel("reactions"));
     }
 
 }

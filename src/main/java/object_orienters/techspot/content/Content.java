@@ -1,15 +1,12 @@
 package object_orienters.techspot.content;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.post.Post;
+import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.reaction.Reaction;
 
 import java.sql.Timestamp;
@@ -30,7 +27,10 @@ public abstract class Content {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "content_id", updatable = false, nullable = false)
     @Getter
-    private Long contentId;
+    private Long contentID;
+    @ManyToOne
+    //@JsonBackReference
+    private Profile contentAuthor;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private Timestamp timestamp;
@@ -51,6 +51,10 @@ public abstract class Content {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Post)) return false;
-        return contentId != null && contentId.equals(((Post) o).getContentId());
+        return contentID != null && contentID.equals(((Post) o).getContentID());
+    }
+
+    public Profile getContentAuthor() {
+        return contentAuthor;
     }
 }

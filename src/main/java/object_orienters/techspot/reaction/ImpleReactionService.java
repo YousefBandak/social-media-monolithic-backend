@@ -1,13 +1,9 @@
 package object_orienters.techspot.reaction;
 
 
-import jakarta.persistence.EntityNotFoundException;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ContentRepository;
-import object_orienters.techspot.post.Post;
-import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -53,29 +49,29 @@ public class ImpleReactionService implements ReactionService {
     }
 
     @Override
-    public Reaction updateReaction(Long reactionId, Reaction updatedReaction)  {
+    public Reaction updateReaction(Long reactionId,String reactionType) {
         Reaction existingReaction = reactionRepository.findById(reactionId).orElseThrow(() -> new ReactionNotFoundException(reactionId));
-        existingReaction.setContent(updatedReaction.getContent());
-        existingReaction.setType(updatedReaction.getType());
-        existingReaction.setReactionId(updatedReaction.getReactionId());
+        Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
+        existingReaction.setType(reactionTypee);
         return reactionRepository.save(existingReaction);
     }
 
     @Override
     public void deleteReaction(Long reactionId) {
         Content content = reactionRepository.findById(reactionId).orElseThrow(() -> new ReactionNotFoundException(reactionId)).getContent();
-        content.getReactions().removeIf(r -> r.getReactionId().equals(reactionId));
-        reactionRepository.deleteById(reactionId);
+        content.getReactions().removeIf(r -> r.getReactionID().equals(reactionId));
+        reactionRepository.findById(reactionId).ifPresent(reactionRepository::delete);
 
     }
     @Override
-    public Reaction createReaction(String reactorId, Reaction.ReactionType reactionType, Long contentId) {
-        Profile reactor = profileRepository.findById(reactorId)
-                .orElseThrow(() -> new UserNotFoundException(reactorId));
+    public Reaction createReaction(String reactorID, String reactionType, Long contentId) {
+        Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
+        Profile reactor = profileRepository.findById(reactorID)
+                .orElseThrow(() -> new UserNotFoundException(reactorID));
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
 
-        Reaction createdReaction =  new Reaction(reactor, reactionType, content);
+        Reaction createdReaction =  new Reaction(reactor, reactionTypee, content);
         return reactionRepository.save(createdReaction);
 
     }

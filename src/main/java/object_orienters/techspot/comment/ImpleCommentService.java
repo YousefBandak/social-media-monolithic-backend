@@ -5,26 +5,20 @@ import java.util.List;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ContentRepository;
-import object_orienters.techspot.post.PostRepository;
-import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.post.Post;
 
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.reaction.ReactionNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ImpleCommentService implements CommentService {
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository;
     private final ContentRepository contentRepository;
     private final ProfileRepository profileRepository;
 
-    public ImpleCommentService(CommentRepository commentRepository, PostRepository postRepository, ContentRepository contentRepository, ProfileRepository profileRepository) {
+    public ImpleCommentService(CommentRepository commentRepository, ContentRepository contentRepository, ProfileRepository profileRepository) {
         this.commentRepository = commentRepository;
-        this.postRepository = postRepository;
         this.contentRepository = contentRepository;
         this.profileRepository = profileRepository;
     }
@@ -34,7 +28,7 @@ public class ImpleCommentService implements CommentService {
         if (newComment == null) {
             throw new IllegalArgumentException("Reaction object cannot be null.");
         } else {
-            newComment.setCommentedOn(contentRepository.findById(newComment.getContentId()).orElseThrow(() -> new ContentNotFoundException(newComment.getContentId())));
+            newComment.setCommentedOn(contentRepository.findById(newComment.getContentID()).orElseThrow(() -> new ContentNotFoundException(newComment.getContentID())));
             return commentRepository.save(newComment);
         }
     }
@@ -45,11 +39,11 @@ public class ImpleCommentService implements CommentService {
         if (comment == null || comment.isBlank() || comment.isEmpty()) {
             throw new IllegalArgumentException("Comment object cannot be null.");
         } else {
-            Comment newComment = new Comment(comment);
             Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
             Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+            Comment newComment = new Comment(comment,user,content);
             newComment.setCommentedOn(content);
-            newComment.setCommenter(user);
+            newComment.setContentAuthor(user);
             commentRepository.save(newComment);
             content.getComments().add(newComment);
             contentRepository.save(content);
@@ -85,16 +79,16 @@ public class ImpleCommentService implements CommentService {
     @Override
     public void deleteComment(Long contentId, Long commentId) throws ContentNotFoundException {
         Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
-        content.getComments().removeIf(c -> c.getContentId().equals(commentId));
+        content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         contentRepository.save(content);
 
     }
 
     @Override
-    public Comment updateComment(Long contentID, Long commentID, Comment newComment) throws ContentNotFoundException, CommentNotFoundException {
+    public Comment updateComment(Long contentID, Long commentID, String newComment) throws ContentNotFoundException, CommentNotFoundException {
         Content content = contentRepository.findById(contentID).orElseThrow(() -> new ContentNotFoundException(contentID));
         Comment comment = commentRepository.findById(commentID).orElseThrow(() -> new CommentNotFoundException(commentID));
-        comment.setComment(newComment.getComment());
+        comment.setComment(newComment);
         return commentRepository.save(comment);
 
     }

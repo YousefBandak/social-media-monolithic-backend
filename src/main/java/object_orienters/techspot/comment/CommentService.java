@@ -12,7 +12,7 @@ public interface CommentService {
     public Comment addComment(Long contentId, String newComment, String username) throws PostNotFoundException;
     //public void deletePostComment(Long postId, Long commentId) throws PostNotFoundException, CommentNotFoundException;
     public void deleteComment(Long contentId, Long commentId) throws PostNotFoundException, ContentNotFoundException,CommentNotFoundException;
-    public Comment updateComment(Long contentID, Long commentID, Comment newComment) throws ContentNotFoundException, CommentNotFoundException;
+    public Comment updateComment(Long contentID, Long commentID, String newComment) throws ContentNotFoundException, CommentNotFoundException;
 
     //public List<Comment> getCommentsOfPost(Long postId) throws PostNotFoundException;
     // public List<Comment> getCommentsOfComment(Long comment) throws PostNotFoundException, CommentNotFoundException;

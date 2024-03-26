@@ -1,17 +1,8 @@
 package object_orienters.techspot.comment;
 
-import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.content.ContentRepository;
-import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.PostController;
-import object_orienters.techspot.post.PostNotFoundException;
 
-import object_orienters.techspot.profile.Profile;
-import object_orienters.techspot.profile.ProfileRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.reaction.Reaction;
-import object_orienters.techspot.reaction.ReactionController;
 import org.slf4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -22,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -30,37 +20,38 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
-@RequestMapping("/posts/{contentID}")
+@RequestMapping("/profiles/{username}/posts/{contentID}")
 public class CommentController {
 
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
-    private final ProfileRepository profileRepository;
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService, ProfileRepository profileRepository) {
+    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
-        this.profileRepository = profileRepository;
     }
 
     @GetMapping("/comments")
-    public ResponseEntity<?> getComments(@PathVariable long contentID) {
+    public ResponseEntity<?> getComments(@PathVariable long contentID, @PathVariable String username) {
 
         try {
             List<Comment> commentList = commentService.getComments(contentID);
-            CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(commentList.stream().map(assembler::toModel).collect(Collectors.toList()), linkTo(methodOn(CommentController.class).getComments(contentID)).withSelfRel(), linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
+            CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(commentList.stream().
+                    map(assembler::toModel).collect(Collectors.toList()),
+                    linkTo(methodOn(CommentController.class).getComments(contentID,username)).withSelfRel(),
+                    linkTo(methodOn(PostController.class).getPost(contentID,username)).withRel("post"));
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
     }
 
-    @GetMapping("/comments/{commentId}")
-    public ResponseEntity<?> getComment(@PathVariable Long commentId) {
+    @GetMapping("/comments/{commentID}")
+    public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID, @PathVariable String username) {
         try {
-            Comment comment = commentService.getComment(commentId);
+            Comment comment = commentService.getComment(commentID);
             EntityModel<Comment> commentModel = assembler.toModel(comment);
             return ResponseEntity.ok(commentModel);
         } catch ( ContentNotFoundException e) {
@@ -68,10 +59,11 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/comments/{commentId}")
-    public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentId, @RequestBody Comment newComment) {
+    @PutMapping("/comments/{commentID}")
+    public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID, @RequestBody Map<String,String> newComment) {
         try {
-            Comment updatedComment = commentService.updateComment(contentID, commentId, newComment);
+            Comment updatedComment = commentService.updateComment(contentID, commentID, newComment.get("comment"));
+            logger.info("Comment: " + commentID + "updated to the content: " + contentID);
             EntityModel<Comment> commentModel = assembler.toModel(updatedComment);
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException | CommentNotFoundException e) {
@@ -93,11 +85,11 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping("/comments/{commentID}")
 
-    public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentId)  {
+    public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID)  {
         try {
-            commentService.deleteComment(contentID, commentId);
+            commentService.deleteComment(contentID, commentID);
             return ResponseEntity.ok("Comment deleted successfully");
         } catch (ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));

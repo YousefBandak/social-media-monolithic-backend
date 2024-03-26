@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/profiles/{username}")
 public class PostController {
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostModelAssembler assembler;
@@ -21,7 +22,7 @@ public class PostController {
         this.sharedPostAssembler = sharedPostAssembler;
     }
 
-    @GetMapping("/profiles/{username}/posts")
+    @GetMapping("/posts")
     public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toCollectionModel(postService.getTimelinePosts(username)));
@@ -30,7 +31,7 @@ public class PostController {
         }
     }
 
-    @PostMapping("/profiles/{username}/posts")
+    @PostMapping("/posts")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post, @RequestParam(required = false) boolean isShared) {
         if (isShared) {
             try {
@@ -47,7 +48,7 @@ public class PostController {
         }
     }
 
-    @PutMapping("/profiles/{username}/posts/{postId}")
+    @PutMapping("/posts/{postId}")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId, @RequestBody Post newPost) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.editTimelinePost(username, postId, newPost)));
@@ -57,7 +58,7 @@ public class PostController {
 
     }
 
-    @DeleteMapping("/profiles/{username}/posts/{postId}")
+    @DeleteMapping("/posts/{postId}")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             postService.deleteTimelinePost(username, postId);

@@ -2,7 +2,6 @@ package object_orienters.techspot.comment;
 
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.profile.ProfileController;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.lang.NonNull;
@@ -19,9 +18,9 @@ public class CommentModelAssembler implements RepresentationModelAssembler<Comme
     @NonNull
     public EntityModel<Comment> toModel(@NonNull Comment entity) {
                 return EntityModel.of(entity, //
-                linkTo(methodOn(CommentController.class).getComment(entity.getContentId())).withSelfRel(),
-                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentId())).withRel("Post"),
+                linkTo(methodOn(CommentController.class).getComment(entity.getContentID())).withSelfRel(),
+                linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentID())).withRel("Post"),
                 linkTo(methodOn(ProfileController.class).one(entity.getCommenter().getUsername())).withRel("Commenter"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentId())).withRel("comments"));
+                linkTo(methodOn(CommentController.class).getComments(entity.getContentID())).withRel("comments"));
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TechspotApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(TechspotApplication.class, args);
 	}
 

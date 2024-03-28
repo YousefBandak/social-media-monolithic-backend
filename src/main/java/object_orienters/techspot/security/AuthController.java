@@ -39,7 +39,7 @@ public class AuthController {
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    @GetMapping("/")
+    @PostMapping("/a")
     public String home() {
         return "Hello, Home!";
     }

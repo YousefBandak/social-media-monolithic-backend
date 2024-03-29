@@ -1,18 +1,17 @@
-//package object_orienters.techspot.message;
-//
-//import object_orienters.techspot.chat.ChatNotFoundException;
-//import object_orienters.techspot.profile.UserNotFoundException;
-//import object_orienters.techspot.chat.Chat;
-//import object_orienters.techspot.profile.Profile;
-//import object_orienters.techspot.chat.ImpleChatService;
-//import object_orienters.techspot.profile.ImpleProfileService;
-//import org.springframework.hateoas.EntityModel;
-//import org.springframework.hateoas.mediatype.problem.Problem;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
+package object_orienters.techspot.message;
+
+import object_orienters.techspot.profile.UserNotFoundException;
+import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ImpleProfileService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.mediatype.problem.Problem;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 //
 //@RestController
 //@RequestMapping("/profiles")
@@ -87,3 +86,20 @@
 //        }
 //    }
 //}
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
+@RestController
+@RequestMapping("/profiles")
+public class MessageControler {
+    @Autowired
+    private Sender sender;
+
+    @PostMapping("/send")
+    public String sendMessage(@RequestBody String message){
+        sender.sendMessage(message);
+
+        return "Sent Successfully";
+    }
+}

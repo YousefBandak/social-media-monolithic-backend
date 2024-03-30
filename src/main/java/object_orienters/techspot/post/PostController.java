@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/profiles/{username}")
+@RequestMapping("/profiles/{username}/posts")
 public class PostController {
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostModelAssembler assembler;
@@ -22,7 +22,7 @@ public class PostController {
         this.sharedPostAssembler = sharedPostAssembler;
     }
 
-    @GetMapping("/posts")
+    @GetMapping("")
     public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toCollectionModel(postService.getTimelinePosts(username)));
@@ -31,7 +31,7 @@ public class PostController {
         }
     }
 
-    @PostMapping("/posts")
+    @PostMapping("")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post, @RequestParam(required = false) boolean isShared) {
         if (isShared) {
             try {
@@ -48,7 +48,7 @@ public class PostController {
         }
     }
 
-    @PutMapping("/posts/{postId}")
+    @PutMapping("/{postId}")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId, @RequestBody Post newPost) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.editTimelinePost(username, postId, newPost)));
@@ -58,7 +58,7 @@ public class PostController {
 
     }
 
-    @DeleteMapping("/posts/{postId}")
+    @DeleteMapping("/{postId}")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             postService.deleteTimelinePost(username, postId);
@@ -72,7 +72,7 @@ public class PostController {
 
 
     //Todo: the path need to be changed
-    @GetMapping("/posts/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.getPost(postId)));
@@ -83,5 +83,29 @@ public class PostController {
     }
 
     // //TODO: Specify if post is shared or authored
+
+
+
+
+
+
+
+
+    @PostMapping("/{postId}/share")
+    public ResponseEntity<?> sharePostOfUser(@PathVariable String username, @RequestBody Post post, @RequestParam(required = false) boolean isShared) {
+        if (isShared) {
+            try {
+                return ResponseEntity.status(HttpStatus.CREATED).body(sharedPostAssembler.toModel(postService.addSharedPost(username, post, post.getPrivacy())));
+            } catch (UserNotFoundException exception) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            }
+        } else {
+            try {
+                return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(postService.addTimelinePosts(username, post)));
+            } catch (UserNotFoundException exception) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            }
+        }
+    }
 
 }

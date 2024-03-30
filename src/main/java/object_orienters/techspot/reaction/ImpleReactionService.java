@@ -1,6 +1,5 @@
 package object_orienters.techspot.reaction;
 
-import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;

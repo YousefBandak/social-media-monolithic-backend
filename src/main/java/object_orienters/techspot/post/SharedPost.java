@@ -12,9 +12,6 @@ import object_orienters.techspot.profile.Profile;
 @Entity
 @NoArgsConstructor
 public class SharedPost extends Content {
-    @Id
-    @GeneratedValue
-    private Long sharedPostId;
     @ManyToOne
     @JoinColumn(name = "profile_id")
     @JsonBackReference

@@ -1,15 +1,14 @@
 package object_orienters.techspot.comment;
 
-import java.util.List;
-
-import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.content.ReactableContent;
+import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ImpleCommentService implements CommentService {
@@ -95,7 +94,7 @@ public class ImpleCommentService implements CommentService {
     @Override
     public Comment updateComment(Long contentID, Long commentID, String newComment)
             throws ContentNotFoundException, CommentNotFoundException {
-        Content content = contentRepository.findById(contentID)
+        ReactableContent content = contentRepository.findById(contentID)
                 .orElseThrow(() -> new ContentNotFoundException(contentID));
         Comment comment = commentRepository.findById(commentID)
                 .orElseThrow(() -> new CommentNotFoundException(commentID));

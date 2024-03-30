@@ -21,10 +21,11 @@ public class Post extends ReactableContent {
     @NotBlank(message = "Post content cannot be empty")
     private String content;
     private Privacy privacy;
+    //TODO: handel this to be incremented when a comment is added
     private int numOfComments;
-    private int numOfLikes;
-
-    //private int numOfShares;
+    //TODO: handel this to be incremented when a Reaction is added
+    private int numOfReactions;
+    private int numOfShares;
 
     public Post(String content, Privacy privacy, Profile author){
 
@@ -41,7 +42,7 @@ public class Post extends ReactableContent {
                 ", content='" + content + '\'' +
                 ", privacy=" + privacy +
                 ", numOfComments=" + numOfComments +
-                ", numOfLikes=" + numOfLikes +
+                ", numOfLikes=" + numOfReactions +
                 '}';
     }
 

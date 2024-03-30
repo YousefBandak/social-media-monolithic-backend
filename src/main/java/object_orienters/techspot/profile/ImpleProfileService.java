@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,14 +22,14 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
-    public Profile createNewUser(Profile newUser) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
+    public Profile createNewUser(Profile newUser) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption,  DataIntegrityViolationException{
         // if (repo.findByEmail(newUser.getEmail()) != null) {
-        //     throw new EmailAlreadyUsedException(newUser.getEmail());
+        // throw new EmailAlreadyUsedException(newUser.getEmail());
         // }
         // if (repo.findById(newUser.getUsername()) != null) {
-        //     throw new UsernameAlreadyUsedExeption(newUser.getUsername());
+        // throw new UsernameAlreadyUsedExeption(newUser.getUsername());
         // }
-        return repo.save(newUser);
+            return repo.save(newUser);
     }
 
     @Override

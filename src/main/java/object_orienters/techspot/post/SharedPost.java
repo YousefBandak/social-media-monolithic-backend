@@ -5,12 +5,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
 @Entity
 @NoArgsConstructor
-public class SharedPost {
+public class SharedPost extends Content {
     @Id
     @GeneratedValue
     private Long sharedPostId;
@@ -23,7 +24,8 @@ public class SharedPost {
     @Getter
     private Post post;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     Privacy privacy;
 
     public SharedPost(Profile sharer, Post post, Privacy privacy) {

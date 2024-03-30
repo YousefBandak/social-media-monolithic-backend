@@ -21,7 +21,10 @@ import object_orienters.techspot.post.SharedPost;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "Profile")
+@Table(name = "Profile", 
+    uniqueConstraints = { 
+      @UniqueConstraint(columnNames = "profile_id"),
+      @UniqueConstraint(columnNames = "email")})
 public class Profile {
 
     @Id

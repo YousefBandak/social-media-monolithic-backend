@@ -7,26 +7,25 @@ import lombok.Data;
 
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.Content;
+import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
-
-import java.sql.Timestamp;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.ManyToAny;
 
-@Data
+
+
 @Entity
 @Table(name = "comment")
 @NoArgsConstructor
-
 @Valid
-public class Comment extends Content {
+//@Data
+public class Comment extends ReactableContent {
 
     @ManyToOne
     @JoinColumn(name = "commented_on")
     @JsonIgnore
-    private Content commentedOn;
+    private ReactableContent commentedOn;
     @NotBlank(message = "Comment content cannot be empty")
     private String comment;
     private int numOfReactions;
@@ -34,10 +33,53 @@ public class Comment extends Content {
     private int numOfReplies;
 
 
-    public Comment(String comment, Profile commentor, Content commentedOn) {
+    public Comment(String comment, Profile commentor, ReactableContent commentedOn) {
         this.comment = comment;
         this.setContentAuthor(commentor);
         this.commentedOn = commentedOn;
     }
+
+
+    public ReactableContent getCommentedOn() {
+        return commentedOn;
+    }
+
+
+    public void setCommentedOn(ReactableContent commentedOn) {
+        this.commentedOn = commentedOn;
+    }
+
+
+    public String getComment() {
+        return comment;
+    }
+
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+
+    public int getNumOfReactions() {
+        return numOfReactions;
+    }
+
+
+    public void setNumOfReactions(int numOfReactions) {
+        this.numOfReactions = numOfReactions;
+    }
+
+
+    public int getNumOfReplies() {
+        return numOfReplies;
+    }
+
+
+    public void setNumOfReplies(int numOfReplies) {
+        this.numOfReplies = numOfReplies;
+    }
+
+
+    
 
 }

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import object_orienters.techspot.comment.CommentController;
 
+import object_orienters.techspot.profile.ImpleProfileService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,12 +38,19 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    UserCredentialsServices userCredentialsServices;
+
+    @Autowired
+    ImpleProfileService profileService;
+
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    @PostMapping("/a")
+    @PostMapping("/home")
     public String home() {
         return "Hello, Home!";
     }
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -66,10 +74,8 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         //roleRepository.save(new Role(ERole.ROLE_ADMIN));
-        logger.info("im in");
-        signUpRequest.getRole().add("admin");
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            logger.info("first if");
+        logger.info("Registering user");
+        if (userCredentialsServices.usernameExists(signUpRequest)) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Username is already taken!"));
@@ -86,38 +92,16 @@ public class AuthController {
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()));
-                System.out.println(user.toString());
 
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
 
-        if (strRoles == null) {
-            logger.info("3rd if");
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            logger.info("else if log");
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
-        }
 
-        user.setRoles(roles);
+
+
+        user.setRoles(Set.of(userCredentialsServices.setRole(signUpRequest)));
         userRepository.save(user);
-         logger.info(user.getEmail());
-         logger.info(user.getUsername());
-         logger.info(user.getPassword());
+
+        profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
+        logger.info("User Registered Successfully " + user.toString());
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }

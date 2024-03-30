@@ -1,8 +1,12 @@
 package object_orienters.techspot.profile;
 
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +19,10 @@ import java.util.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import lombok.Value;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
+import object_orienters.techspot.security.User;
 
 @Entity
 @Data
@@ -25,10 +31,17 @@ import object_orienters.techspot.post.SharedPost;
 public class Profile {
 
     @Id
-    @Column(name = "profile_id")
-    @NotNull(message = "Username shouldn't be null.")
-    @Size(min = 4, max = 20, message = "Username size should be between 4 and 20 characters.")
-    private String username;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
+    Long id;
+
+
+    @PrimaryKeyJoinColumn(name = "username")
+    @OneToOne
+    @JsonIgnore
+    @Valid
+    private User owner;
+
     private String profilePic;
     @NotNull(message = "Name shouldn't be null.")
     @NotBlank(message = "Name cannot be left blank.")
@@ -40,13 +53,12 @@ public class Profile {
     //@UniqueEmail
     private String email;
     private Gender gender;
-    @NotNull(message = "Date of Birth shouldn't be null.")
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
 
-    @JsonIgnore
-    @ManyToOne
-    private Profile master;
+//    @JsonIgnore
+//    @ManyToOne
+//    private Profile master;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "followship", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
@@ -68,9 +80,9 @@ public class Profile {
     // @OneToMany(mappedBy = "profile", fetch = FetchType.EAGER)
     // private Set<Chat> Inbox;
 
-    public Profile(String username, String name, String profession, String email, String profilePic, Gender gender,
-            String dob) {
-        this.username = username;
+    public Profile(User user, String name, String profession, String email, String profilePic, Gender gender,
+                   String dob) {
+        this.owner = user;
         this.name = name;
         this.profession = profession;
         this.email = email;
@@ -83,7 +95,7 @@ public class Profile {
     }
 
     public String toString() {
-        return "Username: " + username + " Name: " + name + " Profession: " + profession + " Email: " + email;
+        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + email + "User: " + owner;
     }
 
     public List<Profile> getFollowing() {
@@ -93,13 +105,24 @@ public class Profile {
         return following;
     }
 
+
+   @JsonProperty("ownerUsername")
+   public String getUsername() {
+       if (this.owner != null) {
+           return this.owner.getUsername();
+       } else {
+           return null; // or handle the case where owner is null
+       }
+   }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
         if (!(o instanceof Profile))
             return false;
-        return username != null && username.equals(((Profile) o).getUsername());
+        return getUsername() != null && getUsername().equals(((Profile) o).getUsername());
     }
 
     public enum Gender {

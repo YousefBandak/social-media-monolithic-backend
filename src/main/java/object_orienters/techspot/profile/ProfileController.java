@@ -1,6 +1,7 @@
 package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -62,11 +63,12 @@ public class ProfileController {
     }
 
     // create new user profile
+    @PreAuthorize("hasRole('ROLE_ADMIN')") //TODO: IMPLEMENT THIS METHOD correctly with user object
     @PostMapping("")
-    public ResponseEntity<?> createUser(@Valid @RequestBody Profile newUser)
+    public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
             throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
         try {
-            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewUser(newUser));
+            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewProfile(newProfile));
             return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
                     .body(entityModel);
         } catch (EmailAlreadyUsedException exception) {

@@ -66,7 +66,7 @@ public class ImpleReactionService implements ReactionService {
     @Override
     public Reaction createReaction(String reactorID, String reactionType, Long contentId) {
         Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
-        Profile reactor = profileRepository.findById(reactorID)
+        Profile reactor = profileRepository.findByUsername(reactorID)
                 .orElseThrow(() -> new UserNotFoundException(reactorID));
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));

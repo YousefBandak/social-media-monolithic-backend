@@ -28,12 +28,12 @@ public class ImplePostService implements PostService {
     @Override
     public Collection<Post> getTimelinePosts(String username) throws UserNotFoundException {
         return postRepository.findByContentAuthor(
-                profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username)));
+                profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username)));
     }
 
     @Override
     public Post addTimelinePosts(String username, Post post) throws UserNotFoundException {
-        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         post.setContentAuthor(user);
         postRepository.save(post);
 
@@ -46,7 +46,7 @@ public class ImplePostService implements PostService {
 
     //Todo: add shared post implementation
     public SharedPost addSharedPost(String username, Post post, Privacy privacy) throws UserNotFoundException {
-        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         SharedPost sharedPost = new SharedPost(user, post, privacy);
         sharedPostRepository.save(sharedPost);
         user.getSharedPosts().add(sharedPost);
@@ -60,7 +60,7 @@ public class ImplePostService implements PostService {
     public Post editTimelinePost(String username, long postId, Post newPost)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
 
-        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         if ((!post.getContentAuthor().equals(user) ||
@@ -85,7 +85,7 @@ public class ImplePostService implements PostService {
 
     @Override
     public void deleteTimelinePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
-        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         // TODO: Maybe we should mark the post for deletion instead of deleting it

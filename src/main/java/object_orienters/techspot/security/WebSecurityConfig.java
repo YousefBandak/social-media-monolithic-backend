@@ -1,5 +1,6 @@
 package object_orienters.techspot.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +57,9 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+
+        //Code with JWT only
 //        return http
 //                .csrf(csrf -> csrf.disable())
 //                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
@@ -85,7 +89,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//Code with form only
 //        http
 //                .csrf(csrf -> csrf.disable()) // If it's a REST API, you're not using CSRF protection.
 //                .authorizeHttpRequests(authorize -> authorize
@@ -109,20 +113,23 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 //        return http.build();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//code with both
         http
                 .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/**").permitAll()
+                        .requestMatchers("/login", "/auth/**", "profiles/").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults())
                 .formLogin(form -> {
                     form.permitAll();
                     form.failureHandler((request, response, exception) -> {
                         logger.error("Failed to login", exception);
+
+                        exception.printStackTrace();
                         response.sendRedirect("/auth/signup");
                     });
-                    form.successForwardUrl("/auth/a");
+                    form.successForwardUrl("/auth/home");
                 })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -130,6 +137,10 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
 
         return http.build();
+
+
+        /////////////////////
+
     }
 
 

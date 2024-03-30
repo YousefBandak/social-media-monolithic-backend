@@ -40,7 +40,7 @@ public class ImpleCommentService implements CommentService {
             throw new IllegalArgumentException("Comment object cannot be null.");
         } else {
             Content content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
-            Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+            Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
             Comment newComment = new Comment(comment,user,content);
             newComment.setCommentedOn(content);
             newComment.setContentAuthor(user);

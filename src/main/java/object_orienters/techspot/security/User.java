@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,8 @@ import lombok.NoArgsConstructor;
 public class User {
     @NotBlank
     @Id
-    @Size(max = 20)
+    @NotNull(message = "Username shouldn't be null.")
+    @Size(min = 4, max = 20, message = "Username size should be between 4 and 20 characters.")
     private String username;
 
     @NotBlank
@@ -48,6 +50,10 @@ public class User {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    public String toString() {
+        return "User [email=" + email + ", password=" + password + ", roles=" + roles + ", username=" + username + "]";
     }
 
 

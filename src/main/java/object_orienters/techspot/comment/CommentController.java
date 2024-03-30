@@ -20,7 +20,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
-@RequestMapping("/profiles/{username}/posts/{contentID}")
+@RequestMapping("/profiles/{username}/content/{contentID}")
 public class CommentController {
 
     private final CommentModelAssembler assembler;
@@ -94,7 +94,11 @@ public class CommentController {
         } catch (ContentNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
+
+        
     }
+
+
 
 
 

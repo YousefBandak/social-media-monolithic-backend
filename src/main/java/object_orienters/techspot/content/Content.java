@@ -6,11 +6,6 @@ import lombok.Data;
 import lombok.Getter;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.post.Post;
-import object_orienters.techspot.profile.Profile;
-import object_orienters.techspot.reaction.Reaction;
-
-import java.sql.Timestamp;
-import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
@@ -21,40 +16,10 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "content")
 @Data
-
 public abstract class Content {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "content_id", updatable = false, nullable = false)
     @Getter
     private Long contentID;
-    @ManyToOne
-    //@JsonBackReference
-    private Profile contentAuthor;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    private Timestamp timestamp;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Reaction> reactions;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "commentedOn", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Comment> comments;
-
-    public Content() {
-        this.timestamp = new Timestamp(System.currentTimeMillis());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Post)) return false;
-        return contentID != null && contentID.equals(((Post) o).getContentID());
-    }
-
-    public Profile getContentAuthor() {
-        return contentAuthor;
-    }
 }

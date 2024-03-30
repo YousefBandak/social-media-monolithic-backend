@@ -7,7 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.content.Content;
+import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
@@ -16,7 +16,7 @@ import object_orienters.techspot.profile.Profile;
 @Table(name = "post")
 @NoArgsConstructor
 @Valid
-public class Post extends Content {
+public class Post extends ReactableContent {
 
     @NotBlank(message = "Post content cannot be empty")
     private String content;

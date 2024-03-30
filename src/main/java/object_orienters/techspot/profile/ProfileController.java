@@ -84,6 +84,7 @@ public class ProfileController {
 
     // update user profile
     @PutMapping("/{username}")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody Profile newUser, @PathVariable String username) {
         try {
             Profile updatedUser = profileService.updateUserProfile(newUser, username);
@@ -155,6 +156,7 @@ public class ProfileController {
     // TODO: IS IT POST MAPPING OR PUT?
     // add new follower to user
     @PostMapping("/{username}/followers")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
             return ResponseEntity.ok(assembler.toModel(profileService.addNewFollower(username, followerUserName.get("username").asText())));
@@ -166,6 +168,7 @@ public class ProfileController {
 
     // delete follower from user
     @DeleteMapping("/{username}/followers")
+    @PreAuthorize("#username == authentication.principal.username")
     ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody Profile deletedUser) {
         try {
             profileService.deleteFollower(username, deletedUser);

@@ -1,4 +1,4 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.payload;
 
 public class MessageResponse {
     private String message;

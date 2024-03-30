@@ -10,6 +10,7 @@ import object_orienters.techspot.profile.UserNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ImpleReactionService implements ReactionService {
@@ -76,5 +77,13 @@ public class ImpleReactionService implements ReactionService {
 
     }
 
+    public boolean isReactor(String username, Long reactionID) {
+        Optional<Reaction> reactionOptional = reactionRepository.findById(reactionID);
+        if (reactionOptional.isPresent()) {
+           Reaction reaction = reactionOptional.get();
+            return reaction.getReactor().getUsername().equals(username);
+        }
+        return false; // Return false if the comment is not found
+    }
 
 }

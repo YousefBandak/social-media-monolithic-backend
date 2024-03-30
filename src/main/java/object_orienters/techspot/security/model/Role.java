@@ -1,6 +1,7 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.model;
 
 import jakarta.persistence.*;
+import object_orienters.techspot.security.model.ERole;
 
 @Entity
 @Table(name = "roles")

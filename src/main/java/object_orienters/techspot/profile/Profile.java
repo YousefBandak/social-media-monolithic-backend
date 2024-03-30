@@ -1,7 +1,5 @@
 package object_orienters.techspot.profile;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -19,24 +17,18 @@ import java.util.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import lombok.Value;
+import object_orienters.techspot.model.UserBase;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
-import object_orienters.techspot.security.User;
+import object_orienters.techspot.security.model.User;
 
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "Profile")
-public class Profile {
+@Table(name = "profile")
+@Valid
+public class Profile extends UserBase {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    Long id;
-
-
-    @PrimaryKeyJoinColumn(name = "username")
     @OneToOne
     @JsonIgnore
     @Valid
@@ -48,10 +40,7 @@ public class Profile {
     @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
     private String name;
     private String profession;
-    @NotNull(message = "Email shouldn't be null.")
-    @Email
-    //@UniqueEmail
-    private String email;
+
     private Gender gender;
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
@@ -85,7 +74,7 @@ public class Profile {
         this.owner = user;
         this.name = name;
         this.profession = profession;
-        this.email = email;
+        this.setEmail(email);
         this.profilePic = profilePic;
         this.gender = gender;
         this.followers = new ArrayList<>();
@@ -95,7 +84,7 @@ public class Profile {
     }
 
     public String toString() {
-        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + email + "User: " + owner;
+        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + getEmail() + "User: " + owner;
     }
 
     public List<Profile> getFollowing() {
@@ -104,16 +93,6 @@ public class Profile {
         }
         return following;
     }
-
-
-   @JsonProperty("ownerUsername")
-   public String getUsername() {
-       if (this.owner != null) {
-           return this.owner.getUsername();
-       } else {
-           return null; // or handle the case where owner is null
-       }
-   }
 
 
     @Override

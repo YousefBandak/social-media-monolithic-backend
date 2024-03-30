@@ -1,6 +1,10 @@
 package object_orienters.techspot.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import object_orienters.techspot.security.model.ERole;
+import object_orienters.techspot.security.model.Role;
+import object_orienters.techspot.security.payload.SignupRequest;
+import object_orienters.techspot.security.repository.RoleRepository;
+import object_orienters.techspot.security.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service

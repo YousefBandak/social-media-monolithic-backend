@@ -3,7 +3,7 @@ package object_orienters.techspot.profile;
 import java.util.List;
 import java.util.Optional;
 
-import object_orienters.techspot.security.UserRepository;
+import object_orienters.techspot.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,7 @@ public class ImpleProfileService implements ProfileService {
     @Override
     public Profile createNewProfile(String username, String email, String name) {
         Profile newProfile = new Profile();
+        newProfile.setUsername(username);
         newProfile.setOwner(userRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
         newProfile.setEmail(email);
         newProfile.setName(name);

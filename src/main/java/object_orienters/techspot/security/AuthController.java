@@ -1,6 +1,5 @@
 package object_orienters.techspot.security;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,6 +8,14 @@ import jakarta.validation.Valid;
 import object_orienters.techspot.comment.CommentController;
 
 import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.security.model.User;
+import object_orienters.techspot.security.payload.JwtResponse;
+import object_orienters.techspot.security.payload.LoginRequest;
+import object_orienters.techspot.security.payload.MessageResponse;
+import object_orienters.techspot.security.payload.SignupRequest;
+import object_orienters.techspot.security.repository.RoleRepository;
+import object_orienters.techspot.security.repository.UserRepository;
+import object_orienters.techspot.security.service.ImpleUserDetails;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

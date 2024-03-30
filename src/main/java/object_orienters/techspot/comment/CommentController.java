@@ -9,6 +9,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,6 +61,7 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
+    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID, @RequestBody Map<String,String> newComment) {
         try {
             Comment updatedComment = commentService.updateComment(contentID, commentID, newComment.get("comment"));
@@ -86,7 +88,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-
+    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID)  {
         try {
             commentService.deleteComment(contentID, commentID);

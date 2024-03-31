@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
 

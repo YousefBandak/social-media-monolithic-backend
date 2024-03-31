@@ -1,15 +1,15 @@
 package object_orienters.techspot.reaction;
 
 
-import object_orienters.techspot.content.Content;
+import jakarta.transaction.Transactional;
 import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.content.ContentRepository;
+import object_orienters.techspot.content.ReactableContent;
+import object_orienters.techspot.content.ReactableContentRepository;
+import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +74,7 @@ public class ImpleReactionService implements ReactionService {
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId)).getContent();
         content.getReactions().remove(reactionRepository.findById(reactionId).get());
         // reactionRepository.save(reactionRepository.findById(reactionId).get());
+        content.setNumOfReactions(content.getNumOfReactions() - 1);
         contentRepository.save(content);
         // content.getReactions().removeIf(r -> r.getReactionID().equals(reactionId));
         // reactionRepository.findById(reactionId).ifPresent(reactionRepository::delete);
@@ -87,7 +88,7 @@ public class ImpleReactionService implements ReactionService {
                 .orElseThrow(() -> new UserNotFoundException(reactorID));
         ReactableContent content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
-
+        content.setNumOfReactions(content.getNumOfReactions() + 1);
         Reaction createdReaction = new Reaction(reactor, reactionTypee, content);
         return reactionRepository.save(createdReaction);
 

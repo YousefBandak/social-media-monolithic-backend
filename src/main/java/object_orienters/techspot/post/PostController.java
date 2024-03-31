@@ -20,11 +20,11 @@ public class PostController {
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostModelAssembler assembler;
     private final SharedPostModelAssembler sharedPostAssembler;
-    private final PostService postService;
-    private final SharedPostService sharedPostService;
+    private final ImplePostService postService;
+    private final ImplSharedPostService sharedPostService;
 
-    PostController(PostModelAssembler assembler, PostService postService, SharedPostModelAssembler sharedPostAssembler,
-            SharedPostService sharedPostService) {
+    PostController(PostModelAssembler assembler, ImplePostService postService, SharedPostModelAssembler sharedPostAssembler,
+                   ImplSharedPostService sharedPostService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;

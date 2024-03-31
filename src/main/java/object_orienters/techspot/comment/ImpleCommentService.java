@@ -48,6 +48,7 @@ public class ImpleCommentService implements CommentService {
             Comment newComment = new Comment(comment, user, content);
             newComment.setCommentedOn(content);
             newComment.setContentAuthor(user);
+            content.setNumOfComments(content.getNumOfComments() + 1);
             commentRepository.save(newComment);
             content.getComments().add(newComment);
             contentRepository.save(content);
@@ -89,6 +90,7 @@ public class ImpleCommentService implements CommentService {
         ReactableContent content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
+        content.setNumOfComments(content.getNumOfComments() - 1);
         contentRepository.save(content);
 
     }

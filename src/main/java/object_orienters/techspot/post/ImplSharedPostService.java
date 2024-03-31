@@ -33,6 +33,7 @@ public class ImplSharedPostService implements SharedPostService {
 
         SharedPost sharedPost = new SharedPost(sharer, originalPost, privacyType);
         sharedPostRepository.save(sharedPost);
+        originalPost.setNumOfShares(originalPost.getNumOfShares() + 1);
         sharer.getSharedPosts().add(sharedPost);
         profileRepository.save(sharer);
         return sharedPost;
@@ -50,6 +51,8 @@ public class ImplSharedPostService implements SharedPostService {
             throws UserNotFoundException, PostNotFoundException {
         Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         SharedPost post = getSharedPost(sharedPostId);
+        post.getPost().setNumOfShares(post.getPost().getNumOfShares() - 1);
+
         sharedPostRepository.delete(post);
     }
 }

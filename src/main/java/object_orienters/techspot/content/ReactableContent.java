@@ -37,6 +37,8 @@ public abstract class ReactableContent extends Content{
     @JsonIgnore
     @OneToMany(mappedBy = "commentedOn", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
+    private int numOfComments;
+    private int numOfReactions;
 
     public ReactableContent() {
         this.timestamp = new Timestamp(System.currentTimeMillis());

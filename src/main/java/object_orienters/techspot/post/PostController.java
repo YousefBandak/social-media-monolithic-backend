@@ -1,5 +1,6 @@
 package object_orienters.techspot.post;
 
+import jakarta.validation.Valid;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.UserNotFoundException;
 
@@ -7,13 +8,14 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/profiles/{username}/posts")
+@RequestMapping("/profiles/{username}")
 public class PostController {
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
     private final PostModelAssembler assembler;
@@ -29,7 +31,7 @@ public class PostController {
         this.sharedPostService = sharedPostService;
     }
 
-    @GetMapping("")
+    @GetMapping("/posts")
     public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toCollectionModel(postService.getTimelinePosts(username)));
@@ -39,7 +41,7 @@ public class PostController {
         }
     }
 
-    @PostMapping("")
+    @PostMapping("/posts")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post,
             @RequestParam(required = false) boolean isShared) {
         if (isShared) {
@@ -61,7 +63,7 @@ public class PostController {
         }
     }
 
-    @PutMapping("/{postId}")
+    @PutMapping("/posts/{postId}")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
             @RequestBody Post newPost) {
         try {
@@ -73,7 +75,7 @@ public class PostController {
 
     }
 
-    @DeleteMapping("/{postId}")
+    @DeleteMapping("/posts/{postId}")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             postService.deleteTimelinePost(username, postId);
@@ -86,7 +88,7 @@ public class PostController {
     }
 
     // Todo: the path need to be changed
-    @GetMapping("/{postId}")
+    @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.getPost(postId)));
@@ -99,14 +101,65 @@ public class PostController {
 
     // //TODO: Specify if post is shared or authored
 
-    @PostMapping("/{postId}/share")
-    public ResponseEntity<?> sharePostOfUser(@PathVariable String username, @RequestBody Map<String,String> newSharedPost) {
+    @PostMapping("/posts/{postId}/share")
+    public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId, @RequestBody Map<String,String> bodyMap) {
         try {
-            sharedPostService.addSharedPost(username, post, privacy);
-        } catch (UserNotFoundException | PostNotFoundException e) {
-            e.printStackTrace();
+            SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId, bodyMap.get("privacy"));
+            return ResponseEntity.status(HttpStatus.CREATED).body(sharedPostAssembler.toModel(sharedPost));
+        } catch (PostNotFoundException exception) {
+            exception = new PostNotFoundException(postId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
         }
-        return null;
+        catch (UserNotFoundException exception) {
+            exception = new UserNotFoundException(username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+
     }
+    @GetMapping("/sharedPosts/{postId}")
+    public ResponseEntity<?> getSharedPost(@PathVariable long postId, @PathVariable String username) {
+        try {
+            return ResponseEntity.ok(sharedPostAssembler.toModel(sharedPostService.getSharedPost(postId)));
+        } catch (PostNotFoundException exception) {
+            exception = new PostNotFoundException(postId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        }
+        catch (UserNotFoundException exception) {
+            exception = new UserNotFoundException(username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+
+    }
+    @DeleteMapping("/sharedPosts/{postId}")
+    public ResponseEntity<?> deleteSharedPost(@PathVariable String username, @PathVariable Long postId) {
+        try {
+            sharedPostService.deleteSharedPost(username, postId);
+            return ResponseEntity.ok("Post deleted successfully");
+        } catch (PostNotFoundException exception) {
+            exception = new PostNotFoundException(postId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        }
+        catch (UserNotFoundException exception) {
+            exception = new UserNotFoundException(username);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
+    @PutMapping("/sharedPosts/{postId}")
+    public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId, @Valid @RequestBody Map<String,String> bodyMap) {
+        try {
+            SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId, Privacy.valueOf(bodyMap.get("privacy")));
+            EntityModel<SharedPost> sharedPostModel = sharedPostAssembler.toModel(updatedSharedPost);
+            return ResponseEntity.ok(sharedPostModel);
+        } catch (PostNotFoundException exception) {
+            exception = new PostNotFoundException(postId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
 
 }

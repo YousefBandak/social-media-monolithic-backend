@@ -31,7 +31,7 @@ import object_orienters.techspot.security.model.User;
 @Valid
 public class Profile extends UserBase {
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JsonIgnore
     @Valid
     private User owner;

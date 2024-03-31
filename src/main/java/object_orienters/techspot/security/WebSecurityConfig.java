@@ -123,7 +123,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/**").permitAll()
+                        .requestMatchers("/login", "/auth/signin", "auth/signup", "auth/usernameExists/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults())
                 .formLogin(form -> {

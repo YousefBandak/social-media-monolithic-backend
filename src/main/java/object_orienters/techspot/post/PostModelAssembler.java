@@ -18,7 +18,7 @@ public class PostModelAssembler implements RepresentationModelAssembler<Post, En
     public EntityModel<Post> toModel(@NonNull Post entity) {
         return EntityModel.of(entity,
                 linkTo(methodOn(PostController.class).getPost(entity.getContentID(),entity.getContentAuthor().getUsername())).withSelfRel(),
-                linkTo(methodOn(ProfileController.class).one(entity.getContentAuthor().getUsername())).withRel("author)"),
+                linkTo(methodOn(ProfileController.class).one(entity.getContentAuthor().getUsername())).withRel("author"),
                 linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID(),entity.getContentAuthor().getUsername())).withRel("reactions"),
                 linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),entity.getContentAuthor().getUsername())).withRel("comments")
         );

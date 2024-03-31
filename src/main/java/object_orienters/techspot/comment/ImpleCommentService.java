@@ -1,6 +1,7 @@
 package object_orienters.techspot.comment;
 
 import java.util.List;
+import java.util.Optional;
 
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
@@ -102,6 +103,15 @@ public class ImpleCommentService implements CommentService {
         comment.setComment(newComment);
         return commentRepository.save(comment);
 
+    }
+
+    public boolean isCommentAuthor(String username, Long commentID) {
+        Optional<Comment> commentOptional = commentRepository.findById(commentID);
+        if (commentOptional.isPresent()) {
+            Comment comment = commentOptional.get();
+            return comment.getContentAuthor().getUsername().equals(username);
+        }
+        return false; // Return false if the comment is not found
     }
 
     // @Override

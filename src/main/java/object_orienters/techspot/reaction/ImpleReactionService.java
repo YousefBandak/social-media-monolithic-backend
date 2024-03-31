@@ -1,10 +1,9 @@
 package object_orienters.techspot.reaction;
 
+
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.content.ReactableContent;
-import object_orienters.techspot.content.ReactableContentRepository;
-import object_orienters.techspot.post.PostRepository;
+import object_orienters.techspot.content.ContentRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ImpleReactionService implements ReactionService {
@@ -91,6 +91,15 @@ public class ImpleReactionService implements ReactionService {
         Reaction createdReaction = new Reaction(reactor, reactionTypee, content);
         return reactionRepository.save(createdReaction);
 
+    }
+
+    public boolean isReactor(String username, Long reactionID) {
+        Optional<Reaction> reactionOptional = reactionRepository.findById(reactionID);
+        if (reactionOptional.isPresent()) {
+           Reaction reaction = reactionOptional.get();
+            return reaction.getReactor().getUsername().equals(username);
+        }
+        return false; // Return false if the comment is not found
     }
 
 }

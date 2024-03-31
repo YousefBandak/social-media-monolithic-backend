@@ -5,8 +5,8 @@ import java.util.List;
 public interface ProfileService {
     public Profile getUserByUsername(String username) throws UserNotFoundException;
 
-    public Profile createNewUser(Profile newUser);
-
+    public Profile createNewProfile(Profile newUser);
+    public Profile createNewProfile(String username, String email, String name);
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException;
 
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException;

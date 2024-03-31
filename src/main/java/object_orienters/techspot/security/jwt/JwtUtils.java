@@ -1,8 +1,9 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.jwt;
 
 import java.security.Key;
 import java.util.Date;
 
+import object_orienters.techspot.security.service.ImpleUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

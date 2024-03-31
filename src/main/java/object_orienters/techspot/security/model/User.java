@@ -1,4 +1,4 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.model;
 
 import java.util.Set;
 
@@ -12,27 +12,21 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import object_orienters.techspot.model.UserBase;
+import object_orienters.techspot.security.model.Role;
 
 @Data
 @Entity
-@Table(name = "users", uniqueConstraints = {
+@Table(name = "user", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email")
 })
 @NoArgsConstructor
-public class User {
-    @NotBlank
-    @Id
-    @Size(max = 20)
-    private String username;
-
-    @NotBlank
-    @Size(max = 50)
-    @Email
-    private String email;
+public class User extends UserBase {
 
     @NotBlank
     @Size(max = 120)
@@ -45,9 +39,13 @@ public class User {
 
     public User(@NotBlank @Size(max = 20) String username, @NotBlank @Size(max = 50) @Email String email,
             @NotBlank @Size(max = 120) String password) {
-        this.username = username;
-        this.email = email;
+        this.setUsername(username);
+        this.setEmail(email);
         this.password = password;
+    }
+
+    public String toString() {
+        return "User [email=" + getEmail() + ", password=" + password + ", roles=" + roles + ", username=" + getUsername() + "]";
     }
 
 

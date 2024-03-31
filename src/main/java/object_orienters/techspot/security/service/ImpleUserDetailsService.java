@@ -1,5 +1,7 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.service;
 
+import object_orienters.techspot.security.model.User;
+import object_orienters.techspot.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

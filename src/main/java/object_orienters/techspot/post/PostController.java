@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,6 +33,7 @@ public class PostController {
     }
 
     @PostMapping("/posts")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post, @RequestParam(required = false) boolean isShared) {
         if (isShared) {
             try {
@@ -49,6 +51,7 @@ public class PostController {
     }
 
     @PutMapping("/posts/{postId}")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId, @RequestBody Post newPost) {
         try {
             return ResponseEntity.ok(assembler.toModel(postService.editTimelinePost(username, postId, newPost)));
@@ -59,6 +62,7 @@ public class PostController {
     }
 
     @DeleteMapping("/posts/{postId}")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             postService.deleteTimelinePost(username, postId);

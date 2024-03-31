@@ -1,5 +1,8 @@
 package object_orienters.techspot.security;
 
+import object_orienters.techspot.security.jwt.AuthEntryPointJwt;
+import object_orienters.techspot.security.jwt.AuthTokenFilter;
+import object_orienters.techspot.security.service.ImpleUserDetailsService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +35,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         return new AuthTokenFilter();
     }
 
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -41,6 +45,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
         return authProvider;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -85,6 +90,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         // UsernamePasswordAuthenticationFilter.class) // Add JWT token filter
         // .build();
 
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // http
@@ -112,28 +118,32 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         // return http.build();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//code with both
         http
                 .csrf(csrf -> csrf.disable())
-               // .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/auth/**").permitAll()
                         .anyRequest().authenticated())
-                // .oauth2Login(withDefaults())
-                // .formLogin(form -> {
-                //     form.permitAll();
-                //     form.failureHandler((request, response, exception) -> {
-                //         logger.error("Failed to login", exception);
-                //         response.sendRedirect("/auth/signup");
-                //     });
-                //     form.successForwardUrl("/auth/a");
-                // })
+                .oauth2Login(withDefaults())
+                .formLogin(form -> {
+                    form.permitAll();
+                    form.failureHandler((request, response, exception) -> {
+                        logger.error("Failed to login", exception);
+
+                        exception.printStackTrace();
+                        response.sendRedirect("/auth/signup");
+                    });
+                    form.successForwardUrl("/auth/home");
+                })
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+
         return http.build();
     }
+
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class);
 }

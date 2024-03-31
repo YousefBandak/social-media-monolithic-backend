@@ -10,6 +10,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,6 +75,7 @@ public class ReactionController {
 //    }
 
     @PutMapping("/reactions/{reactionId}")
+    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
     public ResponseEntity<?> updateReaction(@PathVariable Long reactionId, @Valid @RequestBody Map<String,String> newReaction, @PathVariable Long contentID, @PathVariable String username) {
         try {
             Reaction reaction = reactionService.updateReaction(reactionId, newReaction.get("reactionType"));
@@ -86,6 +88,7 @@ public class ReactionController {
 
 
     @DeleteMapping("/reactions/{reactionId}")
+    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
     public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId, @PathVariable String contentID, @PathVariable String username) {
         try {
             reactionService.deleteReaction(reactionId);

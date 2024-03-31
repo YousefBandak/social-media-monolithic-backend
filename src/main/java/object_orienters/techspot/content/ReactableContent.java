@@ -27,8 +27,7 @@ public abstract class ReactableContent extends Content{
     // @JsonBackReference
     private Profile contentAuthor;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    private Timestamp timestamp;
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -40,9 +39,6 @@ public abstract class ReactableContent extends Content{
     private int numOfComments;
     private int numOfReactions;
 
-    public ReactableContent() {
-        this.timestamp = new Timestamp(System.currentTimeMillis());
-    }
 
     @Override
     public boolean equals(Object o) {

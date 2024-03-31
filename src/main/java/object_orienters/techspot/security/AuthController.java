@@ -1,5 +1,6 @@
 package object_orienters.techspot.security;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,6 +74,15 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
+
+        // Set the lastLogin field to the current timestamp
+        user.setLastLogin(new Timestamp(System.currentTimeMillis()));
+
+        // Save the updated User object back to the database
+        userRepository.save(user);
 
         return ResponseEntity.ok(new JwtResponse(jwt,
                 userDetails.getUsername(),

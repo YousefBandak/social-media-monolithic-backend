@@ -1,5 +1,6 @@
 package object_orienters.techspot.security.model;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -36,6 +37,7 @@ public class User extends UserBase {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "username"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
+    Timestamp lastLogin;
 
     public User(@NotBlank @Size(max = 20) String username, @NotBlank @Size(max = 50) @Email String email,
             @NotBlank @Size(max = 120) String password) {

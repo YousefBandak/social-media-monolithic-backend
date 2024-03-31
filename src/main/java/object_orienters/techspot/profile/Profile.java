@@ -11,12 +11,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.UserBase;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
@@ -95,6 +97,30 @@ public class Profile extends UserBase {
         return following;
     }
 
+    public TreeSet<? extends Content> getTimelinePosts() {
+        TreeSet<? extends Content> timeline = new TreeSet<>(Comparator.comparing(Content::getTimestamp).reversed());
+        timeline.addAll(((Collection) this.getSharedPosts()));
+        timeline.addAll(((Collection) this.getPublishedPosts()));
+        return timeline;
+    }
+
+    public List<Post> getPublishedPosts() {
+        if (this.publishedPosts == null) {
+            this.publishedPosts = new ArrayList<>();
+        }
+        return publishedPosts;
+    }
+
+    public List<SharedPost> getSharedPosts() {
+        if (this.sharedPosts == null) {
+            this.sharedPosts = new ArrayList<>();
+        }
+        return sharedPosts;
+    }
+
+    public Timestamp getLastLogin() {
+        return owner.getLastLogin();
+    }
 
     @Override
     public boolean equals(Object o) {

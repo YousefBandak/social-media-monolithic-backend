@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class ReactableContent extends Content{
 
     @ManyToOne
-    // @JsonBackReference
+    //@JsonBackReference
     private Profile contentAuthor;
 
 

@@ -2,6 +2,8 @@ package object_orienters.techspot.post;
 
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +22,8 @@ public class Post extends ReactableContent {
 
     @NotBlank(message = "Post content cannot be empty")
     private String content;
+    
+    @Enumerated(EnumType.STRING)
     private Privacy privacy;
     private int numOfShares;
 

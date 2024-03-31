@@ -16,7 +16,6 @@ public class SignupRequest {
     private String email;
 
     //changed to be one value no need for a set here
-    private String role;
 
     @NotBlank
     @Size(min = 6, max = 40)
@@ -46,14 +45,6 @@ public class SignupRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRole() {
-        return this.role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     public String getName() {

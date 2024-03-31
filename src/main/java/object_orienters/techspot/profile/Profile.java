@@ -97,6 +97,7 @@ public class Profile extends UserBase {
         return following;
     }
 
+    @JsonIgnore
     public TreeSet<? extends Content> getTimelinePosts() {
         TreeSet<? extends Content> timeline = new TreeSet<>(Comparator.comparing(Content::getTimestamp).reversed());
         timeline.addAll(((Collection) this.getSharedPosts()));

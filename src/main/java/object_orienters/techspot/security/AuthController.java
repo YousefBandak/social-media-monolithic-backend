@@ -16,7 +16,6 @@ import object_orienters.techspot.security.payload.JwtResponse;
 import object_orienters.techspot.security.payload.LoginRequest;
 import object_orienters.techspot.security.payload.MessageResponse;
 import object_orienters.techspot.security.payload.SignupRequest;
-import object_orienters.techspot.security.repository.RoleRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.security.service.ImpleUserDetails;
 import org.slf4j.Logger;
@@ -38,9 +37,6 @@ public class AuthController {
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
 
     @Autowired
     PasswordEncoder encoder;
@@ -116,7 +112,7 @@ public class AuthController {
 
 
 
-        userCredentialsServices.setRole(signUpRequest);
+//        userCredentialsServices.setRole(signUpRequest);
         userRepository.save(user);
 
         profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
@@ -156,7 +152,7 @@ public class AuthController {
                     .orElseThrow(() -> new UserNotFoundException(username));
             user.setEmail(signUpRequest.getEmail());
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
-            userCredentialsServices.setRole(signUpRequest);
+            //userCredentialsServices.setRole(signUpRequest);
             userRepository.save(user);
             return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
         }

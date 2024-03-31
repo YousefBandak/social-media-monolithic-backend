@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
-
 public class ImpleUserDetails implements UserDetails {
 
     private String username;
@@ -23,7 +22,7 @@ public class ImpleUserDetails implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public ImpleUserDetails(String username, String email, String password,
-            Collection<? extends GrantedAuthority> authorities) {
+                            Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.email = email;
         this.password = password;
@@ -31,9 +30,8 @@ public class ImpleUserDetails implements UserDetails {
     }
 
     public static ImpleUserDetails build(User user) {
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
-                .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("USER"));
+
 
         return new ImpleUserDetails(
                 user.getUsername(),

@@ -149,7 +149,7 @@ public class ProfileController {
     // TODO: IS IT POST MAPPING OR PUT?
     // add new follower to user
     @PostMapping("/{username}/followers")
-    @PreAuthorize("#username == authentication.principal.username")
+    @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
             return ResponseEntity.ok(assembler.toModel(profileService.addNewFollower(username, followerUserName.get("username").asText())));

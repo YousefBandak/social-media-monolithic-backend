@@ -7,10 +7,9 @@ import object_orienters.techspot.profile.UserNotFoundException;
 public interface SharedPostService {
     public SharedPost getSharedPost(long sharedPostId) throws UserNotFoundException, PostNotFoundException;
 
-    public SharedPost addSharedPost(String username, Post post, Privacy privacy) throws UserNotFoundException, PostNotFoundException;
+    public SharedPost createSharedPost(String username, Long postID, String privacy) throws UserNotFoundException, PostNotFoundException;
 
-    public SharedPost editSharedPost(String username, long sharedPostId,Privacy newPrivacy)
-            throws UserNotFoundException, PostNotFoundException;
+    public SharedPost updateSharedPost(long sharedPostId, Privacy newPrivacy) throws  PostNotFoundException;
 
     public void deleteSharedPost(String username, long sharedPostId) throws UserNotFoundException, PostNotFoundException;
 

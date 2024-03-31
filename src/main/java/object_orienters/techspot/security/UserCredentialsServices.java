@@ -27,7 +27,7 @@ public class UserCredentialsServices {
         return userRepository.existsByEmail(signUpRequest.getEmail());
     }
 
-    public Role setRole(SignupRequest signUpRequest) {
+    public void setRole(SignupRequest signUpRequest) {
         String strRole = signUpRequest.getRole() != null ? signUpRequest.getRole().toString() : "user";
         Role role;
         switch (strRole) {
@@ -43,6 +43,5 @@ public class UserCredentialsServices {
 
         }
 
-        return role;
     }
 }

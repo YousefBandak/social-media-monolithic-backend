@@ -1,4 +1,4 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.jwt;
 
 import java.security.Key;
 import java.util.Date;

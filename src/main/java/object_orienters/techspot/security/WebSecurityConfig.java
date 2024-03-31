@@ -1,5 +1,7 @@
 package object_orienters.techspot.security;
 
+import object_orienters.techspot.security.jwt.AuthEntryPointJwt;
+import object_orienters.techspot.security.jwt.AuthTokenFilter;
 import object_orienters.techspot.security.service.ImpleUserDetailsService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.security.jwt;
 
 import java.io.IOException;
 

@@ -7,6 +7,7 @@ import object_orienters.techspot.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,6 +29,7 @@ public class ImpleProfileService implements ProfileService {
         return repo.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
+    //NOTE:This method might be redundant and unnecessary
     @Override
     public Profile createNewProfile(Profile newProfile) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
         if (repo.findByEmail(newProfile.getEmail()) != null) {

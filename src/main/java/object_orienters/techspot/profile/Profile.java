@@ -42,6 +42,7 @@ public class Profile extends UserBase {
     private String profession;
 
     private Gender gender;
+    @NotNull(message = "Date of Birth shouldn't be null.")
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
 

@@ -13,6 +13,7 @@ import java.util.List;
 
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -37,18 +38,6 @@ public class ProfileController {
         this.assembler = assembler;
         this.profileService = profileService;
     }
-
-    // TODO: IMPLEMENT THIS METHOD
-    // @GetMapping("path")
-    // public String getUserPosts(@RequestParam String param) {
-    // return new String();
-    // }
-
-    // TODO: IMPLEMENT THIS METHOD
-    // @GetMapping("path")
-    // public String getUserChats(@RequestParam String param) {
-    // return new String();
-    // }
 
     // get user profile
     @GetMapping("/{username}")
@@ -79,7 +68,11 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Problem.create().withTitle("Username Already Used.")
                             .withDetail(exception.getMessage() + ", Username must be unique."));
-        }
+        }catch (DataIntegrityViolationException exception) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(Problem.create().withTitle("Violation exception")
+                    .withDetail(exception.getMessage() + ", Violation exception"));
+            }
     }
 
     // update user profile

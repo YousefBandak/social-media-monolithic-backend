@@ -17,10 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
-@RequestMapping("/profiles/{username}/posts/{contentID}")
+@RequestMapping("/profiles/{username}/content/{contentID}")
 public class ReactionController {
     private final ImpleReactionService reactionService;
     private final ReactionModelAssembler assembler;

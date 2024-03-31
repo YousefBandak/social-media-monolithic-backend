@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,60 +59,63 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-
-        //Code with JWT only
-//        return http
-//                .csrf(csrf -> csrf.disable())
-//                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//                // Enable OAuth2 login with default settings
-//                .formLogin(formLogin -> {
-//                    formLogin.loginPage("/customLogin") // Set custom login page URL
-//                            .failureUrl("/customFailure"); // Set custom failure URL
-//                })
-//                .oauth2Login(withDefaults())// Enable form-based login with default settings
-//                .authorizeHttpRequests(auth -> {
-//                    auth.requestMatchers("/customLogin").permitAll();
-//                    auth.requestMatchers("/customFailure").permitAll();
-//                    auth.requestMatchers("/auth/login").permitAll();
-//                    auth.requestMatchers("/auth/signup").permitAll();
-//                    auth.requestMatchers("/favicon.ico").permitAll();
-//                    auth.requestMatchers("/auth/**").permitAll();
-//                    //auth.requestMatchers("/login/**").permitAll();
-//                    //auth.requestMatchers("/").permitAll();
-//                    // auth.anyRequest().authenticated();
-//                })
-//
-//
-//                .authenticationProvider(authenticationProvider()) // Register custom authentication provider
-//                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class) // Add JWT token filter
-//                .build();
+        // return http
+        // .csrf(csrf -> csrf.disable())
+        // .exceptionHandling(exception ->
+        // exception.authenticationEntryPoint(unauthorizedHandler))
+        // .sessionManagement(session ->
+        // session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        // // Enable OAuth2 login with default settings
+        // .formLogin(formLogin -> {
+        // formLogin.loginPage("/customLogin") // Set custom login page URL
+        // .failureUrl("/customFailure"); // Set custom failure URL
+        // })
+        // .oauth2Login(withDefaults())// Enable form-based login with default settings
+        // .authorizeHttpRequests(auth -> {
+        // auth.requestMatchers("/customLogin").permitAll();
+        // auth.requestMatchers("/customFailure").permitAll();
+        // auth.requestMatchers("/auth/login").permitAll();
+        // auth.requestMatchers("/auth/signup").permitAll();
+        // auth.requestMatchers("/favicon.ico").permitAll();
+        // auth.requestMatchers("/auth/**").permitAll();
+        // //auth.requestMatchers("/login/**").permitAll();
+        // //auth.requestMatchers("/").permitAll();
+        // // auth.anyRequest().authenticated();
+        // })
+        //
+        //
+        // .authenticationProvider(authenticationProvider()) // Register custom
+        // authentication provider
+        // .addFilterBefore(authenticationJwtTokenFilter(),
+        // UsernamePasswordAuthenticationFilter.class) // Add JWT token filter
+        // .build();
 
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//Code with form only
-//        http
-//                .csrf(csrf -> csrf.disable()) // If it's a REST API, you're not using CSRF protection.
-//                .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/login", "/auth/**").permitAll() // Allow public access to these endpoints
-//                        .anyRequest().authenticated()) // All other requests must be authenticated.
-//                .oauth2Login(withDefaults())
-//                .formLogin(form -> {
-//                    form.permitAll();
-//                    //form.failureUrl("/auth/signup");
-//                    form.failureHandler((request, response, exception) -> {
-//                        logger.error("Failed to login", exception);
-//                        response.sendRedirect("/auth/signup");
-//                    });
-//                    form.successForwardUrl("/auth/a");
-//                    logger.info("Form login enabled");
-//                    logger.info(form.isCustomLoginPage()+"");
-//
-//                })
-//        ;
-//        // Other configurations...
-//        return http.build();
+
+        // http
+        // .csrf(csrf -> csrf.disable()) // If it's a REST API, you're not using CSRF
+        // protection.
+        // .authorizeHttpRequests(authorize -> authorize
+        // .requestMatchers("/login", "/auth/**").permitAll() // Allow public access to
+        // these endpoints
+        // .anyRequest().authenticated()) // All other requests must be authenticated.
+        // .oauth2Login(withDefaults())
+        // .formLogin(form -> {
+        // form.permitAll();
+        // //form.failureUrl("/auth/signup");
+        // form.failureHandler((request, response, exception) -> {
+        // logger.error("Failed to login", exception);
+        // response.sendRedirect("/auth/signup");
+        // });
+        // form.successForwardUrl("/auth/a");
+        // logger.info("Form login enabled");
+        // logger.info(form.isCustomLoginPage()+"");
+        //
+        // })
+        // ;
+        // // Other configurations...
+        // return http.build();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //code with both
@@ -119,7 +123,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/**", "profiles/").permitAll()
+                        .requestMatchers("/login", "/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults())
                 .formLogin(form -> {
@@ -138,10 +142,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
 
         return http.build();
-
-
-        /////////////////////
-
     }
 
 

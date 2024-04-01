@@ -1,17 +1,16 @@
 package object_orienters.techspot.content;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
-import object_orienters.techspot.comment.Comment;
-import object_orienters.techspot.post.Post;
-
+import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.profile.Profile;
 
 import java.sql.Timestamp;
 
 
-//NOTE: are these annptations still valid?
 //@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 //@JsonSubTypes({
 //        @JsonSubTypes.Type(value = Post.class, name = "post"),
@@ -36,4 +35,10 @@ public abstract class Content {
         this.timestamp = new Timestamp(System.currentTimeMillis());
     }
 
+    public abstract Privacy getPrivacy();
+
+    @JsonIgnore
+    public abstract Profile getMainAuthor();
+
+    //public abstract void setPrivacy(Privacy privacy);
 }

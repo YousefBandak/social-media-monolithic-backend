@@ -48,4 +48,8 @@ public class Post extends ReactableContent {
     }
 
 
+    @Override
+    public Profile getMainAuthor() {
+        return this.getContentAuthor();
+    }
 }

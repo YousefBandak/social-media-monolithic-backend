@@ -12,6 +12,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -95,6 +97,9 @@ public class PostController {
         } catch (PostNotFoundException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        } catch (ContentIsPrivateException exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
         }
 
     }

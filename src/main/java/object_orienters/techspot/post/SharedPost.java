@@ -30,4 +30,9 @@ public class SharedPost extends Content {
         this.post = post;
         this.privacy = privacy;
     }
+
+    @Override
+    public Profile getMainAuthor() {
+        return getSharer();
+    }
 }

@@ -1,29 +1,26 @@
 package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.*;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import object_orienters.techspot.content.Content;
+import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.model.UserBase;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
 import object_orienters.techspot.security.model.User;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.*;
+
+@SuppressWarnings({"unchecked", "rawtypes"})
 @Entity
 @Data
 @NoArgsConstructor
@@ -47,10 +44,6 @@ public class Profile extends UserBase {
     //@NotNull(message = "Date of Birth shouldn't be null.")
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
-
-//    @JsonIgnore
-//    @ManyToOne
-//    private Profile master;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "followship", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
@@ -98,11 +91,23 @@ public class Profile extends UserBase {
     }
 
     @JsonIgnore
-    public TreeSet<? extends Content> getTimelinePosts() {
-        TreeSet<? extends Content> timeline = new TreeSet<>(Comparator.comparing(Content::getTimestamp).reversed());
-        timeline.addAll(((Collection) this.getSharedPosts()));
-        timeline.addAll(((Collection) this.getPublishedPosts()));
+    private List<? extends Content> getPrivateAndPublicTimelinePosts() {
+        List<? extends Content> timeline = new ArrayList<>();
+        timeline.addAll((Collection) this.getSharedPosts());
+        timeline.addAll((Collection) this.getPublishedPosts());
         return timeline;
+    }
+
+    @JsonIgnore
+    public List<? extends Content> getTimelinePostsByPrivacy(Privacy privacy) {
+        return switch (privacy) {
+            case PUBLIC -> this.getPublicTimelinePosts();
+            case PRIVATE -> this.getPrivateAndPublicTimelinePosts();
+        };
+    }
+    @JsonIgnore
+    private List<? extends Content> getPublicTimelinePosts() {
+        return this.getPrivateAndPublicTimelinePosts().stream().filter(content -> content.getPrivacy().equals(Privacy.PUBLIC)).toList();
     }
 
     public List<Post> getPublishedPosts() {

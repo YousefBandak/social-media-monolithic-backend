@@ -73,7 +73,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/signin") //TODO: Change to /login
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(

@@ -51,29 +51,29 @@ public class ProfileController {
         }
     }
 
-    // create new user profile
-    @PreAuthorize("hasRole('ROLE_ADMIN')") //TODO: IMPLEMENT THIS METHOD correctly with user object
-    @PostMapping("")
-    public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
-            throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
-        try {
-            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewProfile(newProfile));
-            return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                    .body(entityModel);
-        } catch (EmailAlreadyUsedException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Problem.create().withTitle("Email Already Used.")
-                            .withDetail(exception.getMessage() + ", Email must be unique."));
-        } catch (UsernameAlreadyUsedExeption exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Problem.create().withTitle("Username Already Used.")
-                            .withDetail(exception.getMessage() + ", Username must be unique."));
-        }catch (DataIntegrityViolationException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(Problem.create().withTitle("Violation exception")
-                    .withDetail(exception.getMessage() + ", Violation exception"));
-            }
-    }
+//    // create new user profile
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PostMapping("")
+//    public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
+//            throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
+//        try {
+//            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewProfile(newProfile));
+//            return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+//                    .body(entityModel);
+//        } catch (EmailAlreadyUsedException exception) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body(Problem.create().withTitle("Email Already Used.")
+//                            .withDetail(exception.getMessage() + ", Email must be unique."));
+//        } catch (UsernameAlreadyUsedExeption exception) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body(Problem.create().withTitle("Username Already Used.")
+//                            .withDetail(exception.getMessage() + ", Username must be unique."));
+//        }catch (DataIntegrityViolationException exception) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//            .body(Problem.create().withTitle("Violation exception")
+//                    .withDetail(exception.getMessage() + ", Violation exception"));
+//            }
+//    }
 
     // update user profile
     @PutMapping("/{username}")

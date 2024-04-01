@@ -6,14 +6,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import java.util.stream.Collectors;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -33,6 +37,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class ProfileController {
     private final ProfileModelAssembler assembler;
     private final ImpleProfileService profileService;
+    private final Logger logger = LoggerFactory.getLogger(ProfileController.class);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public ProfileController(ProfileModelAssembler assembler, ImpleProfileService profileService) {
         this.assembler = assembler;
@@ -43,48 +49,57 @@ public class ProfileController {
     @GetMapping("/{username}")
     public ResponseEntity<?> one(@PathVariable String username) {
         try {
+            logger.info(
+                    ">>>>Retrieving Profile From Database... " + getTimestamp() + "<<<<");
             EntityModel<Profile> profileModel = assembler.toModel(profileService.getUserByUsername(username));
+            logger.info(">>>>Profile  Retrieved. " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(profileModel);
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
 
-//    // create new user profile
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-//    @PostMapping("")
-//    public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
-//            throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
-//        try {
-//            EntityModel<Profile> entityModel = assembler.toModel(profileService.createNewProfile(newProfile));
-//            return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-//                    .body(entityModel);
-//        } catch (EmailAlreadyUsedException exception) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT)
-//                    .body(Problem.create().withTitle("Email Already Used.")
-//                            .withDetail(exception.getMessage() + ", Email must be unique."));
-//        } catch (UsernameAlreadyUsedExeption exception) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT)
-//                    .body(Problem.create().withTitle("Username Already Used.")
-//                            .withDetail(exception.getMessage() + ", Username must be unique."));
-//        }catch (DataIntegrityViolationException exception) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT)
-//            .body(Problem.create().withTitle("Violation exception")
-//                    .withDetail(exception.getMessage() + ", Violation exception"));
-//            }
-//    }
+    // // create new user profile
+    // @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // @PostMapping("")
+    // public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
+    // throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
+    // try {
+    // EntityModel<Profile> entityModel =
+    // assembler.toModel(profileService.createNewProfile(newProfile));
+    // return
+    // ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+    // .body(entityModel);
+    // } catch (EmailAlreadyUsedException exception) {
+    // return ResponseEntity.status(HttpStatus.CONFLICT)
+    // .body(Problem.create().withTitle("Email Already Used.")
+    // .withDetail(exception.getMessage() + ", Email must be unique."));
+    // } catch (UsernameAlreadyUsedExeption exception) {
+    // return ResponseEntity.status(HttpStatus.CONFLICT)
+    // .body(Problem.create().withTitle("Username Already Used.")
+    // .withDetail(exception.getMessage() + ", Username must be unique."));
+    // }catch (DataIntegrityViolationException exception) {
+    // return ResponseEntity.status(HttpStatus.CONFLICT)
+    // .body(Problem.create().withTitle("Violation exception")
+    // .withDetail(exception.getMessage() + ", Violation exception"));
+    // }
+    // }
 
     // update user profile
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody Profile newUser, @PathVariable String username) {
         try {
+            logger.info(">>>>Updating Profile... " + getTimestamp() + "<<<<");
             Profile updatedUser = profileService.updateUserProfile(newUser, username);
-            EntityModel<Profile> entityModel = assembler.toModel(updatedUser);
-            return ResponseEntity.ok().location(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                    .body(entityModel);
+            logger.info(">>>>Profile Updated. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok()
+                    .location(assembler.toModel(updatedUser).getRequiredLink(IanaLinkRelations.SELF).toUri())
+                    .body(assembler.toModel(updatedUser));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
@@ -94,12 +109,15 @@ public class ProfileController {
     @GetMapping("/{username}/followers")
     public ResponseEntity<?> Followers(@PathVariable String username) {
         try {
+            logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
             List<EntityModel<Profile>> followers = profileService.getUserFollowersByUsername(username).stream()
                     .map(assembler::toModel)
                     .collect(Collectors.toList());
+            logger.info(">>>>Followers List Retrieved. " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(CollectionModel.of(followers,
                     linkTo(methodOn(ProfileController.class).one(username)).withSelfRel()));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
@@ -110,9 +128,12 @@ public class ProfileController {
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
             @PathVariable String followerUserName) {
         try {
-            return ResponseEntity
-                    .ok(assembler.toModel(profileService.getFollowerByUsername(username, followerUserName)));
+            logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
+            Profile follower = profileService.getFollowerByUsername(username, followerUserName);
+            logger.info(">>>>Follower Retrieved. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(follower));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
@@ -122,12 +143,15 @@ public class ProfileController {
     @GetMapping("/{username}/following")
     public ResponseEntity<?> Following(@PathVariable String username) {
         try {
+            logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
             List<EntityModel<Profile>> following = profileService.getUserFollowingByUsername(username).stream()
                     .map(userModel -> assembler.toModel(userModel))
                     .collect(Collectors.toList());
+            logger.info(">>>>Following List Retrieved. " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(CollectionModel.of(following,
                     linkTo(methodOn(ProfileController.class).one(username)).withSelfRel()));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
@@ -138,22 +162,29 @@ public class ProfileController {
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
             @PathVariable String followingUsername) {
         try {
+            logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
+            Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername);
+            logger.info(">>>>Following Profile Retrieved. " + getTimestamp() + "<<<<");
             return ResponseEntity
-                    .ok(assembler.toModel(profileService.getFollowingByUsername(username, followingUsername)));
+                    .ok(assembler.toModel(followingProfile));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
 
-    // TODO: IS IT POST MAPPING OR PUT?
     // add new follower to user
     @PostMapping("/{username}/followers")
     @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
-            return ResponseEntity.ok(assembler.toModel(profileService.addNewFollower(username, followerUserName.get("username").asText())));
+            logger.info(">>>>Adding New Follower... " + getTimestamp() + "<<<<");
+            Profile newFollower = profileService.addNewFollower(username, followerUserName.get("username").asText());
+            logger.info(">>>>New Follower Added. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(newFollower));
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
@@ -164,12 +195,19 @@ public class ProfileController {
     @PreAuthorize("#username == authentication.principal.username")
     ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody Profile deletedUser) {
         try {
+            logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
             profileService.deleteFollower(username, deletedUser);
+            logger.info(">>>>Follower Added. " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
+    }
+
+    private static String getTimestamp() {
+        return LocalDateTime.now().format(formatter) + " ";
     }
 
 }

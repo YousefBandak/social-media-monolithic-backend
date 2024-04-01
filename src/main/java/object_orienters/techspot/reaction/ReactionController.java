@@ -62,17 +62,6 @@ public class ReactionController {
         }
 
     }
-//    @PostMapping("/reactions")
-//    public ResponseEntity<?> createReaction(@Valid @RequestBody ReactionRequest request, @PathVariable Long contentID, @PathVariable String username) {
-//        try {
-//            Reaction createdReaction = reactionService.createReaction(request.getReactorId(), request.getReactionType(), contentID);
-//            EntityModel<Reaction> reactionModel = assembler.toModel(createdReaction);
-//            return ResponseEntity.status(HttpStatus.CREATED).body(reactionModel);
-//        } catch (IllegalArgumentException | ContentNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
-//        }
-//
-//    }
 
     @PutMapping("/reactions/{reactionId}")
     @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")

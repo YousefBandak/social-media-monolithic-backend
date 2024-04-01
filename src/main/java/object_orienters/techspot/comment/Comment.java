@@ -7,6 +7,7 @@ import lombok.Data;
 
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
+import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
 
@@ -79,6 +80,13 @@ public class Comment extends ReactableContent {
     }
 
 
-    
+    @Override
+    public Privacy getPrivacy() {
+        return commentedOn.getPrivacy();
+    }
 
+    @Override
+    public Profile getMainAuthor() {
+        return this.getContentAuthor();
+    }
 }

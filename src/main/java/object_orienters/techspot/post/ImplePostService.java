@@ -3,12 +3,15 @@ package object_orienters.techspot.post;
 import java.util.Collection;
 
 
+import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,10 +28,14 @@ public class ImplePostService implements PostService {
         this.sharedPostRepository = sharedPostRepository;
     }
 
+    public Privacy getAllowedPrincipalPrivacy(String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalUsername = authentication.getName();
+        return currentPrincipalUsername.equals(username) ? Privacy.PRIVATE : Privacy.PUBLIC;
+    }
     @Override
-    public Collection<Post> getTimelinePosts(String username) throws UserNotFoundException {
-        return postRepository.findByContentAuthor(
-                profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username)));
+    public Collection<? extends Content> getTimelinePosts(String username) throws UserNotFoundException {
+        return profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username)).getTimelinePostsByPrivacy(getAllowedPrincipalPrivacy(username));
     }
 
     @Override
@@ -95,8 +102,18 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public Post getPost(long postId) throws PostNotFoundException {
-        return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
+    public Post getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
+
+       Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
+       Privacy postPrivacy = post.getPrivacy();
+       if (postPrivacy.equals(Privacy.PUBLIC))
+           return post;
+
+       else if (Privacy.PRIVATE.equals(getAllowedPrincipalPrivacy(post.getContentAuthor().getUsername()))){
+           return post;
+       }else
+           throw new ContentIsPrivateException();
+
     }
 
 }

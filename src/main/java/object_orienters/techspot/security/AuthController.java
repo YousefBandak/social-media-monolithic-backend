@@ -1,14 +1,10 @@
 package object_orienters.techspot.security;
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import jakarta.validation.Valid;
 import object_orienters.techspot.comment.CommentController;
-
 import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.profile.ProfileNotFoundException;
+import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.security.jwt.JwtUtils;
 import object_orienters.techspot.security.model.User;
@@ -27,6 +23,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -50,6 +50,9 @@ public class AuthController {
     @Autowired
     ImpleProfileService profileService;
 
+    @Autowired
+    ProfileRepository profileRepository;
+
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     @GetMapping("/home")
@@ -57,7 +60,20 @@ public class AuthController {
         return "Hello, Home!";
     }
 
-    @PostMapping("/signin") //TODO: Change to /login
+    @GetMapping("/usernameExists/{username}")
+    public ResponseEntity<?> usernameExists(@PathVariable String username) {
+        if (userRepository.existsByUsername(username)) {
+            return ResponseEntity
+                    .ok()
+                    .body(new MessageResponse("Username is already taken!"));
+        } else {
+            return ResponseEntity
+                    .ok()
+                    .body(new MessageResponse("Username is available!"));
+        }
+    }
+
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -109,9 +125,6 @@ public class AuthController {
                 encoder.encode(signUpRequest.getPassword()));
 
 
-
-
-
 //        userCredentialsServices.setRole(signUpRequest);
         userRepository.save(user);
 
@@ -134,32 +147,32 @@ public class AuthController {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof ImpleUserDetails userDetails) {
-            String username = userDetails.getUsername();
+            String clientUsername = userDetails.getUsername();
 
-            if (userCredentialsServices.usernameExists(signUpRequest)) {
+            if (!signUpRequest.getUsername().equals(clientUsername) && userCredentialsServices.usernameExists(signUpRequest)) {
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Error: Username is already taken!"));
             }
 
-            if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            if (!signUpRequest.getEmail().equals(userRepository.findByUsername(clientUsername).orElseThrow(() -> new UserNotFoundException(clientUsername)).getEmail())
+                    && userRepository.existsByEmail(signUpRequest.getEmail())) {
                 return ResponseEntity
                         .badRequest()
                         .body(new MessageResponse("Error: Email is already in use!"));
             }
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UserNotFoundException(username));
+            User user = userRepository.findByUsername(clientUsername)
+                    .orElseThrow(() -> new UserNotFoundException(clientUsername));
             user.setEmail(signUpRequest.getEmail());
             user.setPassword(encoder.encode(signUpRequest.getPassword()));
-            //userCredentialsServices.setRole(signUpRequest);
-            userRepository.save(user);
+            user.setUsername(signUpRequest.getUsername());
+            userRepository.save(user); //NOte this create a new user object
             return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
         }
         return ResponseEntity
                 .badRequest()
                 .body(new MessageResponse("Error: Unable to identify client user!"));
-
 
 
     }
@@ -174,6 +187,7 @@ public class AuthController {
             String username = userDetails.getUsername();
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UserNotFoundException(username));
+            profileRepository.delete(profileRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
             userRepository.delete(user);
             return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
         }
@@ -182,5 +196,4 @@ public class AuthController {
                 .body(new MessageResponse("Error: Unable to identify client user!"));
     }
 
-    //TODO: Make a mehtod to get if usernam alreadly exists for client side validation
 }

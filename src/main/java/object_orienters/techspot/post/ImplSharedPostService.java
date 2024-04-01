@@ -5,6 +5,8 @@ import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.reaction.Reaction;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,17 +20,33 @@ public class ImplSharedPostService implements SharedPostService {
         this.sharedPostRepository = sharedPostRepository;
         this.postRepository = postRepository;
     }
-
-    @Override
-    public SharedPost getSharedPost(long sharedPostId) throws PostNotFoundException {
-        return sharedPostRepository.findById(sharedPostId).orElseThrow(() -> new PostNotFoundException(sharedPostId));
+    public Privacy getAllowedPrincipalPrivacy(String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalUsername = authentication.getName();
+        return currentPrincipalUsername.equals(username) ? Privacy.PRIVATE : Privacy.PUBLIC;
     }
 
     @Override
-    public SharedPost createSharedPost(String username, Long postID, String privacy)
+    public SharedPost getSharedPost(long sharedPostId) throws PostNotFoundException, ContentIsPrivateException {
+        SharedPost sharedPost = sharedPostRepository.findById(sharedPostId).orElseThrow(() -> new PostNotFoundException(sharedPostId));
+        Privacy postPrivacy = sharedPost.getPrivacy();
+        if(postPrivacy.equals(Privacy.PUBLIC)) {
+            return sharedPost;
+        }
+        else if (Privacy.PRIVATE.equals(getAllowedPrincipalPrivacy(sharedPost.getSharer().getUsername()))) {
+            return sharedPost;
+        }
+        else {
+            throw new ContentIsPrivateException();
+        }
+
+    }
+
+    @Override
+    public SharedPost createSharedPost(String sharerUsername, Long postID, String privacy)
             throws UserNotFoundException, PostNotFoundException {
         Post originalPost = postRepository.findById(postID).orElseThrow(() -> new PostNotFoundException(postID));
-        Profile sharer = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile sharer = profileRepository.findById(sharerUsername).orElseThrow(() -> new UserNotFoundException(sharerUsername));
         Privacy privacyType = Privacy.valueOf(privacy);
 
         SharedPost sharedPost = new SharedPost(sharer, originalPost, privacyType);
@@ -40,7 +58,7 @@ public class ImplSharedPostService implements SharedPostService {
     }
 
     @Override
-    public SharedPost updateSharedPost(long sharedPostId, Privacy newPrivacy) throws PostNotFoundException {
+    public SharedPost updateSharedPost(long sharedPostId, Privacy newPrivacy) throws PostNotFoundException, ContentIsPrivateException {
         SharedPost sharedPost = getSharedPost(sharedPostId);
         sharedPost.setPrivacy(newPrivacy);
         return sharedPostRepository.save(sharedPost);
@@ -48,7 +66,7 @@ public class ImplSharedPostService implements SharedPostService {
 
     @Override
     public void deleteSharedPost(String username, long sharedPostId)
-            throws UserNotFoundException, PostNotFoundException {
+            throws UserNotFoundException, PostNotFoundException, ContentIsPrivateException {
         Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         SharedPost post = getSharedPost(sharedPostId);
         post.getPost().setNumOfShares(post.getPost().getNumOfShares() - 1);

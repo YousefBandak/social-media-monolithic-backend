@@ -20,7 +20,7 @@ public class PostModelAssembler implements RepresentationModelAssembler<Content,
         return EntityModel.of(entity,
                 linkTo(methodOn(PostController.class).getPost(entity.getContentID(),entity.getMainAuthor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getMainAuthor().getUsername())).withRel("author"),
-                linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID(),entity.getMainAuthor().getUsername())).withRel("reactions"),
+                linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID())).withRel("reactions"),
                 linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),entity.getMainAuthor().getUsername())).withRel("comments")
         );
 

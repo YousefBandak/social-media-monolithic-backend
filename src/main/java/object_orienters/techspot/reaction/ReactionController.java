@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/profiles/{username}/content/{contentID}")
+@RequestMapping("/content/{contentID}")
 public class ReactionController {
     private final ImpleReactionService reactionService;
     private final ReactionModelAssembler assembler;
@@ -36,8 +36,7 @@ public class ReactionController {
     }
 
     @GetMapping("/reactions/{reactionId}")
-    public ResponseEntity<?> getReaction(@PathVariable Long reactionId, @PathVariable Long contentID,
-            @PathVariable String username) {
+    public ResponseEntity<?> getReaction(@PathVariable Long reactionId, @PathVariable Long contentID) {
 
         try {
             logger.info(">>>>Adding Reaction to Post... @ " + getTimestamp() + "<<<<");
@@ -53,7 +52,7 @@ public class ReactionController {
     }
 
     @GetMapping("/reactions")
-    public ResponseEntity<?> getReactions(@PathVariable Long contentID, @PathVariable String username) {
+    public ResponseEntity<?> getReactions(@PathVariable Long contentID) {
         try {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
             List<Reaction> reactionList = reactionService.getReactions(contentID);
@@ -72,7 +71,7 @@ public class ReactionController {
 
     @PostMapping("/reactions")
     public ResponseEntity<?> createReaction(@Valid @RequestBody Map<String, String> reaction,
-            @PathVariable Long contentID, @PathVariable String username) {
+            @PathVariable Long contentID) {
         try {
             logger.info(">>>>Adding Reaction... @ " + getTimestamp() + "<<<<");
             Reaction createdReaction = reactionService.createReaction(reaction.get("reactorID"),
@@ -91,8 +90,7 @@ public class ReactionController {
     @PutMapping("/reactions/{reactionId}")
     @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
     public ResponseEntity<?> updateReaction(@PathVariable Long reactionId,
-            @Valid @RequestBody Map<String, String> newReaction, @PathVariable Long contentID,
-            @PathVariable String username) {
+            @Valid @RequestBody Map<String, String> newReaction, @PathVariable Long contentID) {
         try {
             logger.info(">>>>Updating Reaction... @ " + getTimestamp() + "<<<<");
             Reaction reaction = reactionService.updateReaction(reactionId, newReaction.get("reactionType"));
@@ -108,8 +106,7 @@ public class ReactionController {
 
     @DeleteMapping("/reactions/{reactionId}")
     @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
-    public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId, @PathVariable String contentID,
-            @PathVariable String username) {
+    public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId, @PathVariable String contentID) {
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
             reactionService.deleteReaction(reactionId);

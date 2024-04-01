@@ -42,11 +42,8 @@ public class ImplePostService implements PostService {
     public Post addTimelinePosts(String username, Post post) throws UserNotFoundException {
         Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         post.setContentAuthor(user);
-        postRepository.save(post);
-
-        logger.info("Post added to the timeline: " + post);
-
         user.getPublishedPosts().add(post);
+        postRepository.save(post);
         profileRepository.save(user);
         return post;
     }

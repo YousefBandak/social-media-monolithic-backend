@@ -24,7 +24,6 @@ public class ValidationException extends ResponseEntityExceptionHandler {
     @Nullable
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        logger.info("MethodArgumentNotValidException2", ex);
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", status.value());
@@ -36,6 +35,6 @@ public class ValidationException extends ResponseEntityExceptionHandler {
                 .collect(Collectors.toMap(x -> x.getField(), x -> x.getDefaultMessage()));
 
         body.put("errors", errors);
-        return new ResponseEntity<>(body, headers, HttpStatus.I_AM_A_TEAPOT);
+        return new ResponseEntity<>(body, headers, HttpStatus.BAD_REQUEST);
     }
 }

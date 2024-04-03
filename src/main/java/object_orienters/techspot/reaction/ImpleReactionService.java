@@ -64,7 +64,8 @@ public class ImpleReactionService implements ReactionService {
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId));
         Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
         existingReaction.setType(reactionTypee);
-        return reactionRepository.save(existingReaction);
+        reactionRepository.save(existingReaction);
+        return existingReaction;
     }
 
     @Override

@@ -7,6 +7,8 @@ import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,25 +30,32 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.zip.DataFormatException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/profiles/{username}")
 public class PostController {
     private static final Logger logger = LoggerFactory.getLogger(PostController.class);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final PostModelAssembler assembler;
     private final SharedPostModelAssembler sharedPostAssembler;
     private final ImplePostService postService;
     private final ImplSharedPostService sharedPostService;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private final ImpleProfileService profileService;
 
     PostController(PostModelAssembler assembler, ImplePostService postService,
-            SharedPostModelAssembler sharedPostAssembler,
-            ImplSharedPostService sharedPostService) {
+                   SharedPostModelAssembler sharedPostAssembler,
+                   ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
         this.sharedPostService = sharedPostService;
+        this.profileService = profileService;
+    }
+
+    private static String getTimestamp() {
+        return LocalDateTime.now().format(formatter) + " ";
     }
 
     @GetMapping("/posts")
@@ -87,7 +96,7 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-            @RequestBody Post newPost) {
+                                              @RequestBody Post newPost) {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
             Post editedPost = postService.editTimelinePost(username, postId, newPost);
@@ -116,11 +125,14 @@ public class PostController {
         }
 
     }
-
-    // Todo: the path need to be changed
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
+            profileService.getUserByUsername(username);
+            String aouther = postService.getPost(postId).getContentAuthor().getUsername();
+            if (!Objects.equals(username, aouther)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+            }
             logger.info(">>>>Retrieving Post... @ " + getTimestamp() + "<<<<");
             Post post = postService.getPost(postId);
             logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<");
@@ -133,6 +145,10 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+        }catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
 
     }
@@ -162,7 +178,7 @@ public class PostController {
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap.get(\"sharer\") == authentication.principal.username")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
-            @RequestBody Map<String, String> bodyMap) {
+                                             @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId,
@@ -187,6 +203,11 @@ public class PostController {
     @GetMapping("/sharedPosts/{postId}")
     public ResponseEntity<?> getSharedPost(@PathVariable long postId, @PathVariable String username) {
         try {
+            profileService.getUserByUsername(username);
+            String aouther = postService.getPost(postId).getContentAuthor().getUsername();
+            if (!Objects.equals(username, aouther)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+            }
             logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.getSharedPost(postId);
             logger.info(">>>>Sharing Post Retrieved. @ " + getTimestamp() + "<<<<");
@@ -238,7 +259,7 @@ public class PostController {
     @PutMapping("/sharedPosts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-            @Valid @RequestBody Map<String, String> bodyMap) {
+                                              @Valid @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,
@@ -256,9 +277,5 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
         }
-    }
-
-    private static String getTimestamp() {
-        return LocalDateTime.now().format(formatter) + " ";
     }
 }

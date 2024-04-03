@@ -32,11 +32,11 @@ function connect(event) {
 
 
 function onConnected() {
-    stompClient.subscribe(`/user/${nickname}/queue/messages`, onMessageReceived);
-    stompClient.subscribe(`/user/public`, onMessageReceived);
+    stompClient.subscribe(`/chatter/${nickname}/queue/messages`, onMessageReceived);
+    stompClient.subscribe(`/chatter/public`, onMessageReceived);
 
     // register the connected user
-    stompClient.send("/app/user.addUser",
+    stompClient.send("/app/chatter.add",
         {},
         JSON.stringify({nickName: nickname, fullName: fullname, status: 'ONLINE'})
     );
@@ -45,7 +45,7 @@ function onConnected() {
 }
 
 async function findAndDisplayConnectedUsers() {
-    const connectedUsersResponse = await fetch('/users');
+    const connectedUsersResponse = await fetch('/chatters');
     let connectedUsers = await connectedUsersResponse.json();
     connectedUsers = connectedUsers.filter(user => user.nickName !== nickname);
     const connectedUsersList = document.getElementById('connectedUsers');
@@ -177,7 +177,7 @@ async function onMessageReceived(payload) {
 }
 
 function onLogout() {
-    stompClient.send("/app/user.disconnectUser",
+    stompClient.send("/app/chatter.disconnect",
         {},
         JSON.stringify({nickName: nickname, fullName: fullname, status: 'OFFLINE'})
     );

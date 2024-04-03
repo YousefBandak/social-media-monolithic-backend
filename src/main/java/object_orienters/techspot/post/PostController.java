@@ -1,8 +1,12 @@
 package object_orienters.techspot.post;
 
 import jakarta.validation.Valid;
+import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.postTypes.DataType;
+import object_orienters.techspot.postTypes.DataTypeRepository;
+import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.ImpleProfileService;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -11,14 +15,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.mysql.cj.util.DataTypeUtil;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
+import java.util.zip.DataFormatException;
 import java.util.Objects;
 
 @RestController
@@ -30,6 +41,7 @@ public class PostController {
     private final SharedPostModelAssembler sharedPostAssembler;
     private final ImplePostService postService;
     private final ImplSharedPostService sharedPostService;
+
     private final ImpleProfileService profileService;
 
     PostController(PostModelAssembler assembler, ImplePostService postService,
@@ -62,10 +74,15 @@ public class PostController {
 
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post) {
+    public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam("name") String name,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addTimelinePosts(username, post);
+            Post profilePost = postService.addTimelinePosts(username, file, text, name, type, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -134,6 +151,28 @@ public class PostController {
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
 
+    }
+
+    @GetMapping("/posts/{postId}/media")
+    public ResponseEntity<?> getPostMedia(@PathVariable long postId) {
+        try {
+            Post post = postService.getPost(postId);
+            if (post.getMediaData().getType().equalsIgnoreCase("image/jpeg")) {
+                byte[] Bytes = DataTypeUtils.safelyDecompress(post.getMediaData().getType().getBytes());
+                logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<"); // its not getting decompressed
+                return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
+                        .body(Bytes);
+            }
+        } catch (PostNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        } catch (ContentIsPrivateException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+        }
+        return null;
     }
 
     @PostMapping("/posts/{postId}/share")

@@ -23,7 +23,7 @@ import java.sql.Timestamp;
 public abstract class Content {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "content_id", updatable = false, nullable = false)
+    @Column(name = "content_id", updatable = false, nullable = false,insertable = false)
     @Getter
     private Long contentID;
 

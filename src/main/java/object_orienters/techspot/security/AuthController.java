@@ -1,6 +1,7 @@
 package object_orienters.techspot.security;
 
 import jakarta.validation.Valid;
+import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.ImpleProfileService;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -109,7 +111,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) throws IOException {
         logger.info(">>>>Regsitering User... @ " + getTimestamp() + "<<<<");
         if (userCredentialsServices.usernameExists(signUpRequest)) {
             logger.info(
@@ -133,7 +135,7 @@ public class AuthController {
 
         // userCredentialsServices.setRole(signUpRequest);
         userRepository.save(user);
-        profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
+        profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName(), null);
         logger.info(">>>>User " + user.toString() + " Registered Successfully. @ " + getTimestamp() + "<<<<");
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }

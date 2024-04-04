@@ -1,14 +1,18 @@
 package object_orienters.techspot.profile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import object_orienters.techspot.postTypes.DataType;
+import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ImpleProfileService implements ProfileService {
@@ -17,6 +21,8 @@ public class ImpleProfileService implements ProfileService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
 
     Logger log = LoggerFactory.getLogger(ImpleProfileService.class.getName());
 
@@ -29,7 +35,7 @@ public class ImpleProfileService implements ProfileService {
         return repo.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
-    //NOTE:This method might be redundant and unnecessary
+    // NOTE:This method might be redundant and unnecessary
     @Override
     public Profile createNewProfile(Profile newProfile) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
         if (repo.findByEmail(newProfile.getEmail()) != null) {
@@ -42,21 +48,32 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
-    public Profile createNewProfile(String username, String email, String name) {
+    public Profile createNewProfile(String username, String email, String name, MultipartFile file) throws IOException {
         Profile newProfile = new Profile();
+        DataType profilePic = new DataType();
+        if (file != null && !file.isEmpty()) {
+            if (!file.getContentType().equals("image/jpeg") || !file.getContentType().equals("image/png")) {
+                throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
+            }
+            profilePic.setData(file.getBytes());
+            profilePic.setType(file.getContentType());
+        }
+        newProfile.setProfilePic(profilePic);
+        dataTypeRepository.save(profilePic);
+        newProfile.setProfilePic(profilePic);
         newProfile.setUsername(username);
-        newProfile.setOwner(userRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
+        newProfile.setOwner(
+                userRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
         newProfile.setEmail(email);
         newProfile.setName(name);
         return repo.save(newProfile);
 
     }
 
-
     @Override
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException {
         Profile updatedUser = repo.findByUsername(username).map(user -> {
-            //user.getOwner.(newUser.getUsername()); //NOTE: user cannot change username
+            // user.getOwner.(newUser.getUsername()); //NOTE: user cannot change username
             user.setProfilePic(newUser.getProfilePic());
             user.setDob(newUser.getDob());
             user.setEmail(newUser.getEmail());
@@ -95,6 +112,9 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public Profile addNewFollower(String username, String followerUserName) throws UserNotFoundException {
+        if (username.equals(followerUserName)) {
+            throw new UserCannotFollowSelfException(followerUserName);
+        }
         Profile newFollower = getUserByUsername(followerUserName);
         Optional<Profile> user = repo.findByUsername(username);
         user.get().getFollowers().add(newFollower);
@@ -105,12 +125,40 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
-    public void deleteFollower(String username, Profile deletedUser) throws UserNotFoundException {
-        Optional<Profile> profile = repo.findByUsername(username);
-        profile.get().getFollowers().remove(deletedUser);
-        deletedUser.getFollowing().remove(profile.get());
+    public void deleteFollower(String username, String deletedUser) throws UserNotFoundException {
+        Optional<Profile> profile = repo.findById(username);
+        Optional<Profile> deletedProfile = repo.findByUsername(deletedUser);
+        profile.get().getFollowers().remove(deletedProfile.get());
+        deletedProfile.get().getFollowing().remove(profile.get());
         repo.save(profile.get());
-        repo.save(deletedUser);
+        repo.save(deletedProfile.get());
+    }
+
+    public void deleteFollowing(String username, String deletedUser) throws UserNotFoundException {
+        Optional<Profile> profile = repo.findByUsername(username);
+        Optional<Profile> deletedProfile = repo.findByUsername(deletedUser);
+        profile.get().getFollowing().remove(deletedProfile.get());
+        deletedProfile.get().getFollowers().remove(profile.get());
+        repo.save(profile.get());
+        repo.save(deletedProfile.get());
+    }
+
+    @Override
+    public Profile addProfilePic(String username, MultipartFile file, String text) // TODO: theres a problem
+            throws UserNotFoundException, IOException {
+        Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        DataType profilePic = new DataType();
+        if (file != null && !file.isEmpty()) {
+            if (!file.getContentType().equalsIgnoreCase("image/jpeg") ||
+                    !file.getContentType().equals("image/png")) {
+                throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
+            }
+            profilePic.setData(file.getBytes());
+            profilePic.setType(file.getContentType());
+        }
+        user.setProfilePic(profilePic);
+        dataTypeRepository.save(profilePic);
+        return repo.save(user);
     }
 
 }

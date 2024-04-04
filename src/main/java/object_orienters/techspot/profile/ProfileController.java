@@ -3,6 +3,7 @@ package object_orienters.techspot.profile;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -193,7 +196,7 @@ public class ProfileController {
     // delete follower from user
     @DeleteMapping("/{username}/followers")
     @PreAuthorize("#username == authentication.principal.username")
-    ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody Profile deletedUser) {
+    public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody String deletedUser) {
         try {
             logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
             profileService.deleteFollower(username, deletedUser);
@@ -206,8 +209,44 @@ public class ProfileController {
         }
     }
 
+    @DeleteMapping("/{username}/followers")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody String deletedUser) {
+        try {
+            logger.info(">>>>Deleting Following... " + getTimestamp() + "<<<<");
+            profileService.deleteFollowing(username, deletedUser);
+            logger.info(">>>>Following Added. " + getTimestamp() + "<<<<");
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";
+    }
+
+    @PostMapping("/{username}/profilePic")
+    public ResponseEntity<?> addProfilePic(@PathVariable String username,
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+        try {
+            logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
+            Profile profile = profileService.addProfilePic(username, file, text);
+            logger.info(">>>>Profile Picture Added. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(profile));
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        } catch (IOException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+
+        }
     }
 
 }

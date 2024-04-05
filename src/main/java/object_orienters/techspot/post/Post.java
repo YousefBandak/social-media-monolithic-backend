@@ -32,6 +32,7 @@ public class Post extends ReactableContent {
         this.content = content;
         this.privacy = privacy;
         this.setContentAuthor(author);
+        author.getPublishedPosts().add(this);
     }
 
 

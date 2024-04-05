@@ -37,6 +37,8 @@ public class Comment extends ReactableContent {
         this.comment = comment;
         this.setContentAuthor(commentor);
         this.commentedOn = commentedOn;
+        commentedOn.getComments().add(this);
+
     }
 
 

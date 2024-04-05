@@ -77,6 +77,7 @@ public class Profile extends UserBase {
         this.following = new ArrayList<>();
         this.publishedPosts = new ArrayList<>();
         this.dob = LocalDate.parse(dob);
+        this.setUsername(user.getUsername());
     }
 
     public String toString() {

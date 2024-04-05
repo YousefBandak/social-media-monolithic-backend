@@ -1,8 +1,12 @@
 package object_orienters.techspot.post;
 
 import jakarta.validation.Valid;
+import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.postTypes.DataType;
+import object_orienters.techspot.postTypes.DataTypeRepository;
+import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.ImpleProfileService;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -11,14 +15,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.mysql.cj.util.DataTypeUtil;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
+import java.util.zip.DataFormatException;
 import java.util.Objects;
 
 @RestController
@@ -30,11 +41,12 @@ public class PostController {
     private final SharedPostModelAssembler sharedPostAssembler;
     private final ImplePostService postService;
     private final ImplSharedPostService sharedPostService;
+
     private final ImpleProfileService profileService;
 
     PostController(PostModelAssembler assembler, ImplePostService postService,
-                   SharedPostModelAssembler sharedPostAssembler,
-                   ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
+            SharedPostModelAssembler sharedPostAssembler,
+            ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
@@ -62,10 +74,13 @@ public class PostController {
 
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> addTimelinePosts(@PathVariable String username, @RequestBody Post post) {
+    public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addTimelinePosts(username, post);
+            Post profilePost = postService.addTimelinePosts(username, file, text, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -79,7 +94,7 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-                                              @RequestBody Post newPost) {
+            @RequestBody Post newPost) {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
             Post editedPost = postService.editTimelinePost(username, postId, newPost);
@@ -108,13 +123,16 @@ public class PostController {
         }
 
     }
+
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             profileService.getUserByUsername(username);
             String aouther = postService.getPost(postId).getContentAuthor().getUsername();
             if (!Objects.equals(username, aouther)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Problem.create().withTitle("Not Found").withDetail(
+                                "User: " + username + " is not the author of this content." + "Author is: " + aouther));
             }
             logger.info(">>>>Retrieving Post... @ " + getTimestamp() + "<<<<");
             Post post = postService.getPost(postId);
@@ -128,7 +146,7 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }catch (UserNotFoundException exception) {
+        } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
@@ -136,10 +154,32 @@ public class PostController {
 
     }
 
+    @GetMapping("/posts/{postId}/media")
+    public ResponseEntity<?> getPostMedia(@PathVariable long postId) {
+        try {
+            Post post = postService.getPost(postId);
+            if (post.getMediaData().getType().equalsIgnoreCase("image/jpeg")) {
+                byte[] Bytes = DataTypeUtils.safelyDecompress(post.getMediaData().getType().getBytes());
+                logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<"); // its not getting decompressed
+                return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
+                        .body(Bytes);
+            }
+        } catch (PostNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+        } catch (ContentIsPrivateException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+        }
+        return null;
+    }
+
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap.get(\"sharer\") == authentication.principal.username")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
-                                             @RequestBody Map<String, String> bodyMap) {
+            @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId,
@@ -167,7 +207,9 @@ public class PostController {
             profileService.getUserByUsername(username);
             String aouther = postService.getPost(postId).getContentAuthor().getUsername();
             if (!Objects.equals(username, aouther)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Problem.create().withTitle("Not Found").withDetail(
+                                "User: " + username + " is not the author of this content." + "Author is: " + aouther));
             }
             logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.getSharedPost(postId);
@@ -220,7 +262,7 @@ public class PostController {
     @PutMapping("/sharedPosts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-                                              @Valid @RequestBody Map<String, String> bodyMap) {
+            @Valid @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,

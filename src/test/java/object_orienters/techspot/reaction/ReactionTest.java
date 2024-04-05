@@ -1,3 +1,4 @@
+
 package object_orienters.techspot.reaction;
 
 import object_orienters.techspot.comment.Comment;
@@ -208,3 +209,4 @@ class ReactionTest {
 
 
 }
+

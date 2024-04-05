@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -87,13 +89,12 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Map<String, String> jsonMap) {
-        logger.info(jsonMap.toString());
-
+    public ResponseEntity<?> addComment(@PathVariable long contentID, @PathVariable String username,
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
-            Comment createdComment = commentService.addComment(contentID, jsonMap.get("comment"),
-                    jsonMap.get("commentor"));
+            Comment createdComment = commentService.addComment(contentID, username, file, text);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);

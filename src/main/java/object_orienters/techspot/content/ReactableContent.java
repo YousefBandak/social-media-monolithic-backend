@@ -2,12 +2,15 @@ package object_orienters.techspot.content;
 
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.Getter;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.post.Post;
+import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.reaction.Reaction;
+
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -22,13 +25,18 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "ReactableContent")
 @Data
-public abstract class ReactableContent extends Content{
+public abstract class ReactableContent extends Content {
 
     @ManyToOne
-    //@JsonBackReference
+    // @JsonBackReference
     private Profile contentAuthor;
 
-
+    // @NotBlank(message = "Post content cannot be empty")
+    // @NotNull(message = "Content must be specified")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    private DataType mediaData;
+    private String textData;
 
     @JsonIgnore
     @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -39,6 +47,7 @@ public abstract class ReactableContent extends Content{
     private List<Comment> comments;
     private int numOfComments;
     private int numOfReactions;
+
 
     public ReactableContent() {
         this.reactions = new ArrayList<>();

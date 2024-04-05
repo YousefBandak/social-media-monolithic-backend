@@ -1,67 +1,43 @@
 package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import jakarta.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-import java.util.stream.Collectors;
-
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/profiles")
 public class ProfileController {
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final ProfileModelAssembler assembler;
     private final ImpleProfileService profileService;
     private final Logger logger = LoggerFactory.getLogger(ProfileController.class);
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     public ProfileController(ProfileModelAssembler assembler, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.profileService = profileService;
     }
 
-    // get user profile
-    @GetMapping("/{username}")
-    public ResponseEntity<?> one(@PathVariable String username) {
-        try {
-            logger.info(
-                    ">>>>Retrieving Profile From Database... " + getTimestamp() + "<<<<");
-            EntityModel<Profile> profileModel = assembler.toModel(profileService.getUserByUsername(username));
-            logger.info(">>>>Profile  Retrieved. " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(profileModel);
-        } catch (UserNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        }
+    private static String getTimestamp() {
+        return LocalDateTime.now().format(formatter) + " ";
     }
 
     // // create new user profile
@@ -90,6 +66,24 @@ public class ProfileController {
     // }
     // }
 
+    // get user profile
+    @GetMapping("/{username}")
+    public ResponseEntity<?> one(@PathVariable String username) {
+        try {
+            logger.info(
+                    ">>>>Retrieving Profile From Database... " + getTimestamp() + "<<<<");
+            EntityModel<Profile> profileModel = assembler.toModel(profileService.getUserByUsername(username));
+            logger.info(">>>>Profile  Retrieved. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(profileModel);
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
+    ;
+
     // update user profile
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.principal.username")
@@ -106,7 +100,7 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
-    };
+    }
 
     // get user followers
     @GetMapping("/{username}/followers")
@@ -129,7 +123,7 @@ public class ProfileController {
     // get specific user follower
     @GetMapping("/{username}/followers/{followerUserName}")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
-            @PathVariable String followerUserName) {
+                                                 @PathVariable String followerUserName) {
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
@@ -163,7 +157,7 @@ public class ProfileController {
     // get specific user following
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
-            @PathVariable String followingUsername) {
+                                                  @PathVariable String followingUsername) {
         try {
             logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
             Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername);
@@ -190,6 +184,12 @@ public class ProfileController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }catch (UserCannotFollowSelfException ex){
+            logger.info(">>>>Error Occurred: " + ex.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Problem.create().withTitle("Bad Request").withDetail(ex.getMessage()));
+
         }
     }
 
@@ -209,7 +209,7 @@ public class ProfileController {
         }
     }
 
-    @DeleteMapping("/{username}/followers")
+    @DeleteMapping("/{username}/following")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody String deletedUser) {
         try {
@@ -224,14 +224,10 @@ public class ProfileController {
         }
     }
 
-    private static String getTimestamp() {
-        return LocalDateTime.now().format(formatter) + " ";
-    }
-
     @PostMapping("/{username}/profilePic")
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
-            @RequestParam(value = "file") MultipartFile file,
-            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+                                           @RequestParam(value = "file") MultipartFile file,
+                                           @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addProfilePic(username, file, text);

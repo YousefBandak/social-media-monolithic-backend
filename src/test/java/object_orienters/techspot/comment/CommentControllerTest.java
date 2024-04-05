@@ -1,3 +1,4 @@
+
 package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ReactableContent;
@@ -58,52 +59,55 @@ public class CommentControllerTest {
     private CommentModelAssembler assembler;
 
     @MockBean
+    @Autowired
     private ImpleCommentService commentService;
     private User user = createUser();
     private Profile profile = createProfile(user);
     private Post post = createPost(profile);
-    private Comment comment = createComment("Test comment", profile, post);
-    private Comment replaedComment = createComment("Replaced comment", profile, comment);
+    private  Comment comment = createComment("Test comment", profile, post);
+    private Comment repliedComment = createComment("Replied comment", profile, comment);
 
     public static User createUser() {
+
         return new User("husam_ramoni", "husam@example.com", "securepassword123");
     }
 
     public static Profile createProfile(User user) {
-        // Assuming the format for dob is YYYY-MM-DD and gender is an enum that has MALE as a value.
-        // You might need to adjust the date format and enum based on your actual model.
         return new Profile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
                 "url_to_profile_pic", Profile.Gender.MALE, "1985-04-12");
     }
 
-    public static Post createPost(Profile author) {
+    public Post createPost(Profile author) {
+
         return new Post("This is a test post", Privacy.PUBLIC, author);
     }
 
-    public static Comment createComment(String commentContent, Profile commentor, ReactableContent commentedOn) {
+    public Comment createComment(String commentContent, Profile commentor, ReactableContent commentedOn) {
+
         return new Comment(commentContent, commentor, commentedOn);
     }
 
     public void generator() {
-        profile.setPublishedPosts(List.of(post));
-        post.setComments(List.of(comment));
-        profile.setUsername(user.getUsername());
         post.setContentID(1L);
         comment.setContentID(2L);
-        replaedComment.setContentID(3L);
+        repliedComment.setContentID(3L);
     }
 
     @Test
     public void testGetCommentsOnPost() throws Exception {
         generator();
-        System.out.println(user.getUsername());
-        System.out.println(profile.getUsername());
+        System.out.println(post.getContentID());
         System.out.println(profile.getPublishedPosts());
         System.out.println(post.getComments());
+        System.out.println(profile.getUsername());
+//        System.out.println(user.getUsername());
+//        System.out.println(profile.getUsername());
+//        System.out.println(profile.getPublishedPosts());
+//        System.out.println(post.getComments());
         EntityModel<Comment> entityModel = EntityModel.of(comment); // Wrap in HATEOAS entity model.
         given(commentService.getComments(post.getContentID())).willReturn(List.of(comment));
         given(assembler.toModel(comment)).willReturn(entityModel);
-        mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1)
+        mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments", profile.getUsername(), 1)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()); // Here we expect the HTTP status to be 200 OK.
 
@@ -125,6 +129,7 @@ public class CommentControllerTest {
                 .andExpect(status().isOk())
                 // Verify some fields in the response.
                 .andExpect(jsonPath("$.contentID").value(2));
+        System.out.println(comment.getCommentedOn().getContentID());
         // Verify interaction with mock objects
         verify(commentService).getComment(comment.getContentID());
         verify(assembler).toModel(comment);
@@ -134,11 +139,11 @@ public class CommentControllerTest {
     public void testGetCommentsOnComment() throws Exception {
         generator();
         System.out.println(comment.getComments());
-        System.out.println(replaedComment.getComment());
-        System.out.println(replaedComment.getCommentedOn());
-        EntityModel<Comment> entityModel = EntityModel.of(replaedComment); // Wrap in HATEOAS entity model.
-        given(commentService.getComments(comment.getContentID())).willReturn(List.of(replaedComment));
-        given(assembler.toModel(replaedComment)).willReturn(entityModel);
+        System.out.println(repliedComment.getComment());
+        System.out.println(repliedComment.getCommentedOn());
+        EntityModel<Comment> entityModel = EntityModel.of(repliedComment); // Wrap in HATEOAS entity model.
+        given(commentService.getComments(comment.getContentID())).willReturn(List.of(repliedComment));
+        given(assembler.toModel(repliedComment)).willReturn(entityModel);
         mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 2))
                 .andExpect(status().isOk()); // Here we expect the HTTP status to be 200 OK.
 
@@ -148,11 +153,11 @@ public class CommentControllerTest {
     public void testGetCommentOnComment() throws Exception {
         generator();
 
-        EntityModel<Comment> entityModel = EntityModel.of(replaedComment,
-                linkTo(methodOn(CommentController.class).getComment(replaedComment.getContentID(), comment.getContentID(), user.getUsername())).withSelfRel());
+        EntityModel<Comment> entityModel = EntityModel.of(repliedComment,
+                linkTo(methodOn(CommentController.class).getComment(repliedComment.getContentID(), comment.getContentID(), user.getUsername())).withSelfRel());
 
-        given(commentService.getComment(replaedComment.getContentID())).willReturn(replaedComment);
-        given(assembler.toModel(replaedComment)).willReturn(entityModel);
+        given(commentService.getComment(repliedComment.getContentID())).willReturn(repliedComment);
+        given(assembler.toModel(repliedComment)).willReturn(entityModel);
 
         // Act & Assert
         mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments/{commentID}", "husam_ramoni", 2, 3)
@@ -161,8 +166,8 @@ public class CommentControllerTest {
                 // Verify some fields in the response.
                 .andExpect(jsonPath("$.contentID").value(3));
         // Verify interaction with mock objects
-        verify(commentService).getComment(replaedComment.getContentID());
-        verify(assembler).toModel(replaedComment);
+        verify(commentService).getComment(repliedComment.getContentID());
+        verify(assembler).toModel(repliedComment);
     }
 
     @Test
@@ -200,7 +205,6 @@ public class CommentControllerTest {
         //comment.setComment(updatedText);
         System.out.println(commentService.updateComment(post.getContentID(), comment.getContentID(), updatedText));
         EntityModel<Comment> entityModel = EntityModel.of(comment);
-
         given(commentService.updateComment(post.getContentID(), comment.getContentID(), updatedText)).willReturn(comment);
         given(assembler.toModel(comment)).willReturn(entityModel);
         // Act & Assert
@@ -218,3 +222,4 @@ public class CommentControllerTest {
 
 
 }
+

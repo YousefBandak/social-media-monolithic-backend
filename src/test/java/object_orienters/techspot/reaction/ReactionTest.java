@@ -1,3 +1,4 @@
+
 package object_orienters.techspot.reaction;
 
 import object_orienters.techspot.comment.Comment;
@@ -34,21 +35,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ReactionController.class)
-
 class ReactionTest {
     @BeforeEach
     void setup(WebApplicationContext wac) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
     }
-    @TestConfiguration
-    static class SecurityPermitAllConfig {
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-            http.authorizeRequests()
-                    .anyRequest().permitAll();
-            return http.build();
-        }
-    }
+//    @TestConfiguration
+//    static class SecurityPermitAllConfig {
+//        @Bean
+//        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//            http.authorizeRequests()
+//                    .anyRequest().permitAll();
+//            return http.build();
+//        }
+//    }
     @Autowired
     private MockMvc mockMvc;
 
@@ -61,30 +61,19 @@ class ReactionTest {
     private Profile profile = createProfile(user);
     private Post post = createPost(profile);
     private Comment comment = createComment("Test comment", profile, post);
-    private Reaction postReaction = new Reaction();
-    private Reaction commentReaction = new Reaction();
+    private Reaction postReaction = new Reaction(profile, Reaction.ReactionType.LIKE,post);
+    private Reaction commentReaction = new Reaction(profile, Reaction.ReactionType.LIKE,comment);
     public void generator(){
-        profile.setPublishedPosts(List.of(post));
-        profile.setUsername(user.getUsername());
-        post.setComments(List.of(comment));
         post.setContentID(1L);
         comment.setContentID(2L);
         postReaction.setReactionID(4L);
-        postReaction.setContent(post);
-        postReaction.setReactor(profile);
-        postReaction.setType(Reaction.ReactionType.LIKE);
         commentReaction.setReactionID(5L);
-        commentReaction.setContent(comment);
-        commentReaction.setReactor(profile);
-        commentReaction.setType(Reaction.ReactionType.LIKE);
     }
     public static User createUser() {
         return new User("husam_ramoni", "husam@example.com", "securepassword123");
     }
 
     public static Profile createProfile(User user) {
-        // Assuming the format for dob is YYYY-MM-DD and gender is an enum that has MALE as a value.
-        // You might need to adjust the date format and enum based on your actual model.
         return new Profile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
                 "url_to_profile_pic", Profile.Gender.MALE, "1985-04-12");
     }
@@ -220,3 +209,4 @@ class ReactionTest {
 
 
 }
+

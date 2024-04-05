@@ -16,8 +16,7 @@ public class DataType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "datatype_id")
-    private Long id;
-    private String name; 
+    private Long id; 
     private String type; 
     @Lob
     @Column(name = "Data", length = 1000000000)

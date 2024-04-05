@@ -45,8 +45,8 @@ public class PostController {
     private final ImpleProfileService profileService;
 
     PostController(PostModelAssembler assembler, ImplePostService postService,
-                   SharedPostModelAssembler sharedPostAssembler,
-                   ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
+            SharedPostModelAssembler sharedPostAssembler,
+            ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
@@ -77,12 +77,10 @@ public class PostController {
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text,
-            @RequestParam("name") String name,
-            @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addTimelinePosts(username, file, text, name, type, privacy);
+            Post profilePost = postService.addTimelinePosts(username, file, text, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -96,7 +94,7 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-                                              @RequestBody Post newPost) {
+            @RequestBody Post newPost) {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
             Post editedPost = postService.editTimelinePost(username, postId, newPost);
@@ -125,13 +123,16 @@ public class PostController {
         }
 
     }
+
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             profileService.getUserByUsername(username);
             String aouther = postService.getPost(postId).getContentAuthor().getUsername();
             if (!Objects.equals(username, aouther)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Problem.create().withTitle("Not Found").withDetail(
+                                "User: " + username + " is not the author of this content." + "Author is: " + aouther));
             }
             logger.info(">>>>Retrieving Post... @ " + getTimestamp() + "<<<<");
             Post post = postService.getPost(postId);
@@ -145,7 +146,7 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }catch (UserNotFoundException exception) {
+        } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
@@ -178,7 +179,7 @@ public class PostController {
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap.get(\"sharer\") == authentication.principal.username")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
-                                             @RequestBody Map<String, String> bodyMap) {
+            @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId,
@@ -206,7 +207,9 @@ public class PostController {
             profileService.getUserByUsername(username);
             String aouther = postService.getPost(postId).getContentAuthor().getUsername();
             if (!Objects.equals(username, aouther)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Problem.create().withTitle("Not Found").withDetail("User: " + username + " is not the author of this content." + "Author is: " + aouther));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Problem.create().withTitle("Not Found").withDetail(
+                                "User: " + username + " is not the author of this content." + "Author is: " + aouther));
             }
             logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.getSharedPost(postId);
@@ -259,7 +262,7 @@ public class PostController {
     @PutMapping("/sharedPosts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-                                              @Valid @RequestBody Map<String, String> bodyMap) {
+            @Valid @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,

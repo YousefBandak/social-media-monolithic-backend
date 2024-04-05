@@ -90,7 +90,7 @@ public class CommentController {
 
     @PostMapping("/comments")
     public ResponseEntity<?> addComment(@PathVariable long contentID, @PathVariable String username,
-            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "file",required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");

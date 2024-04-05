@@ -1,7 +1,7 @@
 package object_orienters.techspot.security;
 
 
-import object_orienters.techspot.security.payload.SignupRequest;
+import object_orienters.techspot.security.payload.request.SignupRequest;
 import object_orienters.techspot.security.repository.UserRepository;
 import org.springframework.stereotype.Service;
 

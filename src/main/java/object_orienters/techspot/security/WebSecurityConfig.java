@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -121,22 +120,23 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 //code with both
         http
                 .csrf(csrf -> csrf.disable())
-                // .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                // .authorizeHttpRequests(authorize -> authorize
-                //         .requestMatchers("/login", "/auth/login", "auth/signup", "auth/usernameExists/**").permitAll()
-                //         .anyRequest().authenticated())
-                // .oauth2Login(withDefaults())
-                // .formLogin(form -> {
-                //     form.permitAll();
-                //     form.failureHandler((request, response, exception) -> {
-                //         logger.error("Failed to login", exception);
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/login", "/auth/login", "auth/signup","auth/refreshtoken", "auth/usernameExists/**").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(withDefaults())
+                .formLogin(form -> {
+                    form.permitAll();
+                    form.failureHandler((request, response, exception) -> {
+                        logger.error("Failed to login", exception);
 
-                //         exception.printStackTrace();
-                //         response.sendRedirect("/auth/signup");
-                //     });
-                //     form.successForwardUrl("/auth/home");
-                // })
+                        exception.printStackTrace();
+                        response.sendRedirect("/auth/signup");
+                    });
+                    form.successForwardUrl("/auth/home");
+                })
                 .authenticationProvider(authenticationProvider())
+                .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

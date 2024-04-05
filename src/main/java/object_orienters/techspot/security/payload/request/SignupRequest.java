@@ -1,4 +1,4 @@
-package object_orienters.techspot.security.payload;
+package object_orienters.techspot.security.payload.request;
 
 import java.util.HashSet;
 import java.util.Set;

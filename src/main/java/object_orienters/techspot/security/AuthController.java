@@ -7,13 +7,17 @@ import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.security.jwt.JwtUtils;
+import object_orienters.techspot.security.model.RefreshToken;
 import object_orienters.techspot.security.model.User;
-import object_orienters.techspot.security.payload.JwtResponse;
-import object_orienters.techspot.security.payload.LoginRequest;
-import object_orienters.techspot.security.payload.MessageResponse;
-import object_orienters.techspot.security.payload.SignupRequest;
+import object_orienters.techspot.security.payload.request.LoginRequest;
+import object_orienters.techspot.security.payload.request.SignupRequest;
+import object_orienters.techspot.security.payload.request.TokenRefreshRequest;
+import object_orienters.techspot.security.payload.response.JwtResponse;
+import object_orienters.techspot.security.payload.response.MessageResponse;
+import object_orienters.techspot.security.payload.response.TokenRefreshResponse;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.security.service.ImpleUserDetails;
+import object_orienters.techspot.security.service.RefreshTokenService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +32,6 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -55,6 +57,10 @@ public class AuthController {
 
     @Autowired
     ProfileRepository profileRepository;
+
+    @Autowired
+    RefreshTokenService refreshTokenService;
+
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(AuthController.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
@@ -87,12 +93,15 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        ImpleUserDetails userDetails = (ImpleUserDetails) authentication.getPrincipal();
+
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        ImpleUserDetails userDetails = (ImpleUserDetails) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+//        List<String> roles = userDetails.getAuthorities().stream()
+//                .map(item -> item.getAuthority())
+//                .collect(Collectors.toList());
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
@@ -104,10 +113,34 @@ public class AuthController {
         userRepository.save(user);
 
         logger.info(">>>>User " + user.toString() + " Authenticated Successfully. @ " + getTimestamp() + "<<<<");
-        return ResponseEntity.ok(new JwtResponse(jwt,
+        return ResponseEntity.ok(new JwtResponse(
+                jwt,
+                refreshToken.getToken(),
                 userDetails.getUsername(),
-                userDetails.getEmail(),
-                roles));
+                userDetails.getEmail())
+        );
+    }
+
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+                    return ResponseEntity.ok(new TokenRefreshResponse(token, refreshTokenService.createRefreshToken(user.getUsername()).getToken()));
+                })
+                .orElseThrow(() ->
+                        {
+                            logger.info(">>>>Error Occurred: Refresh token is not in database! @ " + getTimestamp() + "<<<<");
+                            //log out
+                            SecurityContextHolder.clearContext();
+                            //delete refresh token form db for user
+                            return new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!, Please login again");
+                        }
+                );
     }
 
     @PostMapping("/signup")

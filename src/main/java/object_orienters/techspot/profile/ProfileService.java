@@ -28,6 +28,8 @@ public interface ProfileService {
 
     public void deleteFollowing(String username, String deletedUser) throws UserNotFoundException;
 
+    public void deleteProfile(String username) throws UserNotFoundException;
+
     public Profile addProfilePic(String username, MultipartFile file, String text)
             throws UserNotFoundException, IOException;
 

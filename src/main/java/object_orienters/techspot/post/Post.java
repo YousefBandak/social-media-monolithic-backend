@@ -30,6 +30,7 @@ public class Post extends ReactableContent {
         this.setMediaData(mediaData);
         this.privacy = privacy;
         this.setContentAuthor(author);
+        author.getPublishedPosts().add(this);
     }
 
     public Post(String textData, Privacy privacy, Profile author) {

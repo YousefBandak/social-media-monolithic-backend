@@ -11,6 +11,9 @@ import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.reaction.Reaction;
 
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -44,6 +47,12 @@ public abstract class ReactableContent extends Content {
     private List<Comment> comments;
     private int numOfComments;
     private int numOfReactions;
+
+
+    public ReactableContent() {
+        this.reactions = new ArrayList<>();
+        this.comments = new ArrayList<>();
+    }
 
     @Override
     public boolean equals(Object o) {

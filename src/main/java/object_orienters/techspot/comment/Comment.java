@@ -34,6 +34,8 @@ public class Comment extends ReactableContent {
         this.setMediaData(comment);
         this.setContentAuthor(commentor);
         this.commentedOn = commentedOn;
+        commentedOn.getComments().add(this);
+
     }
 
     public Comment(DataType comment, Profile commentor, ReactableContent commentedOn, String text) {

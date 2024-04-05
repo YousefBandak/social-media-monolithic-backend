@@ -209,7 +209,7 @@ public class ProfileController {
         }
     }
 
-    @DeleteMapping("/{username}/followers")
+    @DeleteMapping("/{username}/following")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody String deletedUser) {
         try {
@@ -246,6 +246,18 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
 
+        }
+    }
+
+    @DeleteMapping("/{username}/delete")
+    public ResponseEntity<?> deleteProfile(@PathVariable String username) throws UserNotFoundException {
+        try {
+            profileService.deleteProfile(username);
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
 

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -70,10 +71,11 @@ public class PostController {
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text,
-            @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
+            @RequestParam(value = "privacy", required = false) Privacy privacy,
+            @RequestBody() List<String> tags) throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addTimelinePosts(username, file, text, privacy);
+            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,tags);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));

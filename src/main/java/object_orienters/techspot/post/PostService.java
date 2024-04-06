@@ -2,6 +2,7 @@ package object_orienters.techspot.post;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,14 +14,15 @@ public interface PostService {
 
         Collection<? extends Content> getTimelinePosts(String username) throws UserNotFoundException;
 
-        public Post addTimelinePosts(String username, MultipartFile file, String text, Privacy privacy)
+        public Post addTimelinePosts(String username, MultipartFile file, String text, Privacy privacy,
+                        List<String> tags)
                         throws UserNotFoundException, IOException;
 
         // public SharedPost addSharedPost(String username, Post post, Privacy privacy)
         // throws UserNotFoundException;
 
         public Post editTimelinePost(String username, long postId, MultipartFile file,
-        String text, Privacy privacy)
+                        String text, Privacy privacy)
                         throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException;
 
         public void deleteTimelinePost(String username, long postId)

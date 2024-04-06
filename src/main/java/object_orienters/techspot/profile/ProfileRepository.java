@@ -28,4 +28,6 @@ public interface ProfileRepository extends JpaRepository<Profile, String> {
     
     Optional<Profile>  findByEmail(String email);
 
+    List<Profile> findByName(String Name);
+
 }

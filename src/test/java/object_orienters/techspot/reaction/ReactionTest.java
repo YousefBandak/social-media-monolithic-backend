@@ -57,7 +57,7 @@ class ReactionTest {
 
     @MockBean
     private ReactionModelAssembler assembler;
-    private User user = createUser();
+    private User user = createUser("husam_ramoni", "husam@example.com", "securepassword123");
     private Profile profile = createProfile(user);
     private Post post = createPost(profile);
     private Comment comment = createComment("Test comment", profile, post);
@@ -69,13 +69,14 @@ class ReactionTest {
         postReaction.setReactionID(4L);
         commentReaction.setReactionID(5L);
     }
-    public static User createUser() {
-        return new User("husam_ramoni", "husam@example.com", "securepassword123");
+    public static User createUser(String username, String email, String password) {
+
+        return new User(username, email, password);
     }
 
     public static Profile createProfile(User user) {
         return new Profile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
-                "url_to_profile_pic", Profile.Gender.MALE, "1985-04-12");
+                null, Profile.Gender.MALE, "1985-04-12");
     }
 
     public static Post createPost(Profile author) {
@@ -83,7 +84,7 @@ class ReactionTest {
     }
 
     public static Comment createComment(String commentContent, Profile commentor, ReactableContent commentedOn) {
-        return new Comment(commentContent, commentor, commentedOn);
+        return new Comment(null, commentor,commentedOn,commentContent);
     }
     @Test
     public void testGetReactionOnPost() throws Exception {

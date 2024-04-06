@@ -1,0 +1,202 @@
+package object_orienters.techspot.profile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import object_orienters.techspot.postTypes.DataType;
+import object_orienters.techspot.security.model.User;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ExtendWith(SpringExtension.class)
+@WebMvcTest(ProfileController.class)
+class ProfileControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private ProfileModelAssembler assembler;
+
+    @MockBean
+    private ImpleProfileService profileService;
+
+    @InjectMocks
+    private ProfileController profileController;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    private User user = createUser("husam_ramoni", "husam@example.com", "securepassword123");
+    private Profile profile = createProfile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
+            null, Profile.Gender.MALE, "1985-04-12");
+    private Profile profile2 = createProfile(user, "yousef_albadndak", "Software Engineer", "yousef@example.com",
+            null, Profile.Gender.MALE, "1985-04-12");
+
+    public static User createUser(String username, String email, String password) {
+
+        return new User(username, email, password);
+    }
+
+    public static Profile createProfile(User user, String name , String profession, String email, DataType profilePic, Profile.Gender gender, String dob) {
+        return new Profile(user, name, profession, email, profilePic, gender, dob);
+    }
+
+    @BeforeEach
+    public void setup(WebApplicationContext context) {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .build();
+    }
+
+    @Test
+    public void testGetProfile() throws Exception {
+        EntityModel<Profile> mockEntityModel = EntityModel.of(profile);
+        given(profileService.getUserByUsername(profile.getUsername())).willReturn(profile);
+        given(assembler.toModel(profile)).willReturn(mockEntityModel);
+
+        mockMvc.perform(get("/profiles/{username}", profile.getUsername())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void addNewFollowerToProfile() throws Exception {
+
+        ObjectNode followerUserName = objectMapper.createObjectNode();
+        followerUserName.put("username", "yousef_albadndak");
+
+        EntityModel<Profile> profileEntityModel = EntityModel.of(profile);
+
+        given(profileService.addNewFollower(profile.getUsername(), "yousef_albadndak")).willReturn(profile);
+        given(assembler.toModel(profile)).willReturn(profileEntityModel);
+
+        // Execute & Assert
+        mockMvc.perform(post("/profiles/{username}/followers", profile.getUsername())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(followerUserName.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
+    }
+
+    @Test
+    @WithMockUser(username = "john_doe")
+    public void whenUserNotFound_thenNotFoundResponse() throws Exception {
+        // Setup
+        ObjectNode followerUserName = objectMapper.createObjectNode();
+        followerUserName.put("username", "jane_doe");
+
+        given(profileService.addNewFollower("john_doe", "jane_doe")).willThrow(new UserNotFoundException("User not found"));
+
+        // Execute & Assert
+        mockMvc.perform(post("/profiles/{username}/followers", "john_doe")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(followerUserName.toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void testDeleteFollower_Success() throws Exception {
+        ObjectNode followerUserName = objectMapper.createObjectNode();
+        followerUserName.put("username", "yousef_albadndak");
+
+        EntityModel<Profile> profileEntityModel = EntityModel.of(profile);
+
+        given(profileService.addNewFollower(profile.getUsername(), "yousef_albadndak")).willReturn(profile);
+        given(assembler.toModel(profile)).willReturn(profileEntityModel);
+
+        doNothing().when(profileService).deleteFollower(profile.getUsername(), "yousef_albadndak");
+
+        mockMvc.perform(delete("/profiles/{username}/followers", "husam_ramoni")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"yousef_albadndak\""))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void testDeleteFollower_UserNotFound() throws Exception {
+        // Assume that the follower is not found, and UserNotFoundException is thrown
+        doNothing().when(profileService).deleteFollower(profile.getUsername(), "yousef_albadndak");
+
+        mockMvc.perform(delete("/{username}/followers", "husam_ramoni")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("\"yousef_albadndak\""))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void testProfileFollowHimself() throws Exception {
+        // Simulate the exception thrown when a user tries to follow themselves
+        given(profileService.addNewFollower("husam_ramoni", "husam_ramoni"))
+                .willThrow(new UserCannotFollowSelfException("husam_ramoni"));
+
+        // Attempt to follow oneself
+        mockMvc.perform(post("/profiles/{username}/followers", "husam_ramoni")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\": \"husam_ramoni\"}"))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void towProfilesFollowingEachOther() throws Exception {
+        // yousef_albadndak follows husam_ramoni
+        ObjectNode followerUserName = objectMapper.createObjectNode();
+        followerUserName.put("username", "yousef_albadndak");
+
+        EntityModel<Profile> profileEntityModel = EntityModel.of(profile);
+
+        given(profileService.addNewFollower(profile.getUsername(), "yousef_albadndak")).willReturn(profile);
+        given(assembler.toModel(profile)).willReturn(profileEntityModel);
+
+        // Execute & Assert
+        mockMvc.perform(post("/profiles/{username}/followers", profile.getUsername())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(followerUserName.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
+        ////////////////////////////////////
+
+        // husam_ramoni follows yousef_albadndak
+
+        ObjectNode followerUserNamee = objectMapper.createObjectNode();
+        followerUserNamee.put("username", "husam_ramoni");
+
+        EntityModel<Profile> profileEntityModell = EntityModel.of(profile2);
+
+        given(profileService.addNewFollower(profile2.getUsername(), "husam_ramoni")).willReturn(profile2);
+        given(assembler.toModel(profile2)).willReturn(profileEntityModell);
+
+        // Execute & Assert
+        mockMvc.perform(post("/profiles/{username}/followers", profile2.getUsername())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(followerUserNamee.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
+
+
+    }
+
+}

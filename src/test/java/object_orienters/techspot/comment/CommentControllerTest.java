@@ -1,4 +1,3 @@
-
 package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ReactableContent;
@@ -10,18 +9,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 
@@ -38,53 +37,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 //@WebMvcTest(value = CommentController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 
 public class CommentControllerTest {
-    @TestConfiguration
-    static class SecurityPermitAllConfig {
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-            http.authorizeRequests()
-                    .anyRequest().permitAll();
-            return http.build();
-        }
-    }
-    @BeforeEach
-    void setup(WebApplicationContext wac) {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-    }
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private CommentModelAssembler assembler;
-
     @MockBean
     @Autowired
     private ImpleCommentService commentService;
-    private User user = createUser();
+    private User user = createUser("husam_ramoni", "husam@example.com", "securepassword123");
+    private User user2 = createUser("rawan", "rawan@example.com", "securepassword123");
     private Profile profile = createProfile(user);
     private Post post = createPost(profile);
-    private  Comment comment = createComment("Test comment", profile, post);
-    private Comment repliedComment = createComment("Replied comment", profile, comment);
+    //MockMultipartFile mockFile = new MockMultipartFile("file", "filename.txt", "text/plain", "Some content".getBytes());
+    private Comment comment = createComment(profile, post, "Test comment");
+    private Comment repliedComment = createComment(profile, comment, "Replied comment");
+    private Profile profile2 = createProfile(user2);
 
-    public static User createUser() {
+    public static User createUser(String username, String email, String password) {
 
-        return new User("husam_ramoni", "husam@example.com", "securepassword123");
+        return new User(username, email, password);
     }
 
     public static Profile createProfile(User user) {
         return new Profile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
-                "url_to_profile_pic", Profile.Gender.MALE, "1985-04-12");
+                null, Profile.Gender.MALE, "1985-04-12");
     }
+
+    //    @TestConfiguration
+//    static class SecurityPermitAllConfig {
+//        @Bean
+//        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//            http.authorizeRequests()
+//                    .anyRequest().permitAll();
+//            return http.build();
+//        }
+//    }
+
 
     public Post createPost(Profile author) {
 
         return new Post("This is a test post", Privacy.PUBLIC, author);
     }
 
-    public Comment createComment(String commentContent, Profile commentor, ReactableContent commentedOn) {
+    public Comment createComment(Profile commentor, ReactableContent commentedOn, String commentContent) {
 
-        return new Comment(commentContent, commentor, commentedOn);
+        return new Comment(commentor, commentedOn, commentContent);
     }
 
     public void generator() {
@@ -93,9 +90,15 @@ public class CommentControllerTest {
         repliedComment.setContentID(3L);
     }
 
+    @BeforeEach
+    void setup(WebApplicationContext wac) {
+        generator();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    }
+
+
     @Test
     public void testGetCommentsOnPost() throws Exception {
-        generator();
         System.out.println(post.getContentID());
         System.out.println(profile.getPublishedPosts());
         System.out.println(post.getComments());
@@ -115,7 +118,6 @@ public class CommentControllerTest {
 
     @Test
     public void testGetCommentOnPost() throws Exception {
-        generator();
 
         EntityModel<Comment> entityModel = EntityModel.of(comment,
                 linkTo(methodOn(CommentController.class).getComment(comment.getContentID(), post.getContentID(), user.getUsername())).withSelfRel());
@@ -137,9 +139,8 @@ public class CommentControllerTest {
 
     @Test
     public void testGetCommentsOnComment() throws Exception {
-        generator();
         System.out.println(comment.getComments());
-        System.out.println(repliedComment.getComment());
+        System.out.println(repliedComment.getTextData());
         System.out.println(repliedComment.getCommentedOn());
         EntityModel<Comment> entityModel = EntityModel.of(repliedComment); // Wrap in HATEOAS entity model.
         given(commentService.getComments(comment.getContentID())).willReturn(List.of(repliedComment));
@@ -151,7 +152,6 @@ public class CommentControllerTest {
 
     @Test
     public void testGetCommentOnComment() throws Exception {
-        generator();
 
         EntityModel<Comment> entityModel = EntityModel.of(repliedComment,
                 linkTo(methodOn(CommentController.class).getComment(repliedComment.getContentID(), comment.getContentID(), user.getUsername())).withSelfRel());
@@ -172,17 +172,24 @@ public class CommentControllerTest {
 
     @Test
     @WithMockUser(username = "husam_ramoni")
-    public void testAddComment() throws Exception {
-        generator();
-        EntityModel<Comment> entityModel = EntityModel.of(comment);
-        given(commentService.addComment(post.getContentID(), comment.getComment(), user.getUsername())).willReturn(comment);
-        given(assembler.toModel(comment)).willReturn(entityModel);
+    public void testAddTextCommentOnPost() throws Exception {
 
-        mockMvc.perform(post("/profiles/{username}/content/{contentID}/comments", user.getUsername(), post.getContentID())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"comment\":\"Test comment\",\"commentor\":\"husam_ramoni\"}"))
+        given(commentService.addComment(1L, "husam_ramoni", null, "Test comment")).willReturn(comment);
+
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1L)
+                        .param("text", "Test comment")
+                        .param("contentID", "1")
+                        .param("username", "husam_ramoni")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
+        System.out.println("comment.getTextData(): " + comment.getTextData());
+        System.out.println("comment.getCommentedOn(): " + comment.getCommentedOn());
+        System.out.println("comment.getCommentedOn(): " + comment.getCommentedOn());
+        System.out.println("post.getContentID(): " + post.getContentID());
+        System.out.println("post.getTextData(): " + post.getTextData());
     }
+
 
     @Test
     @WithMockUser(username = "husam_ramoni")
@@ -199,7 +206,6 @@ public class CommentControllerTest {
     @WithMockUser(username = "husam_ramoni")
     public void testUpdateComment() throws Exception {
         // Arrange
-        generator();
         String updatedText = "Updated comment text";
         Map<String, String> updateRequest = Map.of("comment", updatedText);
         //comment.setComment(updatedText);
@@ -218,6 +224,37 @@ public class CommentControllerTest {
         // Verify service interaction
         verify(commentService).updateComment(1L, 2L, updatedText);
         verify(assembler).toModel(comment);
+    }
+
+    @Test
+    @WithMockUser(username = "husam_ramoni")
+    public void testAddMediaCommentOnPost() throws Exception {
+        ClassPathResource imageResource = new ClassPathResource("p1.png");
+        System.out.println(imageResource.getFile().getAbsolutePath());
+        if (!imageResource.exists()) {
+            throw new AssertionError("Test file not found");
+        }
+        byte[] content = Files.readAllBytes(imageResource.getFile().toPath());
+
+        generator();
+        MockMultipartFile mockFile = new MockMultipartFile(
+                "file",
+                "p1.png", // Filename
+                "image/png", // Content type
+                content // Correct file content
+        );
+
+        // Configure mock service to return a predefined comment object
+        given(commentService.addComment(1L, "husam_ramoni", mockFile, "Test comment")).willReturn(comment);
+
+        // Perform the mock MVC request
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1L) // Make sure the path matches your controller's endpoint
+                        .file(mockFile) // Adds the file to the request
+                        .param("text", "Test comment")
+                        .param("contentID", "1")
+                        .param("username", "husam_ramoni")
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isCreated()); // Asserts the expected result
     }
 
 

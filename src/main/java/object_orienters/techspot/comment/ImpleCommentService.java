@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import object_orienters.techspot.DataTypeUtils;
-import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.postTypes.DataType;
@@ -44,7 +43,8 @@ public class ImpleCommentService implements CommentService {
     // }
 
     @Override // FIXME: save by order of the content
-    public Comment addComment(Long contentId, String username, MultipartFile file, String text) throws ContentNotFoundException, IOException {
+    public Comment addComment(Long contentId, String username, MultipartFile file, String text)
+            throws ContentNotFoundException, IOException {
 
         // if (comment == null || comment.isBlank() || comment.isEmpty()) {
         // throw new IllegalArgumentException("Comment object cannot be null.");
@@ -57,7 +57,6 @@ public class ImpleCommentService implements CommentService {
             comment.setData(DataTypeUtils.compress(file.getBytes()));
             comment.setType(file.getContentType());
         }
-        comment.setType(comment.getType() != null ? comment.getType() : "text/plain");
         Comment newComment = new Comment(comment, user, content);
         newComment.setTextData(text == null ? "" : text);
         content.setNumOfComments(content.getNumOfComments() + 1);
@@ -109,15 +108,18 @@ public class ImpleCommentService implements CommentService {
     }
 
     @Override
-    public Comment updateComment(Long contentID, Long commentID, String newComment)
-            throws ContentNotFoundException, CommentNotFoundException {
-        // Content content = contentRepository.findById(contentID)
-        // .orElseThrow(() -> new ContentNotFoundException(contentID));
-        // Comment comment = commentRepository.findById(commentID)
-        // .orElseThrow(() -> new CommentNotFoundException(commentID));
-        // comment.setComment(newComment);
-        // return commentRepository.save(comment);
-        return null;
+    public Comment updateComment(Long contentID, Long commentID, MultipartFile file, String text)
+            throws ContentNotFoundException, CommentNotFoundException, IOException {
+        ReactableContent content = contentRepository.findById(contentID)
+                .orElseThrow(() -> new ContentNotFoundException(contentID)); // is this important?
+        Comment comment = commentRepository.findById(commentID)
+                .orElseThrow(() -> new CommentNotFoundException(commentID));
+        if (file != null && !file.isEmpty()) {
+            comment.getMediaData().setData(DataTypeUtils.compress(file.getBytes()));
+            comment.getMediaData().setType(file.getContentType());
+        }
+        comment.setTextData(text == null ? "" : text);
+        return commentRepository.save(comment);
     }
 
     public boolean isCommentAuthor(String username, Long commentID) {

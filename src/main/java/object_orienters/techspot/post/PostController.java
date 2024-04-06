@@ -4,11 +4,7 @@ import jakarta.validation.Valid;
 import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
-import object_orienters.techspot.postTypes.DataType;
-import object_orienters.techspot.postTypes.DataTypeRepository;
-import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.ImpleProfileService;
-import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +17,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.mysql.cj.util.DataTypeUtil;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
-import java.util.zip.DataFormatException;
 import java.util.Objects;
 
 @RestController
@@ -94,10 +87,12 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-            @RequestBody Post newPost) {
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
-            Post editedPost = postService.editTimelinePost(username, postId, newPost);
+            Post editedPost = postService.editTimelinePost(username, postId, file, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
         } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {

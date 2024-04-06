@@ -2,7 +2,6 @@ package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.reaction.Reaction;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,8 +21,8 @@ public interface CommentService {
     public void deleteComment(Long contentId, Long commentId)
             throws PostNotFoundException, ContentNotFoundException, CommentNotFoundException;
 
-    public Comment updateComment(Long contentID, Long commentID, String newComment)
-            throws ContentNotFoundException, CommentNotFoundException;
+    public Comment updateComment(Long contentID, Long commentID, MultipartFile file, String text)
+            throws ContentNotFoundException, CommentNotFoundException, IOException;
 
     // public List<Comment> getCommentsOfPost(Long postId) throws
     // PostNotFoundException;

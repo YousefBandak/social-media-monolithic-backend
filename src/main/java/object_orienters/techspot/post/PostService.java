@@ -19,8 +19,9 @@ public interface PostService {
         // public SharedPost addSharedPost(String username, Post post, Privacy privacy)
         // throws UserNotFoundException;
 
-        public Post editTimelinePost(String username, long postId, Post newPost)
-                        throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException;
+        public Post editTimelinePost(String username, long postId, MultipartFile file,
+        String text, Privacy privacy)
+                        throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException;
 
         public void deleteTimelinePost(String username, long postId)
                         throws UserNotFoundException, PostNotFoundException;

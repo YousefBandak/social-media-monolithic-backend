@@ -1,7 +1,6 @@
 package object_orienters.techspot.post;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 import object_orienters.techspot.DataTypeUtils;
@@ -12,28 +11,21 @@ import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ImplePostService implements PostService {
     private final PostRepository postRepository;
     private final ProfileRepository profileRepository;
-    private final SharedPostRepository sharedPostRepository;
     private final DataTypeRepository dataTypeRepository;
 
-    private final Logger logger = LoggerFactory.getLogger(ImplePostService.class);
-
     public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository,
-            SharedPostRepository sharedPostRepository, DataTypeRepository dataTypeRepository) {
+            DataTypeRepository dataTypeRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
-        this.sharedPostRepository = sharedPostRepository;
         this.dataTypeRepository = dataTypeRepository;
     }
 
@@ -86,29 +78,30 @@ public class ImplePostService implements PostService {
     // }
 
     @Override
-    public Post editTimelinePost(String username, long postId, Post newPost)
-            throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
+    public Post editTimelinePost(String username, long postId, MultipartFile file,
+            String text, Privacy privacy)
+            throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException {
 
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         if ((!post.getContentAuthor().equals(user) ||
-                !user.getPublishedPosts().contains(post))
-        // && user.getSharedPosts().stream().map(SharedPost::getPost).noneMatch(e ->
-        // e.equals(post))
-        ) {
+                !user.getPublishedPosts().contains(post))) {
             throw new PostUnrelatedToUserException(username, postId);
         }
-
+        if (file != null && !file.isEmpty()) {
+            post.getMediaData().setData(DataTypeUtils.compress(file.getBytes()));
+            post.getMediaData().setType(file.getContentType());
+        }
+        post.setPrivacy(privacy == null ? post.getPrivacy() : privacy);
+        post.setTextData(text == null ? "" : text);
         // post.setAuthor(user);
-        post.setMediaData(newPost.getMediaData());
-        post.setPrivacy(newPost.getPrivacy());
+        // post.setMediaData(newPost.getMediaData());
+        // post.setPrivacy(newPost.getPrivacy());
 
         postRepository.save(post);
-
-        // TODO: Specify if post is shared or authored
-        user.getPublishedPosts().add(post);
+        // user.getPublishedPosts().add(post);
         profileRepository.save(user);
         return post;
     }
@@ -118,7 +111,8 @@ public class ImplePostService implements PostService {
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
-
+        user.getPublishedPosts().remove(post);
+        profileRepository.save(user);
         // TODO: Maybe we should mark the post for deletion instead of deleting it
         // immediately
         // TODO: Do we need to update any references to that post before deleting it?

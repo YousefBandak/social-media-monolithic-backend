@@ -2,6 +2,7 @@ package object_orienters.techspot.post;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.Content;
@@ -43,17 +44,18 @@ public class ImplePostService implements PostService {
 
     @Override
     public Post addTimelinePosts(String username, MultipartFile file,
-            String text, Privacy privacy) throws UserNotFoundException, IOException {
+            String text, Privacy privacy, List<String> tags) throws UserNotFoundException, IOException {
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         DataType dataType = new DataType();
         if (file != null && !file.isEmpty()) {
-            dataType.setData(DataTypeUtils.compress(file.getBytes()));
+            dataType.setData(file.getBytes());
             dataType.setType(file.getContentType());
         }
         dataType.setType(dataType.getType() != null ? dataType.getType() : "text/plain");
         dataTypeRepository.save(dataType);
         Post post = new Post();
+        post.setTags(tags);
         post.setTextData(text == null ? "" : text);
         post.setPrivacy(privacy);
         post.setMediaData(dataType);

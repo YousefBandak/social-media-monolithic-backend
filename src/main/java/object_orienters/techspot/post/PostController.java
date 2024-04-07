@@ -53,7 +53,7 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<?> getPosts(@PathVariable String username) {
+    public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
             Collection<? extends Content> posts = postService.getPosts(username);
@@ -65,7 +65,6 @@ public class PostController {
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
-
 
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
@@ -118,7 +117,7 @@ public class PostController {
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
-            postService.deleteTimelinePost(username, postId);
+            postService.deletePost(username, postId);
             logger.info(">>>>Post Deleted. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException | PostNotFoundException exception) {
@@ -159,83 +158,86 @@ public class PostController {
 
     }
 
-    @GetMapping("/posts/{postId}/media")
-    public ResponseEntity<?> getPostMedia(@PathVariable long postId) {
-        try {
-            Post post = postService.getPost(postId);
-            if (post.getMediaData().getType().equalsIgnoreCase("image/jpeg")) {
-                byte[] Bytes = DataTypeUtils.safelyDecompress(post.getMediaData().getType().getBytes());
-                logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<"); // its not getting decompressed
-                return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
-                        .body(Bytes);
-            }
-        } catch (PostNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
-        } catch (ContentIsPrivateException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }
-        return null;
-    }
+    // @GetMapping("/posts/{postId}/media")
+    // public ResponseEntity<?> getPostMedia(@PathVariable long postId) {
+    //     try {
+    //         Post post = postService.getPost(postId);
+    //         if (post.getMediaData().getType().equalsIgnoreCase("image/jpeg")) {
+    //             byte[] Bytes = DataTypeUtils.safelyDecompress(post.getMediaData().getType().getBytes());
+    //             logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<"); // its not getting decompressed
+    //             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
+    //                     .body(Bytes);
+    //         }
+    //     } catch (PostNotFoundException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+    //     } catch (ContentIsPrivateException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.FORBIDDEN)
+    //                 .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+    //     }
+    //     return null;
+    // }
 
-    @PostMapping("/posts")
-    @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> addPost(@PathVariable String username,
-                                     @RequestParam(value = "file", required = false) MultipartFile file,
-                                     @RequestParam(value = "text", required = false) String text,
-                                     @RequestParam(value = "privacy", required = true) Privacy privacy) throws IOException {
-        try {
-            logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addPosts(username, file, text, privacy);
-            logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(assembler.toModel(profilePost));
-        } catch (UserNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        }
-    }
+    // @PostMapping("/posts")
+    // @PreAuthorize("#username == authentication.principal.username")
+    // public ResponseEntity<?> addPost(@PathVariable String username,
+    //         @RequestParam(value = "file", required = false) MultipartFile file,
+    //         @RequestParam(value = "text", required = false) String text,
+    //         @RequestParam(value = "privacy", required = true) Privacy privacy,
+    //         @RequestParam(value = "tags", required = true) String tags) throws IOException {
+    //     try {
+    //         logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
+    //         List<String> tagsList = Arrays.asList(tags);
+    //         Post profilePost = postService.addTimelinePosts(username, file, text, privacy, tagsList);
+    //         logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.CREATED)
+    //                 .body(assembler.toModel(profilePost));
+    //     } catch (UserNotFoundException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+    //     }
+    // }
 
-    @PutMapping("/posts/{postId}")
-    //@PreAuthorize("postRepository.findById(#postId).get().getMainAuthor().getUsername() == authentication.principal.username")
-    @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> editPost(@PathVariable String username, @PathVariable long postId,
-                                      @RequestBody Post newPost) {
-        try {
-            logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
-            Post editedPost = postService.editPost(username, postId, newPost);
-            logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(assembler.toModel(editedPost));
-        } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
-        }
+    // @PutMapping("/posts/{postId}")
+    // // @PreAuthorize("postRepository.findById(#postId).get().getMainAuthor().getUsername()
+    // // == authentication.principal.username")
+    // @PreAuthorize("#username == authentication.principal.username")
+    // public ResponseEntity<?> editPost(@PathVariable String username, @PathVariable long postId,
+    //         @RequestParam(value = "file", required = false) MultipartFile file,
+    //         @RequestParam(value = "text", required = false) String text,
+    //         @RequestParam(value = "privacy", required = true) Privacy privacy) throws IOException {
+    //     try {
+    //         logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
+    //         // List<String> tagsList = Arrays.asList(tags);
+    //         Post editedPost = postService.editTimelinePost(username, postId, file, text, privacy);
+    //         logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.ok(assembler.toModel(editedPost));
+    //     } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+    //     }
 
-    }
+    // }
 
-    @DeleteMapping("/posts/{postId}")
-    @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> deletePost(@PathVariable String username, @PathVariable long postId) {
-        try {
-            logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
-            postService.deletePost(username, postId);
-            logger.info(">>>>Post Deleted. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.noContent().build();
-        } catch (UserNotFoundException | PostNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
-        }
+    // @DeleteMapping("/posts/{postId}")
+    // @PreAuthorize("#username == authentication.principal.username")
+    // public ResponseEntity<?> deletePost(@PathVariable String username, @PathVariable long postId) {
+    //     try {
+    //         logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
+    //         postService.deletePost(username, postId);
+    //         logger.info(">>>>Post Deleted. @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.noContent().build();
+    //     } catch (UserNotFoundException | PostNotFoundException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+    //     }
 
-    }
-
-
-
+    // }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

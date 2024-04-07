@@ -118,9 +118,9 @@ public class ImplePostService implements PostService {
         post.setTextData(text == null ? "" : text);
         // post.setAuthor(user);
 
-        post.setMediaData(newPost.getMediaData());
-        post.setPrivacy(newPost.getPrivacy());
-        post.setTextData(newPost.getTextData());
+        // post.setMediaData(newPost.getMediaData());
+        // post.setPrivacy(newPost.getPrivacy());
+        // post.setTextData(newPost.getTextData());
         postRepository.save(post);
         // user.getPublishedPosts().add(post);
         profileRepository.save(user);
@@ -129,7 +129,7 @@ public class ImplePostService implements PostService {
 
     @Override
     public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
-         profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         user.getPublishedPosts().remove(post);
         profileRepository.save(user);

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ChatNotification {
-    private String id;
+    private int id;
     private String senderId;
     private String recipientId;
     private String content;

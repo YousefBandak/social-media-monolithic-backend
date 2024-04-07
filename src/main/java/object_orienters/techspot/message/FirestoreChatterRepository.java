@@ -26,9 +26,6 @@ public class FirestoreChatterRepository {
         this.firestore = firestore;
     }
 
-//    public FirestoreChatterRepository() {
-//        this.firestore = FirestoreClient.getFirestore();
-//    }
     public String saveChatter(Chatter chatter) {
         ApiFuture<WriteResult> collectionApiFuture = firestore.collection("chatters").document(chatter.getUsername()).set(chatter);
         return "Chatter saved";

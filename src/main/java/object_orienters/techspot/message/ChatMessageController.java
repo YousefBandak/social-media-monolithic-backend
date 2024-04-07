@@ -16,24 +16,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatMessageController {
 
-   // private final ChatMessageService chatMessageService;
+    private final ChatMessageService chatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/messages/{senderId}/{recipientId}")
     public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable String senderId, @PathVariable String recipientId) {
-        //return ResponseEntity.ok(chatMessageService.findChatMessages(senderId, recipientId));
-        return null;
+        chatMessageService.saveChatMessage(ChatMessage.builder()
+                .id(ChatMessage.incrementAndGet())
+                .senderId(senderId)
+                .recipientId(recipientId)
+                .content("Hello")
+                .build());
+        return ResponseEntity.ok(chatMessageService.findChatMessages(senderId, recipientId));
+        //return null;
     }
 
     @MessageMapping("/chat")
     public void processMessage(@Payload ChatMessage chatMessage) {
-//        ChatMessage saveChatMessage = chatMessageService.saveChatMessage(chatMessage);
-//        messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId(), "/queue/messages", ChatNotification.builder()
-//                .id(saveChatMessage.getId())
-//                .recipientId(saveChatMessage.getRecipientId())
-//                .senderId(saveChatMessage.getSenderId())
-//                .content(saveChatMessage.getContent())
-//                .build()
-//        );
+        ChatMessage saveChatMessage = chatMessageService.saveChatMessage(chatMessage);
+        messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId(), "/queue/messages",
+                ChatNotification.builder()
+                .id(saveChatMessage.getId())
+                .recipientId(saveChatMessage.getRecipientId())
+                .senderId(saveChatMessage.getSenderId())
+                .content(saveChatMessage.getContent())
+                .build()
+        );
     }
 }

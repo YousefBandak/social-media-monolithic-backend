@@ -23,7 +23,8 @@ public class ChatMessageRepository {
     }
 
     public ChatMessage saveChatMessage(ChatMessage chatMessage) {
-        firestore.collection("chatMessages").document(chatMessage.getChatRoomId()).set(chatMessage);
+        firestore.collection("chatMessages").document(chatMessage.getId()+"").set(chatMessage);
+        System.out.println("Chat message saved");
         return chatMessage;
     }
 

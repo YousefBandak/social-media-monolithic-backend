@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -36,7 +37,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         return new AuthTokenFilter();
     }
 
-
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -46,7 +46,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
         return authProvider;
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -91,7 +90,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         // UsernamePasswordAuthenticationFilter.class) // Add JWT token filter
         // .build();
 
-
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // http
@@ -119,14 +117,20 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         // return http.build();
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-//code with both
+        // code with both
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(c -> c.disable())
+                // .csrf(c -> c
+                //         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/usernameExists/**").permitAll()
+                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
+                                "auth/usernameExists/**")
+                        .permitAll()
                         .anyRequest().authenticated())
-                .oauth2Login(withDefaults())
+                .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
+                        .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID").invalidateHttpSession(true))
                 .formLogin(form -> {
                     form.permitAll();
                     form.failureHandler((request, response, exception) -> {
@@ -138,13 +142,12 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                     form.successForwardUrl("/auth/home");
                 })
                 .authenticationProvider(authenticationProvider())
+                .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-
         return http.build();
     }
-
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class);
 }

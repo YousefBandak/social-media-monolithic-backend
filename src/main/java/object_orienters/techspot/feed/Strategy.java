@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public abstract class Strategy {
 
-    List<Content> contentList;
+    private List<Content> contentList;
 
     Strategy() {
         contentList = new ArrayList<>();

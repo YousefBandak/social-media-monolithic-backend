@@ -17,10 +17,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -64,6 +66,61 @@ public class PostController {
         }
     }
 
+
+    @PostMapping("/posts")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy", required = false) Privacy privacy,
+            @RequestBody() List<String> tags) throws IOException {
+        try {
+            logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
+            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,tags);
+            logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(assembler.toModel(profilePost));
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
+    @PutMapping("/posts/{postId}")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text,
+            @RequestParam(value = "privacy", required = false) Privacy privacy) throws IOException {
+        try {
+            logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
+            Post editedPost = postService.editTimelinePost(username, postId, file, text, privacy);
+            logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(editedPost));
+        } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
+
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
+        try {
+            logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
+            postService.deleteTimelinePost(username, postId);
+            logger.info(">>>>Post Deleted. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException | PostNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
+
+    }
 
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {

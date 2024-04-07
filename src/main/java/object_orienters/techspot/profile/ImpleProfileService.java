@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -71,16 +72,19 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
+    @Transactional
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException {
         Profile updatedUser = repo.findByUsername(username).map(user -> {
             // user.getOwner.(newUser.getUsername()); //NOTE: user cannot change username
-            user.setProfilePic(newUser.getProfilePic());
+            // user.setProfilePic(newUser.getProfilePic());
             user.setDob(newUser.getDob());
             user.setEmail(newUser.getEmail());
+            user.getOwner().setEmail(newUser.getEmail());
             user.setFollowers(newUser.getFollowers());
             user.setFollowing(newUser.getFollowing());
             user.setName(newUser.getName());
-
+            // user.setUsername(newUser.getUsername());
+            // user.getOwner().setUsername(newUser.getUsername());
             user.setProfession(newUser.getProfession());
             user.setGender(newUser.getGender());
             user.setPublishedPosts(newUser.getPublishedPosts());
@@ -159,6 +163,11 @@ public class ImpleProfileService implements ProfileService {
         user.setProfilePic(profilePic);
         dataTypeRepository.save(profilePic);
         return repo.save(user);
+    }
+
+    @Override
+    public void deleteProfile(String username) throws UserNotFoundException {
+        repo.delete(repo.findById(username).get());
     }
 
 }

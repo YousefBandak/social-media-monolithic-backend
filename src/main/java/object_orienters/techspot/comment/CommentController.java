@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -75,10 +74,11 @@ public class CommentController {
     //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
     @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-            @RequestBody Map<String, String> newComment) {
+    @RequestParam(value = "file",required = false) MultipartFile file,
+    @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
-            Comment updatedComment = commentService.updateComment(contentID, commentID, newComment.get("comment"));
+            Comment updatedComment = commentService.updateComment(contentID, commentID,file,text);
             EntityModel<Comment> commentModel = assembler.toModel(updatedComment);
             logger.info(">>>>Comment Updated. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);

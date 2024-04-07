@@ -23,7 +23,7 @@ import java.util.List;
 @Data
 public abstract class ReactableContent extends Content {
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     // @JsonBackReference
     private Profile contentAuthor;
 

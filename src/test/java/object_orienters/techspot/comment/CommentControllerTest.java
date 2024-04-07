@@ -34,9 +34,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 //@WebMvcTest(value = CommentController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 //@EnableMethodSecurity
 @WebMvcTest(CommentController.class)
+
 
 public class CommentControllerTest {
     @Autowired
@@ -46,6 +48,7 @@ public class CommentControllerTest {
     @MockBean
     @Autowired
     private ImpleCommentService commentService;
+
     private User user;
     private User user2;
     private Profile profile;
@@ -88,7 +91,6 @@ public class CommentControllerTest {
 //            return http.build();
 //        }
 //    }
-
     public Post createPost(Profile author) {
 
         return new Post("This is a test post", Privacy.PUBLIC, author);
@@ -106,21 +108,28 @@ public class CommentControllerTest {
     }
 
 
+    @BeforeEach
+    void setup(WebApplicationContext wac) {
+        generator();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
+    }
+
+
     @Test
     public void testGetCommentsOnPost() throws Exception {
         System.out.println(post.getContentID());
         System.out.println(profile.getPublishedPosts());
         System.out.println(post.getComments());
         System.out.println(profile.getUsername());
-//        System.out.println(user.getUsername());
-//        System.out.println(profile.getUsername());
-//        System.out.println(profile.getPublishedPosts());
-//        System.out.println(post.getComments());
+        // System.out.println(user.getUsername());
+        // System.out.println(profile.getUsername());
+        // System.out.println(profile.getPublishedPosts());
+        // System.out.println(post.getComments());
         EntityModel<Comment> entityModel = EntityModel.of(comment); // Wrap in HATEOAS entity model.
         given(commentService.getComments(post.getContentID())).willReturn(List.of(comment));
         given(assembler.toModel(comment)).willReturn(entityModel);
         mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments", profile.getUsername(), 1)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()); // Here we expect the HTTP status to be 200 OK.
 
     }
@@ -129,14 +138,15 @@ public class CommentControllerTest {
     public void testGetCommentOnPost() throws Exception {
 
         EntityModel<Comment> entityModel = EntityModel.of(comment,
-                linkTo(methodOn(CommentController.class).getComment(comment.getContentID(), post.getContentID(), user.getUsername())).withSelfRel());
+                linkTo(methodOn(CommentController.class).getComment(comment.getContentID(), post.getContentID(),
+                        user.getUsername())).withSelfRel());
 
         given(commentService.getComment(comment.getContentID())).willReturn(comment);
         given(assembler.toModel(comment)).willReturn(entityModel);
 
         // Act & Assert
         mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments/{commentID}", "husam_ramoni", 1, 2)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 // Verify some fields in the response.
                 .andExpect(jsonPath("$.contentID").value(2));
@@ -163,14 +173,15 @@ public class CommentControllerTest {
     public void testGetCommentOnComment() throws Exception {
 
         EntityModel<Comment> entityModel = EntityModel.of(repliedComment,
-                linkTo(methodOn(CommentController.class).getComment(repliedComment.getContentID(), comment.getContentID(), user.getUsername())).withSelfRel());
+                linkTo(methodOn(CommentController.class).getComment(repliedComment.getContentID(),
+                        comment.getContentID(), user.getUsername())).withSelfRel());
 
         given(commentService.getComment(repliedComment.getContentID())).willReturn(repliedComment);
         given(assembler.toModel(repliedComment)).willReturn(entityModel);
 
         // Act & Assert
         mockMvc.perform(get("/profiles/{username}/content/{contentID}/comments/{commentID}", "husam_ramoni", 2, 3)
-                        .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 // Verify some fields in the response.
                 .andExpect(jsonPath("$.contentID").value(3));
@@ -185,12 +196,12 @@ public class CommentControllerTest {
 
         given(commentService.addComment(1L, "husam_ramoni", null, "Test comment")).willReturn(comment);
 
-
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1L)
-                        .param("text", "Test comment")
-                        .param("contentID", "1")
-                        .param("username", "husam_ramoni")
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+        mockMvc.perform(MockMvcRequestBuilders
+                .multipart("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1L)
+                .param("text", "Test comment")
+                .param("contentID", "1")
+                .param("username", "husam_ramoni")
+                .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
         System.out.println("comment.getTextData(): " + comment.getTextData());
         System.out.println("comment.getCommentedOn(): " + comment.getCommentedOn());
@@ -199,12 +210,14 @@ public class CommentControllerTest {
         System.out.println("post.getTextData(): " + post.getTextData());
     }
 
+
     //        doNothing().when(commentService).deleteComment(post.getContentID(), comment.getContentID());
 //
 //        // Act & Assert
 //        mockMvc.perform(delete("/profiles/{username}/content/{contentID}/comments/{commentID}", "husam_ramoni", 1, 2))
 //                .andExpect(status().isNoContent());
 //    }
+
     @Test
     @WithMockUser(username = "husam_ramoni")
     public void testDeleteComment() throws Exception {
@@ -222,6 +235,7 @@ public class CommentControllerTest {
         // Verify service interaction
         verify(commentService).deleteComment(post.getContentID(), comment.getContentID());
     }
+
 
 
     @Test
@@ -269,6 +283,7 @@ public class CommentControllerTest {
         given(commentService.addComment(1L, "husam_ramoni", mockFile, "Test comment")).willReturn(comment);
 
         // Perform the mock MVC request
+
         mockMvc.perform(MockMvcRequestBuilders.multipart("/profiles/{username}/content/{contentID}/comments", "husam_ramoni", 1L) // Make sure the path matches your controller's endpoint
                         .file(mockFile) // Adds the file to the request
                         .param("text", "Test comment")
@@ -276,7 +291,7 @@ public class CommentControllerTest {
                         .param("username", "husam_ramoni")
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated());
-    }
 
+    }
 
 }

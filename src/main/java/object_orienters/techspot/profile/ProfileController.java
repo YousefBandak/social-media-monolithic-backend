@@ -245,4 +245,16 @@ public class ProfileController {
         }
     }
 
+    @DeleteMapping("/{username}/delete")
+    public ResponseEntity<?> deleteProfile(@PathVariable String username) throws UserNotFoundException {
+        try {
+            profileService.deleteProfile(username);
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
 }

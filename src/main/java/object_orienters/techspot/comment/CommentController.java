@@ -72,7 +72,8 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
             @RequestBody Map<String, String> newComment) {
         try {
@@ -106,7 +107,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
+
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");

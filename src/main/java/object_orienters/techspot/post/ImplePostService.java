@@ -1,24 +1,22 @@
 package object_orienters.techspot.post;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-
 import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Collection;
 
 @Service
 public class ImplePostService implements PostService {
@@ -44,14 +42,14 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public Collection<? extends Content> getTimelinePosts(String username) throws UserNotFoundException {
+    public Collection<? extends Content> getPosts(String username) throws UserNotFoundException {
         return profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username))
                 .getTimelinePostsByPrivacy(getAllowedPrincipalPrivacy(username));
     }
 
     @Override
-    public Post addTimelinePosts(String username, MultipartFile file,
-            String text, Privacy privacy) throws UserNotFoundException, IOException {
+    public Post addPosts(String username, MultipartFile file,
+                         String text, Privacy privacy) throws UserNotFoundException, IOException {
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         DataType dataType = new DataType();
@@ -86,7 +84,7 @@ public class ImplePostService implements PostService {
     // }
 
     @Override
-    public Post editTimelinePost(String username, long postId, Post newPost)
+    public Post editPost(String username, long postId, Post newPost)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
 
         Profile user = profileRepository.findByUsername(username)
@@ -104,6 +102,7 @@ public class ImplePostService implements PostService {
         // post.setAuthor(user);
         post.setMediaData(newPost.getMediaData());
         post.setPrivacy(newPost.getPrivacy());
+        post.setTextData(newPost.getTextData());
 
         postRepository.save(post);
 
@@ -114,9 +113,8 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public void deleteTimelinePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
-        Profile user = profileRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+    public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
+         profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
         // TODO: Maybe we should mark the post for deletion instead of deleting it

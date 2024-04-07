@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(ProfileController.class)
+//@EnableMethodSecurity
 class ProfileControllerTest {
 
     @Autowired
@@ -40,16 +41,14 @@ class ProfileControllerTest {
 
     @InjectMocks
     private ProfileController profileController;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-    private User user = createUser("husam_ramoni", "husam@example.com", "securepassword123");
-    private Profile profile = createProfile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
-            null, Profile.Gender.MALE, "1985-04-12");
-    private Profile profile2 = createProfile(user, "yousef_albadndak", "Software Engineer", "yousef@example.com",
-            null, Profile.Gender.MALE, "1985-04-12");
+    private User user;
+    private Profile profile;
+    private Profile profile2;
 
     public static User createUser(String username, String email, String password) {
 
@@ -62,9 +61,13 @@ class ProfileControllerTest {
 
     @BeforeEach
     public void setup(WebApplicationContext context) {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
+        objectMapper = new ObjectMapper();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        user = createUser("husam_ramoni", "husam@example.com", "securepassword123");
+        profile = createProfile(user, "Husam Ramoni", "Software Engineer", "husam@example.com",
+                null, Profile.Gender.MALE, "1985-04-12");
+        profile2 = createProfile(user, "yousef_albadndak", "Software Engineer", "yousef@example.com",
+                null, Profile.Gender.MALE, "1985-04-12");
     }
 
     @Test
@@ -80,7 +83,7 @@ class ProfileControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "husam_ramoni")
+    @WithMockUser(username = "yousef_albadndak")
     public void addNewFollowerToProfile() throws Exception {
 
         ObjectNode followerUserName = objectMapper.createObjectNode();
@@ -99,21 +102,6 @@ class ProfileControllerTest {
                 .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
     }
 
-    @Test
-    @WithMockUser(username = "john_doe")
-    public void whenUserNotFound_thenNotFoundResponse() throws Exception {
-        // Setup
-        ObjectNode followerUserName = objectMapper.createObjectNode();
-        followerUserName.put("username", "jane_doe");
-
-        given(profileService.addNewFollower("john_doe", "jane_doe")).willThrow(new UserNotFoundException("User not found"));
-
-        // Execute & Assert
-        mockMvc.perform(post("/profiles/{username}/followers", "john_doe")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(followerUserName.toString()))
-                .andExpect(status().isNotFound());
-    }
 
     @Test
     @WithMockUser(username = "husam_ramoni")

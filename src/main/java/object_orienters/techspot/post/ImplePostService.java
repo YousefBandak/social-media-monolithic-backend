@@ -10,6 +10,9 @@ import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
+import object_orienters.techspot.security.model.User;
+import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -21,20 +24,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.Collection;
+
 
 @Service
 public class ImplePostService implements PostService {
     private final PostRepository postRepository;
     private final ProfileRepository profileRepository;
     private final DataTypeRepository dataTypeRepository;
+    private final UserRepository userRepository;
 
     public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository,
-            DataTypeRepository dataTypeRepository) {
+            DataTypeRepository dataTypeRepository, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
+        this.userRepository = userRepository;
     }
 
     public Privacy getAllowedPrincipalPrivacy(String username) {
@@ -50,14 +58,16 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-
+    @Transactional
     public Post addTimelinePosts(String username, MultipartFile file,
             String text, Privacy privacy, List<String> tags) throws UserNotFoundException, IOException {
-        Profile user = profileRepository.findByUsername(username)
+                User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new UserNotFoundException(username));
+        Profile prof = profileRepository.findByOwner(user)
                 .orElseThrow(() -> new UserNotFoundException(username));
         DataType dataType = new DataType();
         if (file != null && !file.isEmpty()) {
-            dataType.setData(file.getBytes());
+            dataType.setData(DataTypeUtils.compress(file.getBytes()));
             dataType.setType(file.getContentType());
         }
         dataType.setType(dataType.getType() != null ? dataType.getType() : "text/plain");
@@ -67,10 +77,10 @@ public class ImplePostService implements PostService {
         post.setTextData(text == null ? "" : text);
         post.setPrivacy(privacy);
         post.setMediaData(dataType);
-        post.setContentAuthor(user);
-        user.getPublishedPosts().add(post);
+        post.setContentAuthor(prof);
+        prof.getPublishedPosts().add(post);
         postRepository.save(post);
-        profileRepository.save(user);
+        profileRepository.save(prof);
         return post;
     }
 

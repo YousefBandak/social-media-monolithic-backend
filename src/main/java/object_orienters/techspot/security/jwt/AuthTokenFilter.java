@@ -37,11 +37,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       String header = request.getHeader("Authorization");
 
       if (header != null && header.startsWith("Bearer ")) {
-        System.out.println("hi im here");
         String token = header.substring(7);
 
         if (tokenBlacklistService.isTokenBlacklisted(token)) {
-          System.out.println("hi im here 2");
           response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
           return;
         }

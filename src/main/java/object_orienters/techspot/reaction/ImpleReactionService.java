@@ -9,6 +9,8 @@ import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class ImpleReactionService implements ReactionService {
     private final ReactableContentRepository contentRepository;
     private final ProfileRepository profileRepository;
     private final PostRepository postRepository;
+    Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
     public ImpleReactionService(ReactionRepository reactionRepository, ReactableContentRepository contentRepository,
             ProfileRepository profileRepository, PostRepository postRepository) {
@@ -99,6 +102,7 @@ public class ImpleReactionService implements ReactionService {
         Optional<Reaction> reactionOptional = reactionRepository.findById(reactionID);
         if (reactionOptional.isPresent()) {
            Reaction reaction = reactionOptional.get();
+            logger.info(">>>>Checking if the user is the reactor... @ " + getReaction(reactionID).getReactor().getUsername() + "<<<<");
             return reaction.getReactor().getUsername().equals(username);
         }
         return false; // Return false if the comment is not found

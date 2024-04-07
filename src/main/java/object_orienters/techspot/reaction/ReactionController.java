@@ -105,8 +105,8 @@ public class ReactionController {
     }
 
     @DeleteMapping("/reactions/{reactionId}")
-    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
-    public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId, @PathVariable String contentID) {
+    @PreAuthorize("reactionService.isReactor(authentication.principal.username, #reactionId)")
+    public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId) {
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
             reactionService.deleteReaction(reactionId);
@@ -118,6 +118,7 @@ public class ReactionController {
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
     }
+
 
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";

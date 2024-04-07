@@ -16,6 +16,8 @@ import object_orienters.techspot.profile.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class ImpleCommentService implements CommentService {
     private final CommentRepository commentRepository;
@@ -42,7 +44,8 @@ public class ImpleCommentService implements CommentService {
     // }
     // }
 
-    @Override // FIXME: save by order of the content
+    @Override // FIXME: save by order of the content3
+    @Transactional
     public Comment addComment(Long contentId, String username, MultipartFile file, String text)
             throws ContentNotFoundException, IOException {
 
@@ -104,6 +107,7 @@ public class ImpleCommentService implements CommentService {
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
         contentRepository.save(content);
+        
 
     }
 

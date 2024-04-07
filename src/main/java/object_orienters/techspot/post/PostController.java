@@ -17,10 +17,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -72,10 +72,13 @@ public class PostController {
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "privacy", required = false) Privacy privacy,
-            @RequestBody() List<String> tags) throws IOException {
+            @RequestParam(value = "tags", required = false) String tags)
+            throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,tags);
+            List<String> tagsList = Arrays.asList(tags);
+            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,
+                    tagsList);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -83,6 +86,10 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        } catch (IOException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
         }
     }
 

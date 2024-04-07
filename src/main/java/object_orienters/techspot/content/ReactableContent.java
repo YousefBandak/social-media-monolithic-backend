@@ -33,7 +33,7 @@ public abstract class ReactableContent extends Content {
 
     // @NotBlank(message = "Post content cannot be empty")
     // @NotNull(message = "Content must be specified")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
     private DataType mediaData;
     private String textData;

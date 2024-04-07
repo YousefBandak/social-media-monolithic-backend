@@ -53,10 +53,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
+    public ResponseEntity<?> getPosts(@PathVariable String username) {
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
-            Collection<? extends Content> posts = postService.getTimelinePosts(username);
+            Collection<? extends Content> posts = postService.getPosts(username);
             logger.info(">>>>Timeline Posts Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toCollectionModel(posts));
         } catch (UserNotFoundException exception) {
@@ -65,6 +65,7 @@ public class PostController {
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
+
 
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
@@ -179,6 +180,64 @@ public class PostController {
         }
         return null;
     }
+
+    @PostMapping("/posts")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> addPost(@PathVariable String username,
+                                     @RequestParam(value = "file", required = false) MultipartFile file,
+                                     @RequestParam(value = "text", required = false) String text,
+                                     @RequestParam(value = "privacy", required = true) Privacy privacy) throws IOException {
+        try {
+            logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
+            Post profilePost = postService.addPosts(username, file, text, privacy);
+            logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(assembler.toModel(profilePost));
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        }
+    }
+
+    @PutMapping("/posts/{postId}")
+    //@PreAuthorize("postRepository.findById(#postId).get().getMainAuthor().getUsername() == authentication.principal.username")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> editPost(@PathVariable String username, @PathVariable long postId,
+                                      @RequestBody Post newPost) {
+        try {
+            logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
+            Post editedPost = postService.editPost(username, postId, newPost);
+            logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(editedPost));
+        } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
+
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> deletePost(@PathVariable String username, @PathVariable long postId) {
+        try {
+            logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
+            postService.deletePost(username, postId);
+            logger.info(">>>>Post Deleted. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.noContent().build();
+        } catch (UserNotFoundException | PostNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        }
+
+    }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap.get(\"sharer\") == authentication.principal.username")

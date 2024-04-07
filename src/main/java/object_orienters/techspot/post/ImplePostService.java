@@ -1,5 +1,6 @@
 package object_orienters.techspot.post;
 
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -14,12 +15,20 @@ import object_orienters.techspot.security.model.User;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.util.Collection;
+
 
 @Service
 public class ImplePostService implements PostService {
@@ -43,7 +52,7 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public Collection<? extends Content> getTimelinePosts(String username) throws UserNotFoundException {
+    public Collection<? extends Content> getPosts(String username) throws UserNotFoundException {
         return profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username))
                 .getTimelinePostsByPrivacy(getAllowedPrincipalPrivacy(username));
     }
@@ -108,9 +117,10 @@ public class ImplePostService implements PostService {
         post.setPrivacy(privacy == null ? post.getPrivacy() : privacy);
         post.setTextData(text == null ? "" : text);
         // post.setAuthor(user);
-        // post.setMediaData(newPost.getMediaData());
-        // post.setPrivacy(newPost.getPrivacy());
 
+        post.setMediaData(newPost.getMediaData());
+        post.setPrivacy(newPost.getPrivacy());
+        post.setTextData(newPost.getTextData());
         postRepository.save(post);
         // user.getPublishedPosts().add(post);
         profileRepository.save(user);
@@ -118,9 +128,8 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public void deleteTimelinePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
-        Profile user = profileRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+    public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
+         profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         user.getPublishedPosts().remove(post);
         profileRepository.save(user);

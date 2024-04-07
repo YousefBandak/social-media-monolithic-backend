@@ -1,22 +1,23 @@
 package object_orienters.techspot.comment;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
 import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.content.ContentNotFoundException;
+import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
-import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
 
 @Service
 public class ImpleCommentService implements CommentService {
@@ -102,16 +103,17 @@ public class ImpleCommentService implements CommentService {
 
     @Override
     public void deleteComment(Long contentId, Long commentId) throws ContentNotFoundException {
-        ReactableContent content = contentRepository.findById(contentId)
-                .orElseThrow(() -> new ContentNotFoundException(contentId));
+        ReactableContent content = contentRepository.findById(contentId).orElseThrow(() -> new ContentNotFoundException(contentId));
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
+        commentRepository.delete(commentRepository.findById(commentId).get());
         contentRepository.save(content);
         
 
     }
 
     @Override
+
     public Comment updateComment(Long contentID, Long commentID, MultipartFile file, String text)
             throws ContentNotFoundException, CommentNotFoundException, IOException {
         ReactableContent content = contentRepository.findById(contentID)

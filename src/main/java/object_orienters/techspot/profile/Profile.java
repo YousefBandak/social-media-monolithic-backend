@@ -14,13 +14,14 @@ import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.model.UserBase;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.SharedPost;
+import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.security.model.User;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 @Entity
 @Data
 @NoArgsConstructor
@@ -32,8 +33,9 @@ public class Profile extends UserBase {
     @JsonIgnore
     @Valid
     private User owner;
-
-    private String profilePic;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    private DataType profilePic;
     @NotNull(message = "Name shouldn't be null.")
     @NotBlank(message = "Name cannot be left blank.")
     @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
@@ -41,7 +43,7 @@ public class Profile extends UserBase {
     private String profession;
 
     private Gender gender;
-    //@NotNull(message = "Date of Birth shouldn't be null.")
+    // @NotNull(message = "Date of Birth shouldn't be null.")
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
 
@@ -65,8 +67,8 @@ public class Profile extends UserBase {
     // @OneToMany(mappedBy = "profile", fetch = FetchType.EAGER)
     // private Set<Chat> Inbox;
 
-    public Profile(User user, String name, String profession, String email, String profilePic, Gender gender,
-                   String dob) {
+    public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
+            String dob) {
         this.owner = user;
         this.name = name;
         this.profession = profession;
@@ -77,10 +79,12 @@ public class Profile extends UserBase {
         this.following = new ArrayList<>();
         this.publishedPosts = new ArrayList<>();
         this.dob = LocalDate.parse(dob);
+        this.setUsername(user.getUsername());
     }
 
     public String toString() {
-        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + getEmail() + "User: " + owner;
+        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + getEmail()
+                + "User: " + owner;
     }
 
     public List<Profile> getFollowing() {
@@ -105,9 +109,11 @@ public class Profile extends UserBase {
             case PRIVATE -> this.getPrivateAndPublicTimelinePosts();
         };
     }
+
     @JsonIgnore
     private List<? extends Content> getPublicTimelinePosts() {
-        return this.getPrivateAndPublicTimelinePosts().stream().filter(content -> content.getPrivacy().equals(Privacy.PUBLIC)).toList();
+        return this.getPrivateAndPublicTimelinePosts().stream()
+                .filter(content -> content.getPrivacy().equals(Privacy.PUBLIC)).toList();
     }
 
     public List<Post> getPublishedPosts() {

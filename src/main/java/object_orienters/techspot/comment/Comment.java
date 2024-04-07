@@ -1,42 +1,53 @@
 package object_orienters.techspot.comment;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
-
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 
 @Entity
 @Table(name = "comment")
 @NoArgsConstructor
 @Valid
-//@Data
+// @Data
 public class Comment extends ReactableContent {
 
     @ManyToOne
     @JoinColumn(name = "commented_on")
     @JsonIgnore
     private ReactableContent commentedOn;
-    @NotBlank(message = "Comment content cannot be empty")
-    private String comment;
+    //@NotBlank(message = "Comment content cannot be empty")
+    // private DataType comment;
     private int numOfReactions;
-    //Note: numOfReplies can be validated to set a limit
+    // Note: numOfReplies can be validated to set a limit
     private int numOfReplies;
 
-
-    public Comment(String comment, Profile commentor, ReactableContent commentedOn) {
-        this.comment = comment;
+    public Comment(DataType comment, Profile commentor, ReactableContent commentedOn) {
+        this.setMediaData(comment);
         this.setContentAuthor(commentor);
         this.commentedOn = commentedOn;
+        commentedOn.getComments().add(this);
+
+    }
+
+    public Comment(DataType comment, Profile commentor, ReactableContent commentedOn, String text) {
+        this.setMediaData(comment);
+        this.setContentAuthor(commentor);
+        this.setTextData(text);
+        this.commentedOn = commentedOn;
+    }
+    public Comment(Profile commentor, ReactableContent commentedOn, String text) {
+        this.setContentAuthor(commentor);
+        this.setTextData(text);
+        this.commentedOn = commentedOn;
+
     }
 
 
@@ -44,41 +55,33 @@ public class Comment extends ReactableContent {
         return commentedOn;
     }
 
-
     public void setCommentedOn(ReactableContent commentedOn) {
         this.commentedOn = commentedOn;
     }
 
+    // public DataType getComment() {
+    // return comment;
+    // }
 
-    public String getComment() {
-        return comment;
-    }
-
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
+    // public void setComment(DataType comment) {
+    // this.comment = comment;
+    // }
 
     public int getNumOfReactions() {
         return numOfReactions;
     }
 
-
     public void setNumOfReactions(int numOfReactions) {
         this.numOfReactions = numOfReactions;
     }
-
 
     public int getNumOfReplies() {
         return numOfReplies;
     }
 
-
     public void setNumOfReplies(int numOfReplies) {
         this.numOfReplies = numOfReplies;
     }
-
 
     @Override
     public Privacy getPrivacy() {

@@ -1,12 +1,17 @@
 package object_orienters.techspot.profile;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ProfileService {
     public Profile getUserByUsername(String username) throws UserNotFoundException;
 
     public Profile createNewProfile(Profile newUser);
-    public Profile createNewProfile(String username, String email, String name);
+
+    public Profile createNewProfile(String username, String email, String name, MultipartFile file) throws IOException;
+
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException;
 
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException;
@@ -19,6 +24,13 @@ public interface ProfileService {
 
     public Profile addNewFollower(String username, String newFollower) throws UserNotFoundException;
 
-    public void deleteFollower(String username, Profile deletedUser) throws UserNotFoundException;
+    public void deleteFollower(String username, String deletedUser) throws UserNotFoundException;
+
+    public void deleteFollowing(String username, String deletedUser) throws UserNotFoundException;
+
+    public void deleteProfile(String username) throws UserNotFoundException;
+
+    public Profile addProfilePic(String username, MultipartFile file, String text)
+            throws UserNotFoundException, IOException;
 
 }

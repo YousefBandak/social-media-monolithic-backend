@@ -1,5 +1,6 @@
 package object_orienters.techspot;
 
+import object_orienters.techspot.content.ContentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -35,8 +36,19 @@ public class ServerExceptionsCatcher extends ResponseEntityExceptionHandler {
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("errors", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
+    @ExceptionHandler(ContentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseBody
+    public ResponseEntity<?> handleContentNotFoundException(ContentNotFoundException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("errors", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
 
 
 }

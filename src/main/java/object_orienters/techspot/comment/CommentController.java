@@ -11,11 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -70,12 +71,14 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-            @RequestBody Map<String, String> newComment) {
+    @RequestParam(value = "file",required = false) MultipartFile file,
+    @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
-            Comment updatedComment = commentService.updateComment(contentID, commentID, newComment.get("comment"));
+            Comment updatedComment = commentService.updateComment(contentID, commentID,file,text);
             EntityModel<Comment> commentModel = assembler.toModel(updatedComment);
             logger.info(">>>>Comment Updated. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
@@ -87,13 +90,12 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @RequestBody Map<String, String> jsonMap) {
-        logger.info(jsonMap.toString());
-
+    public ResponseEntity<?> addComment(@PathVariable long contentID, @PathVariable String username,
+            @RequestParam(value = "file",required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
-            Comment createdComment = commentService.addComment(contentID, jsonMap.get("comment"),
-                    jsonMap.get("commentor"));
+            Comment createdComment = commentService.addComment(contentID, username, file, text);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);
@@ -105,7 +107,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
+    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
+
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");

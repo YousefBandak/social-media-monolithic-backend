@@ -1,7 +1,12 @@
 package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ContentNotFoundException;
+import object_orienters.techspot.post.ContentIsPrivateException;
+import object_orienters.techspot.post.ImplePostService;
 import object_orienters.techspot.post.PostController;
+import object_orienters.techspot.post.PostNotFoundException;
+import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.profile.Profile;
 
 import org.slf4j.Logger;
 import org.springframework.hateoas.CollectionModel;
@@ -23,40 +28,54 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
-@RequestMapping("/profiles/{username}/content/{contentID}")
+@RequestMapping("/content/{contentID}")
 public class CommentController {
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
+    private final ImplePostService postService;
+    private final ImpleProfileService profileService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService) {
+    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService,
+            ImplePostService postService, ImpleProfileService profileService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
+        this.postService = postService;
+        this.profileService = profileService;
     }
 
     @GetMapping("/comments")
-    public ResponseEntity<?> getComments(@PathVariable long contentID, @PathVariable String username) {
+    public ResponseEntity<?> getComments(@PathVariable long contentID) {
         try {
             logger.info(">>>>Retrieving Comments... @ " + getTimestamp() + "<<<<");
             List<Comment> commentList = commentService.getComments(contentID);
             CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(
                     commentList.stream().map(assembler::toModel).collect(Collectors.toList()),
-                    linkTo(methodOn(CommentController.class).getComments(contentID, username)).withSelfRel(),
-                    linkTo(methodOn(PostController.class).getPost(contentID, username)).withRel("post"));
+                    linkTo(methodOn(CommentController.class).getComments(contentID)).withSelfRel(),
+                    linkTo(methodOn(PostController.class).getPost(contentID,
+                            postService.getPost(contentID).getContentAuthor().getUsername()))
+                            .withRel("post"));
             logger.info(">>>>Comments Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+                    .body(Problem.create().withTitle("Content Not Found").withDetail(e.getMessage()));
+        } catch (PostNotFoundException e) {
+            logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Post Not Found").withDetail(e.getMessage()));
+        } catch (ContentIsPrivateException e) {
+            logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Problem.create().withTitle("Unauthorized").withDetail(e.getMessage()));
         }
     }
 
     @GetMapping("/comments/{commentID}")
-    public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID,
-            @PathVariable String username) {
+    public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID) {
         try {
             logger.info(">>>>Retrieving Comment... @ " + getTimestamp() + "<<<<");
             Comment comment = commentService.getComment(commentID);
@@ -71,14 +90,15 @@ public class CommentController {
     }
 
     @PutMapping("/comments/{commentID}")
-    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
-    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
+    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
+    // @PreAuthorize("isCommentAuthor(authentication.principal.username,
+    // #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-    @RequestParam(value = "file",required = false) MultipartFile file,
-    @RequestParam(value = "text", required = false) String text) throws IOException {
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
-            Comment updatedComment = commentService.updateComment(contentID, commentID,file,text);
+            Comment updatedComment = commentService.updateComment(contentID, commentID, file, text);
             EntityModel<Comment> commentModel = assembler.toModel(updatedComment);
             logger.info(">>>>Comment Updated. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
@@ -90,12 +110,16 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    public ResponseEntity<?> addComment(@PathVariable long contentID, @PathVariable String username,
-            @RequestParam(value = "file",required = false) MultipartFile file,
+    @PreAuthorize("#commenter == authentication.principal.username")
+    public ResponseEntity<?> addComment(@PathVariable long contentID,
+            @RequestParam(value = "commenter") String commenter,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
-            Comment createdComment = commentService.addComment(contentID, username, file, text);
+
+            Comment createdComment = commentService.addComment(contentID,
+                    commenter, file, text);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);
@@ -107,9 +131,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username, #commentID)")
-    @PreAuthorize("isCommentAuthor(authentication.principal.username, #commentID)")
-
+    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
+    // @PreAuthorize("isCommentAuthor(authentication.principal.username,
+    // #commentID)")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
@@ -121,7 +145,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
-
+        //TODO: FIX THIS ERROR ON POSTMAN
     }
 
     private static String getTimestamp() {

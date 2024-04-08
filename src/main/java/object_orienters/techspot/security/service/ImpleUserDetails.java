@@ -3,7 +3,6 @@ package object_orienters.techspot.security.service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import object_orienters.techspot.security.model.User;
 import org.springframework.security.core.GrantedAuthority;

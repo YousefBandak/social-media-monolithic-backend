@@ -41,17 +41,18 @@ public class Post extends ReactableContent {
         this.setContentAuthor(author);
     }
 
-    public String toString() {
-        return "Post{" +
-                "contentId=" + getContentID() +
-                ", author=" + this.getContentAuthor().getUsername() +
-                ", content='" + this.getMediaData() + '\'' +
-                ", privacy=" + privacy +
-                ", numOfComments=" + this.getNumOfComments() +
-                ", numOfReactions=" + this.getNumOfReactions() +
-                ", numOfShares=" + numOfShares +
-                '}';
-    }
+
+    // public String toString() {
+    //     return "Post{" +
+    //             "contentId=" + getContentID() +
+    //             ", author=" + this.getContentAuthor().getUsername() +
+    //             ", content='" + this.getMediaData() + '\'' +
+    //             ", privacy=" + privacy +
+    //             ", numOfComments=" + this.getNumOfComments() +
+    //             ", numOfReactions=" + this.getNumOfReactions() +
+    //             ", numOfShares=" + numOfShares +
+    //             '}';
+    // }
 
     @Override
     public Profile getMainAuthor() {

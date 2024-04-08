@@ -1,8 +1,5 @@
 package object_orienters.techspot.security.payload.request;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import jakarta.validation.constraints.*;
 
 public class SignupRequest {

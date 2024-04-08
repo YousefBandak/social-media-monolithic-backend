@@ -23,10 +23,7 @@ public class Comment extends ReactableContent {
     @JoinColumn(name = "commented_on")
     @JsonIgnore
     private ReactableContent commentedOn;
-    //@NotBlank(message = "Comment content cannot be empty")
-    // private DataType comment;
     private int numOfReactions;
-    // Note: numOfReplies can be validated to set a limit
     private int numOfReplies;
 
     public Comment(DataType comment, Profile commentor, ReactableContent commentedOn) {
@@ -43,13 +40,13 @@ public class Comment extends ReactableContent {
         this.setTextData(text);
         this.commentedOn = commentedOn;
     }
+
     public Comment(Profile commentor, ReactableContent commentedOn, String text) {
         this.setContentAuthor(commentor);
         this.setTextData(text);
         this.commentedOn = commentedOn;
 
     }
-
 
     public ReactableContent getCommentedOn() {
         return commentedOn;
@@ -58,14 +55,6 @@ public class Comment extends ReactableContent {
     public void setCommentedOn(ReactableContent commentedOn) {
         this.commentedOn = commentedOn;
     }
-
-    // public DataType getComment() {
-    // return comment;
-    // }
-
-    // public void setComment(DataType comment) {
-    // this.comment = comment;
-    // }
 
     public int getNumOfReactions() {
         return numOfReactions;

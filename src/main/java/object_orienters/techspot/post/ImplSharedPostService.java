@@ -4,10 +4,10 @@ import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.reaction.Reaction;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ImplSharedPostService implements SharedPostService {
@@ -64,10 +64,12 @@ public class ImplSharedPostService implements SharedPostService {
         return sharedPostRepository.save(sharedPost);
     }
 
+
     @Override
+    @Transactional
     public void deleteSharedPost(String username, long sharedPostId)
             throws UserNotFoundException, PostNotFoundException, ContentIsPrivateException {
-        Profile user = profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        profileRepository.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         SharedPost post = getSharedPost(sharedPostId);
         post.getPost().setNumOfShares(post.getPost().getNumOfShares() - 1);
 

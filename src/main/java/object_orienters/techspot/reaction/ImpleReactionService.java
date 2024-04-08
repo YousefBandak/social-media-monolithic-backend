@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
-import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -21,32 +20,15 @@ public class ImpleReactionService implements ReactionService {
     private final ReactionRepository reactionRepository;
     private final ReactableContentRepository contentRepository;
     private final ProfileRepository profileRepository;
-    private final PostRepository postRepository;
     Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
     public ImpleReactionService(ReactionRepository reactionRepository, ReactableContentRepository contentRepository,
-            ProfileRepository profileRepository, PostRepository postRepository) {
+            ProfileRepository profileRepository) {
 
         this.reactionRepository = reactionRepository;
         this.contentRepository = contentRepository;
         this.profileRepository = profileRepository;
-        this.postRepository = postRepository;
     }
-
-    // @Override
-    // public Reaction createReaction(Reaction reaction) {
-    // if (reaction == null) {
-    // throw new IllegalArgumentException("Reaction object cannot be null.");
-    // } else {
-    // Content content =
-    // contentRepository.findById(reaction.getContent().getContentId()).orElseThrow(()
-    // -> new ContentNotFoundException(reaction.getContent().getContentId()));
-    // reaction.setContent(content);
-    // content.getReactions().add(reaction);
-    // return reactionRepository.save(reaction);
-    // }
-    //
-    // }
 
     @Override
     public Reaction getReaction(Long reactionId) throws ReactionNotFoundException {
@@ -72,7 +54,7 @@ public class ImpleReactionService implements ReactionService {
     }
 
     @Override
-    @Transactional
+    @Transactional // CHECK THIS
     public void deleteReaction(Long reactionId) {
         ReactableContent content = reactionRepository.findById(reactionId)
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId)).getContent();
@@ -105,7 +87,7 @@ public class ImpleReactionService implements ReactionService {
             logger.info(">>>>Checking if the user is the reactor... @ " + getReaction(reactionID).getReactor().getUsername() + "<<<<");
             return reaction.getReactor().getUsername().equals(username);
         }
-        return false; // Return false if the comment is not found
+        return false; 
     }
 
 }

@@ -1,6 +1,3 @@
-// In case remove the reaction when update the type What should the type be????
-// Like the reaction was a like, how to remove it atoll (REMOVE THE REACTION).
-
 package object_orienters.techspot.reaction;
 
 import jakarta.validation.Valid;
@@ -57,10 +54,6 @@ public class ReactionController {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
             List<Reaction> reactionList = reactionService.getReactions(contentID);
             logger.info(">>>>Reactions Retrieved. @ " + getTimestamp() + "<<<<");
-            // CollectionModel<EntityModel<Reaction>> reactionModel =
-            // CollectionModel.of(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()),
-            // linkTo(methodOn(ReactionController.class).getReactions(contentID)).withSelfRel(),
-            // linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
             return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
@@ -116,7 +109,7 @@ public class ReactionController {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
-        }
+        }   //TODO: FIX THIS ERROR ON POSTMAN
     }
 
 

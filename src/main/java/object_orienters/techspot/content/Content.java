@@ -10,12 +10,6 @@ import object_orienters.techspot.profile.Profile;
 
 import java.sql.Timestamp;
 
-
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = Post.class, name = "post"),
-//        @JsonSubTypes.Type(value = Comment.class, name = "comment")
-//})
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "content")
@@ -23,10 +17,9 @@ import java.sql.Timestamp;
 public abstract class Content {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "content_id", updatable = false, nullable = false,insertable = false)
+    @Column(name = "content_id", updatable = false, nullable = false, insertable = false)
     @Getter
     private Long contentID;
-
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private Timestamp timestamp;
@@ -40,5 +33,4 @@ public abstract class Content {
     @JsonIgnore
     public abstract Profile getMainAuthor();
 
-    //public abstract void setPrivacy(Privacy privacy);
 }

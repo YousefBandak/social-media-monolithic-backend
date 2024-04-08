@@ -17,7 +17,7 @@ public class SharedPost extends Content {
     @JsonBackReference
     @Getter
     private Profile sharer;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @Getter
     private Post post;
 

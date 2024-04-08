@@ -17,16 +17,14 @@ public class CommentModelAssembler implements RepresentationModelAssembler<Comme
     public EntityModel<Comment> toModel(@NonNull Comment entity) {
         EntityModel<Comment> commentModel = EntityModel.of(entity, //
                 linkTo(methodOn(CommentController.class).getComment(entity.getContentID(),
-                        entity.getCommentedOn().getContentID(),
-                        entity.getCommentedOn().getContentAuthor().getUsername())).withSelfRel(),
+                        entity.getCommentedOn().getContentID())).withSelfRel(),
                 linkTo(methodOn(PostController.class).getPost(entity.getCommentedOn().getContentID(),
                         entity.getCommentedOn().getContentAuthor().getUsername())).withRel("Post"),
                 linkTo(methodOn(ProfileController.class).one(entity.getContentAuthor().getUsername()))
                         .withRel("Commenter"));
         if (entity.getComments() != null && !entity.getComments().isEmpty())
             commentModel
-                    .add(linkTo(methodOn(CommentController.class).getComments(entity.getCommentedOn().getContentID(),
-                            entity.getCommentedOn().getContentAuthor().getUsername())).withRel("comments"));
+                    .add(linkTo(methodOn(CommentController.class).getComments(entity.getCommentedOn().getContentID())).withRel("comments"));
 
         return commentModel;
 

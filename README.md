@@ -40,7 +40,10 @@ This social media app is built using the Spring framework in an MVC architecture
 
 ### Configuration
 
-Connect to a MySQL database named "oop".
+1. Connect to a MySQL database named `oop` with user `root` and no password.
+2. To access firebase database store used the following gmail account: `object.orienters@gmail.com` with password `WeAreOopers!` and acccess the [Firestore Console with this link](https://console.firebase.google.com/project/techspot-objectorienters/firestore/databases/-default-/data/~2FChatRooms~2FAlexOrange?view=panel-view)
+
+
 
 ### Steps
 1. Clone the repository.

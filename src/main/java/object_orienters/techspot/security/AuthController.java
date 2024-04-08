@@ -1,7 +1,6 @@
 package object_orienters.techspot.security;
 
 import jakarta.validation.Valid;
-import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.ImpleProfileService;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;

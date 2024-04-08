@@ -18,6 +18,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     
     void deleteByReactionID(Long reactionID);
 
-   //void removeByReactionID(Long reactionID);
 
 }

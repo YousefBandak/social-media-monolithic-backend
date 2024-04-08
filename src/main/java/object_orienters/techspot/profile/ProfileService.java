@@ -2,6 +2,7 @@ package object_orienters.techspot.profile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +21,7 @@ public interface ProfileService {
 
     public List<Profile> getUserFollowingByUsername(String username) throws UserNotFoundException;
 
-    public Profile getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException;
+    public Optional<Profile> getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException;
 
     public Profile addNewFollower(String username, String newFollower) throws UserNotFoundException;
 

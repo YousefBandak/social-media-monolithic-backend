@@ -18,11 +18,11 @@ public class PostModelAssembler implements RepresentationModelAssembler<Content,
     @NonNull
     public EntityModel<Content> toModel(@NonNull Content entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(PostController.class).getPost(entity.getContentID(),entity.getMainAuthor().getUsername())).withSelfRel(),
+                linkTo(methodOn(PostController.class).getPost(entity.getContentID(),
+                        entity.getMainAuthor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getMainAuthor().getUsername())).withRel("author"),
                 linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID())).withRel("reactions"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),entity.getMainAuthor().getUsername())).withRel("comments")
-        );
+                linkTo(methodOn(CommentController.class).getComments(entity.getContentID())).withRel("comments"));
 
     }
 }

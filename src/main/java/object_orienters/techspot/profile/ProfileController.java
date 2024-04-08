@@ -40,32 +40,6 @@ public class ProfileController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
-    // // create new user profile
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    // @PostMapping("")
-    // public ResponseEntity<?> postProfile(@Valid @RequestBody Profile newProfile)
-    // throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
-    // try {
-    // EntityModel<Profile> entityModel =
-    // assembler.toModel(profileService.createNewProfile(newProfile));
-    // return
-    // ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-    // .body(entityModel);
-    // } catch (EmailAlreadyUsedException exception) {
-    // return ResponseEntity.status(HttpStatus.CONFLICT)
-    // .body(Problem.create().withTitle("Email Already Used.")
-    // .withDetail(exception.getMessage() + ", Email must be unique."));
-    // } catch (UsernameAlreadyUsedExeption exception) {
-    // return ResponseEntity.status(HttpStatus.CONFLICT)
-    // .body(Problem.create().withTitle("Username Already Used.")
-    // .withDetail(exception.getMessage() + ", Username must be unique."));
-    // }catch (DataIntegrityViolationException exception) {
-    // return ResponseEntity.status(HttpStatus.CONFLICT)
-    // .body(Problem.create().withTitle("Violation exception")
-    // .withDetail(exception.getMessage() + ", Violation exception"));
-    // }
-    // }
-
     // get user profile
     @GetMapping("/{username}")
     public ResponseEntity<?> one(@PathVariable String username) {
@@ -123,11 +97,14 @@ public class ProfileController {
     // get specific user follower
     @GetMapping("/{username}/followers/{followerUserName}")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
-                                                 @PathVariable String followerUserName) {
+            @PathVariable String followerUserName) {
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
             logger.info(">>>>Follower Retrieved. " + getTimestamp() + "<<<<");
+            if (follower != null) {
+                throw new UserNotFoundException(follower.getUsername());
+            }
             return ResponseEntity.ok(assembler.toModel(follower));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
@@ -157,10 +134,11 @@ public class ProfileController {
     // get specific user following
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
-                                                  @PathVariable String followingUsername) {
+            @PathVariable String followingUsername) {
         try {
             logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
-            Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername);
+            Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername)
+                    .orElseThrow(() -> new UserNotFoundException(followingUsername));
             logger.info(">>>>Following Profile Retrieved. " + getTimestamp() + "<<<<");
             return ResponseEntity
                     .ok(assembler.toModel(followingProfile));
@@ -184,7 +162,7 @@ public class ProfileController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        }catch (UserCannotFollowSelfException ex){
+        } catch (UserCannotFollowSelfException ex) {
             logger.info(">>>>Error Occurred: " + ex.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -196,10 +174,10 @@ public class ProfileController {
     // delete follower from user
     @DeleteMapping("/{username}/followers")
     @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody String deletedUser) {
+    public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
         try {
             logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
-            profileService.deleteFollower(username, deletedUser);
+            profileService.deleteFollower(username, deletedUser.get("deletedUser").asText());
             logger.info(">>>>Follower Added. " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException exception) {
@@ -211,10 +189,10 @@ public class ProfileController {
 
     @DeleteMapping("/{username}/following")
     @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody String deletedUser) {
+    public ResponseEntity<?> deleteFollowing(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
         try {
             logger.info(">>>>Deleting Following... " + getTimestamp() + "<<<<");
-            profileService.deleteFollowing(username, deletedUser);
+            profileService.deleteFollowing(username, deletedUser.get("deletedUser").asText());
             logger.info(">>>>Following Added. " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException exception) {
@@ -226,8 +204,8 @@ public class ProfileController {
 
     @PostMapping("/{username}/profilePic")
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
-                                           @RequestParam(value = "file") MultipartFile file,
-                                           @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addProfilePic(username, file, text);

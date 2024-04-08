@@ -18,14 +18,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig { 
     @Autowired
     ImpleUserDetailsService userDetailsService;
 
@@ -59,69 +58,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // return http
-        // .csrf(csrf -> csrf.disable())
-        // .exceptionHandling(exception ->
-        // exception.authenticationEntryPoint(unauthorizedHandler))
-        // .sessionManagement(session ->
-        // session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // // Enable OAuth2 login with default settings
-        // .formLogin(formLogin -> {
-        // formLogin.loginPage("/customLogin") // Set custom login page URL
-        // .failureUrl("/customFailure"); // Set custom failure URL
-        // })
-        // .oauth2Login(withDefaults())// Enable form-based login with default settings
-        // .authorizeHttpRequests(auth -> {
-        // auth.requestMatchers("/customLogin").permitAll();
-        // auth.requestMatchers("/customFailure").permitAll();
-        // auth.requestMatchers("/auth/login").permitAll();
-        // auth.requestMatchers("/auth/signup").permitAll();
-        // auth.requestMatchers("/favicon.ico").permitAll();
-        // auth.requestMatchers("/auth/**").permitAll();
-        // //auth.requestMatchers("/login/**").permitAll();
-        // //auth.requestMatchers("/").permitAll();
-        // // auth.anyRequest().authenticated();
-        // })
-        //
-        //
-        // .authenticationProvider(authenticationProvider()) // Register custom
-        // authentication provider
-        // .addFilterBefore(authenticationJwtTokenFilter(),
-        // UsernamePasswordAuthenticationFilter.class) // Add JWT token filter
-        // .build();
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        // http
-        // .csrf(csrf -> csrf.disable()) // If it's a REST API, you're not using CSRF
-        // protection.
-        // .authorizeHttpRequests(authorize -> authorize
-        // .requestMatchers("/login", "/auth/**").permitAll() // Allow public access to
-        // these endpoints
-        // .anyRequest().authenticated()) // All other requests must be authenticated.
-        // .oauth2Login(withDefaults())
-        // .formLogin(form -> {
-        // form.permitAll();
-        // //form.failureUrl("/auth/signup");
-        // form.failureHandler((request, response, exception) -> {
-        // logger.error("Failed to login", exception);
-        // response.sendRedirect("/auth/signup");
-        // });
-        // form.successForwardUrl("/auth/a");
-        // logger.info("Form login enabled");
-        // logger.info(form.isCustomLoginPage()+"");
-        //
-        // })
-        // ;
-        // // Other configurations...
-        // return http.build();
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // code with both
-        http
-                .csrf(c -> c.disable())
-                // .csrf(c -> c
-                //         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+        http.csrf(c -> c.disable())
                 .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize

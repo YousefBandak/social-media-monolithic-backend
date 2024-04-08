@@ -12,11 +12,6 @@ import object_orienters.techspot.reaction.Reaction;
 import java.util.ArrayList;
 import java.util.List;
 
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = Post.class, name = "post"),
-//        @JsonSubTypes.Type(value = Comment.class, name = "comment")
-//})
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Table(name = "ReactableContent")
@@ -27,10 +22,8 @@ public abstract class ReactableContent extends Content {
     // @JsonBackReference
     private Profile contentAuthor;
 
-    // @NotBlank(message = "Post content cannot be empty")
-    // @NotNull(message = "Content must be specified")
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = true)
     private DataType mediaData;
     private String textData;
 
@@ -43,7 +36,6 @@ public abstract class ReactableContent extends Content {
     private List<Comment> comments;
     private int numOfComments;
     private int numOfReactions;
-
 
     public ReactableContent() {
         this.reactions = new ArrayList<>();
@@ -58,7 +50,8 @@ public abstract class ReactableContent extends Content {
             return false;
         return this.getContentID() != null && this.getContentID().equals(((Post) o).getContentID());
     }
-public Profile getContentAuthor() {
+
+    public Profile getContentAuthor() {
         return contentAuthor;
     }
 }

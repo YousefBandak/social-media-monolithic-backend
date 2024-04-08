@@ -5,7 +5,7 @@ import object_orienters.techspot.post.PostNotFoundException;
 import java.util.List;
 
 public interface ReactionService {
-    //public Reaction createReaction(Reaction reaction);
+    public Reaction createReaction(String reactorId, String reactionType, Long contentId);
 
     public Reaction getReaction(Long reactionId) throws PostNotFoundException;
 
@@ -14,8 +14,5 @@ public interface ReactionService {
     public Reaction updateReaction(Long reactionId, String reactionType);
 
     public void deleteReaction(Long reactionId);
-    public Reaction createReaction(String reactorId, String reactionType, Long contentId);
-
-
 
 }

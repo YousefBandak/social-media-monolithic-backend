@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -17,11 +18,11 @@ public class ChatMessageService {
     private final ChatRoomService chatRoomService;
 
 
-    public ChatMessage saveChatMessage(ChatMessage chatMessage) {
-        String chatRoomId = chatRoomService.getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true).orElseThrow(() -> new RuntimeException("Chat room not found"));
+    public ChatMessage saveChatMessage(ChatMessage chatMessage) throws ExecutionException, InterruptedException {
+        String chatRoomId = chatRoomService.getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
+                .orElseThrow(() -> new RuntimeException("Chat room not found"));
         chatMessage.setChatRoomId(chatRoomId);
-        //return chatMessageRepository.saveChatMessage(chatMessage);
-        return chatMessage;
+        return chatMessageRepository.saveChatMessage(chatMessage);
     }
 
     public List<ChatMessage> findChatMessages(String senderId, String recipientId) {

@@ -111,10 +111,12 @@ public class CommentController {
 
     @PostMapping("/comments")
     @PreAuthorize("#commenter == authentication.principal.username")
-    public ResponseEntity<?> addComment(@PathVariable long contentID,
+    public ResponseEntity<?> addComment(
+            @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "text", required = false) String text) throws IOException {
+            @RequestParam(value = "text", required = false) String text
+    ) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
 

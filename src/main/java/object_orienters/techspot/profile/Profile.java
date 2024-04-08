@@ -33,16 +33,20 @@ public class Profile extends UserBase {
     @JsonIgnore
     @Valid
     private User owner;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
-    private DataType profilePic;
+
     @NotNull(message = "Name shouldn't be null.")
     @NotBlank(message = "Name cannot be left blank.")
     @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
     private String name;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    private DataType profilePic;
+
     private String profession;
-    // @Enumerated(EnumType.STRING)
+
     private Gender gender;
+
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
 
@@ -66,7 +70,7 @@ public class Profile extends UserBase {
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
             String dob) {
         this.owner = user;
-        this.name = name;
+        this.setName(name);
         this.profession = profession;
         this.setEmail(email);
         this.profilePic = profilePic;
@@ -79,7 +83,7 @@ public class Profile extends UserBase {
     }
 
     public String toString() {
-        return "Username: " + getUsername() + " Name: " + name + " Profession: " + profession + " Email: " + getEmail()
+        return "Username: " + getUsername() + " Name: " + getName() + " Profession: " + profession + " Email: " + getEmail()
                 + "User: " + owner;
     }
 

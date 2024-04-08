@@ -61,7 +61,6 @@ public class ImplePostService implements PostService {
                 .orElseThrow(() -> new UserNotFoundException(username));
         DataType dataType = new DataType();
         if (file != null && !file.isEmpty()) {
-            System.out.println("hi");
             dataType.setData(DataTypeUtils.compress(file.getBytes()));
             dataType.setType(file.getContentType());
         }

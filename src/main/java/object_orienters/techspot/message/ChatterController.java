@@ -18,21 +18,21 @@ public class ChatterController {
     @Autowired
     private ChatterService chatterService;
 
-    @MessageMapping("/chatter.add")
-    @SendTo("/chatter/public") //NOTE: broadcast to all subscribers of /chatter/public that a new chatter has been added
+    @MessageMapping("/user.add")
+    @SendTo("/user/public") //NOTE: broadcast to all subscribers of /chatter/public that a new chatter has been added
     public Chatter addChatter(@Payload Chatter chatter) {
         chatterService.saveChatter(chatter);
         return chatter;
     }
 
-    @MessageMapping("/chatter.disconnect")
-    @SendTo("/chatter/public") //NOTE: broadcast to all subscribers of /chatter/public that a chatter has been disconnected
+    @MessageMapping("/user.disconnect")
+    @SendTo("/user/public") //NOTE: broadcast to all subscribers of /chatter/public that a chatter has been disconnected
     public Chatter disconnectChatter(@Payload Chatter chatter) {
         chatterService.disconnectChatter(chatter);
         return chatter;
     }
 
-    @GetMapping("/chatters")
+    @GetMapping("/users")
     public ResponseEntity<List<Chatter>> getConnectedChatters() {
         return ResponseEntity.ok(chatterService.getConnectedChatters());
     }

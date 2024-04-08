@@ -1,12 +1,6 @@
 package object_orienters.techspot.post;
 
-import java.util.List;
-
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +9,8 @@ import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
 
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "post")
@@ -22,11 +18,11 @@ import object_orienters.techspot.profile.Profile;
 @Valid
 public class Post extends ReactableContent {
 
-    // private String content;
-
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
+
     private int numOfShares;
+
     private List<String> tags;
 
     public Post(DataType mediaData, Privacy privacy, Profile author) {
@@ -43,17 +39,17 @@ public class Post extends ReactableContent {
     }
 
 
-    // public String toString() {
-    //     return "Post{" +
-    //             "contentId=" + getContentID() +
-    //             ", author=" + this.getContentAuthor().getUsername() +
-    //             ", content='" + this.getMediaData() + '\'' +
-    //             ", privacy=" + privacy +
-    //             ", numOfComments=" + this.getNumOfComments() +
-    //             ", numOfReactions=" + this.getNumOfReactions() +
-    //             ", numOfShares=" + numOfShares +
-    //             '}';
-    // }
+     public String toString() {
+         return "Post{" +
+                 "contentId=" + getContentID() +
+                 ", author=" + this.getContentAuthor().getUsername() +
+                 ", content='" + this.getMediaData() + '\'' +
+                 ", privacy=" + privacy +
+                 ", numOfComments=" + this.getNumOfComments() +
+                 ", numOfReactions=" + this.getNumOfReactions() +
+                 ", numOfShares=" + numOfShares +
+                 '}';
+     }
 
     @Override
     public Profile getMainAuthor() {

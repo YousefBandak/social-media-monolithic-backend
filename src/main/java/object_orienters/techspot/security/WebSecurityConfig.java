@@ -62,8 +62,9 @@ public class WebSecurityConfig {
                 .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
-                                "auth/usernameExists/**")
+//                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
+//                                "auth/usernameExists/**")
+                        .requestMatchers("/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")

@@ -17,7 +17,6 @@ public class Reaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reactionID;
 
-    // @JsonIgnore
     @ManyToOne
     @NotNull(message = "Reactor profile should not be null.")
     private Profile reactor;
@@ -25,7 +24,7 @@ public class Reaction {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Type shouldn't be null.")
     private ReactionType type;
-    // @JsonIgnore
+
     @ManyToOne
     @JoinColumn(name = "content_id")
     @JsonBackReference
@@ -47,7 +46,6 @@ public class Reaction {
     }
 
     public enum ReactionType {
-
         LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
     }
 

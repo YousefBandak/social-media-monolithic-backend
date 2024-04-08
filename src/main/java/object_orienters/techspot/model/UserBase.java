@@ -22,9 +22,9 @@ public class UserBase {
     @Email
     @NotBlank
     @Size(max = 50)
-    //@UniqueEmail
     private String email;
-    // private String name;
+
+
 
 
 

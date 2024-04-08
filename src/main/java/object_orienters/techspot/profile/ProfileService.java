@@ -9,10 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ProfileService {
     public Profile getUserByUsername(String username) throws UserNotFoundException;
 
-    public Profile createNewProfile(Profile newUser);
-
     public Profile createNewProfile(String username, String email, String name, MultipartFile file) throws IOException;
-
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException;
 
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException;

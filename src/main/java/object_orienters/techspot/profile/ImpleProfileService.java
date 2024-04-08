@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import object_orienters.techspot.message.Chatter;
+import object_orienters.techspot.message.ChatterService;
+import object_orienters.techspot.message.Status;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
@@ -24,6 +27,9 @@ public class ImpleProfileService implements ProfileService {
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
+    @Autowired
+    ChatterService chatterService;
+
     Logger log = LoggerFactory.getLogger(ImpleProfileService.class.getName());
 
     public ImpleProfileService(ProfileRepository repo) {
@@ -33,18 +39,6 @@ public class ImpleProfileService implements ProfileService {
     @Override
     public Profile getUserByUsername(String username) throws UserNotFoundException {
         return repo.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
-    }
-
-    // NOTE:This method might be redundant and unnecessary
-    @Override
-    public Profile createNewProfile(Profile newProfile) throws EmailAlreadyUsedException, UsernameAlreadyUsedExeption {
-        if (repo.findByEmail(newProfile.getEmail()) != null) {
-            throw new EmailAlreadyUsedException(newProfile.getEmail());
-        }
-        if (repo.findByUsername(newProfile.getUsername()) != null) {
-            throw new UsernameAlreadyUsedExeption(newProfile.getUsername());
-        }
-        return repo.save(newProfile);
     }
 
     @Override
@@ -66,6 +60,7 @@ public class ImpleProfileService implements ProfileService {
                 userRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
         newProfile.setEmail(email);
         newProfile.setName(name);
+        chatterService.saveChatter(new Chatter(newProfile.getUsername(), newProfile.getName(), Status.ONLINE));
         return repo.save(newProfile);
 
     }

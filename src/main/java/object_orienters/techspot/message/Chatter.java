@@ -10,19 +10,17 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Chatter {
 
+
     private String username;
     private String fullName;
     private Status status;
 
-    public Chatter(String username, Status status) {
+    public Chatter(String username, String fullName, Status status) {
         this.username = username;
         this.status = status;
+        this.fullName = fullName;
     }
 
 
 }
 
-enum Status {
-    ONLINE,
-    OFFLINE
-}

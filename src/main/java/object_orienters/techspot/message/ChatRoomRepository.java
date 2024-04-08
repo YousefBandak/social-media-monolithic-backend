@@ -1,6 +1,8 @@
 package object_orienters.techspot.message;
 
+import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import org.checkerframework.checker.guieffect.qual.SafeType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +23,20 @@ public class ChatRoomRepository {
         this.firestore = firestore;
     }
     public ChatRoomRepository() {
-       // this.firestore = FirestoreClient.getFirestore();
+        this.firestore = FirestoreClient.getFirestore();
     }
 
     public Optional<ChatRoom> findBySenderIdAndRecipientId(String senderId, String recipientId) throws ExecutionException, InterruptedException {
 
-      //  return Optional.ofNullable(firestore.collection("chatRooms").document(senderId + recipientId).get().get().toObject(ChatRoom.class));
-      return   Optional.empty();
+        return Optional.ofNullable(firestore.collection("ChatRooms").document(senderId + recipientId).get().get().toObject(ChatRoom.class));
     }
 
     public void saveChatRoom(ChatRoom chatRoom) {
-       // firestore.collection("chatRooms").document(chatRoom.getSenderId() + chatRoom.getRecipientId()).set(chatRoom);
+        if (chatRoom.getId() == null || chatRoom.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("ChatRoom id must not be null or empty");
+        }
+        ApiFuture<WriteResult> collectionApiFuture = firestore.collection("ChatRooms").document(chatRoom.getId()).set(chatRoom);
     }
+
+
 }

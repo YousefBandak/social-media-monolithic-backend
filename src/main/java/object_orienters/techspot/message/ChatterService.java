@@ -34,8 +34,6 @@ public class ChatterService {
     }
 
     public List<Chatter> getConnectedChatters() {
-        saveChatter(new Chatter("test", Status.ONLINE));
-        saveChatter(new Chatter("test2", Status.ONLINE));
         try {
             return firestoreRepository.getChattersByStatus(Status.ONLINE);
         } catch (ExecutionException | InterruptedException e) {

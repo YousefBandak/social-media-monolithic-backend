@@ -1,14 +1,13 @@
 package object_orienters.techspot.message;
 
 
+import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
-import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -22,16 +21,38 @@ public class ChatMessageRepository {
         this.firestore = firestore;
     }
 
-    public ChatMessage saveChatMessage(ChatMessage chatMessage) {
-        firestore.collection("chatMessages").document(chatMessage.getChatRoomId()).set(chatMessage);
-        return chatMessage;
+    public ChatMessage saveChatMessage(ChatMessage chatMessage) throws ExecutionException, InterruptedException {
+        firestore.collection("ChatRooms").document(chatMessage.getRecipientId()+chatMessage.getSenderId())
+                .collection("Messages")
+                .add(chatMessage).get().get().get().toObject(ChatMessage.class);
+
+
+       return firestore.collection("ChatRooms").document(chatMessage.getSenderId()+chatMessage.getRecipientId())
+                .collection("Messages")
+                .add(chatMessage).get().get().get().toObject(ChatMessage.class);
     }
 
-    public List<ChatMessage> findChatMessagesByChatRoomId(String chatRoomId){
+
+    //FIXME
+    public List<ChatMessage> findChatMessagesByChatRoomId(String chatRoomId) {
+
+
+        List<ChatMessage> chatMessages = new ArrayList<>();
+
         try {
-            return Collections.singletonList(firestore.collection("chatMessages").document(chatRoomId).get().get().toObject(ChatMessage.class));
+            CollectionReference messagesCollectionRef = firestore.collection("ChatRooms")
+                    .document(chatRoomId)
+                    .collection("Messages");
+
+            for (DocumentReference document : messagesCollectionRef.listDocuments()) {
+                chatMessages.add(document.get().get().toObject(ChatMessage.class));
+            }
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            // Handle exceptions
         }
+
+        return chatMessages;
+
     }
 }

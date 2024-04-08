@@ -1,6 +1,5 @@
 package object_orienters.techspot.message;
 
-
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
@@ -18,11 +17,13 @@ import java.io.IOException;
 public class FirebaseConfig {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(FirebaseConfig.class);
+
+    @SuppressWarnings("deprecation")
     @PostConstruct
     public void initializeFirebase() throws IOException {
         logger.info("Initializing Firebase");
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/techspot-objectorienters-firebase-adminsdk-bqho2-92fdd9f633.json");
+        FileInputStream serviceAccount = new FileInputStream(
+                "src/main/resources/techspot-objectorienters-firebase-adminsdk-bqho2-92fdd9f633.json");
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))

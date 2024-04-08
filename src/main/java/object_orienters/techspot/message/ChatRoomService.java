@@ -16,17 +16,17 @@ public class ChatRoomService {
 
     public Optional<String> getChatRoomId(String senderId, String recipientId, boolean createIfNotExist) {
         try {
-           Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(senderId, recipientId);
-           if (chatRoom.isPresent()) {
-                  return Optional.of(chatRoom.get().getId());
-           } else {
+            Optional<ChatRoom> chatRoom = chatRoomRepository.findBySenderIdAndRecipientId(senderId, recipientId);
+            if (chatRoom.isPresent()) {
+                return Optional.of(chatRoom.get().getId());
+            } else {
                 if (createIfNotExist) {
-                     String chatId = createChatRoom(senderId, recipientId);
-                     return Optional.of(chatId);
+                    String chatId = createChatRoom(senderId, recipientId);
+                    return Optional.of(chatId);
                 } else {
-                     return Optional.empty();
+                    return Optional.empty();
                 }
-           }
+            }
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -47,17 +47,12 @@ public class ChatRoomService {
                 .build();
 
         senderRecipient.setId(chatId);
-        recipientSender.setId(recipientId+senderId);
+        recipientSender.setId(recipientId + senderId);
 
         chatRoomRepository.saveChatRoom(senderRecipient);
         chatRoomRepository.saveChatRoom(recipientSender);
 
-
         return chatId;
     }
 
-
 }
-
-
-

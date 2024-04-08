@@ -24,7 +24,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class WebSecurityConfig { 
+public class WebSecurityConfig {
     @Autowired
     ImpleUserDetailsService userDetailsService;
 
@@ -59,16 +59,17 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())
-                .sessionManagement(s-> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
-//                                "auth/usernameExists/**")
+                        // .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
+                        // "auth/usernameExists/**")
                         .requestMatchers("/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
-                        .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID").invalidateHttpSession(true))
+                        .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true))
                 .formLogin(form -> {
                     form.permitAll();
                     form.failureHandler((request, response, exception) -> {

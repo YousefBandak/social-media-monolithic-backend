@@ -29,7 +29,7 @@ public class FeedController {
     }
 
     @GetMapping("/feed")
-    @PreAuthorize("ClientUsername.get(\"username\").asText() == authentication.principal.username")
+    //@PreAuthorize("@ClientUsername.get(\"username\").asText() == authentication.principal.username")
     public ResponseEntity<?> feed(@RequestParam(defaultValue = "ALL_USERS") String feedType,
             @RequestParam(defaultValue = "following") String value, @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "10") int limit, @RequestBody ObjectNode ClientUsername) {

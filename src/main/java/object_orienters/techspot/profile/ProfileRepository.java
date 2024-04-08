@@ -33,5 +33,4 @@ public interface ProfileRepository extends JpaRepository<Profile, String> {
 
     Optional<Profile> findByOwner(User user);
 
-
 }

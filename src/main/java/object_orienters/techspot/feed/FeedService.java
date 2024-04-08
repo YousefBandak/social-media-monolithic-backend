@@ -28,7 +28,8 @@ public class FeedService {
 
                 case ALL_USERS:
                     strategy = new addByFollowingStrategy(
-                            profileRepository.findByUsername(ClientUsername).orElseThrow((() -> new ProfileNotFoundException(ClientUsername))));
+                            profileRepository.findByUsername(ClientUsername)
+                                    .orElseThrow((() -> new ProfileNotFoundException(ClientUsername))));
                     break;
                 case TOPIC:
                     strategy = new SearchByTag(value);

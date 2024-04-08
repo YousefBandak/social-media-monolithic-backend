@@ -1,6 +1,5 @@
 package object_orienters.techspot.message;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,8 @@ public class ChatterService {
 
     public void disconnectChatter(Chatter chatter) {
         try {
-            Chatter storedChatter = firestoreRepository.getChatter(chatter.getUsername()).orElseThrow(() -> new RuntimeException("Chatter not found"));
+            Chatter storedChatter = firestoreRepository.getChatter(chatter.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Chatter not found"));
             storedChatter.setStatus(Status.OFFLINE);
             firestoreRepository.saveChatter(storedChatter);
 

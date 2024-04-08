@@ -1,13 +1,11 @@
 package object_orienters.techspot.security;
 
-
 import object_orienters.techspot.security.payload.request.SignupRequest;
 import object_orienters.techspot.security.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserCredentialsServices {
-
 
     private final UserRepository userRepository;
 

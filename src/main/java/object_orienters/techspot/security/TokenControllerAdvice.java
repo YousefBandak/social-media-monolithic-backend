@@ -14,7 +14,8 @@ public class TokenControllerAdvice {
     @ExceptionHandler(TokenRefreshException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<?> handleTokenRefreshException(TokenRefreshException exception) {
-        Map<String, String> error = Map.of("error", "Token refresh failed", "Timestamp", Instant.now().toString(), "message", exception.getMessage());
+        Map<String, String> error = Map.of("error", "Token refresh failed", "Timestamp", Instant.now().toString(),
+                "message", exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(error);
     }

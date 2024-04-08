@@ -2,7 +2,6 @@ package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.profile.Profile;
 
 import java.io.IOException;
 import java.util.List;

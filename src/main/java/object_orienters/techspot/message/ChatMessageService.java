@@ -1,6 +1,5 @@
 package object_orienters.techspot.message;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ public class ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomService chatRoomService;
 
-
     public ChatMessage saveChatMessage(ChatMessage chatMessage) throws ExecutionException, InterruptedException {
         String chatRoomId = chatRoomService.getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
                 .orElseThrow(() -> new RuntimeException("Chat room not found"));
@@ -31,6 +29,5 @@ public class ChatMessageService {
                 .orElse(new ArrayList<>());
 
     }
-
 
 }

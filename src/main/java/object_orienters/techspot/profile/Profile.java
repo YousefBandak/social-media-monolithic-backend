@@ -83,7 +83,8 @@ public class Profile extends UserBase {
     }
 
     public String toString() {
-        return "Username: " + getUsername() + " Name: " + getName() + " Profession: " + profession + " Email: " + getEmail()
+        return "Username: " + getUsername() + " Name: " + getName() + " Profession: " + profession + " Email: "
+                + getEmail()
                 + "User: " + owner;
     }
 

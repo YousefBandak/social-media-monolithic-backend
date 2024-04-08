@@ -26,7 +26,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   private ImpleUserDetailsService userDetailsService;
 
   @Autowired
-  private  ImpleTokenBlackListService tokenBlacklistService;
+  private ImpleTokenBlackListService tokenBlacklistService;
 
   private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 

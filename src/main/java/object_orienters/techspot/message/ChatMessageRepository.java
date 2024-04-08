@@ -1,6 +1,5 @@
 package object_orienters.techspot.message;
 
-
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
@@ -22,20 +21,16 @@ public class ChatMessageRepository {
     }
 
     public ChatMessage saveChatMessage(ChatMessage chatMessage) throws ExecutionException, InterruptedException {
-        firestore.collection("ChatRooms").document(chatMessage.getRecipientId()+chatMessage.getSenderId())
+        firestore.collection("ChatRooms").document(chatMessage.getRecipientId() + chatMessage.getSenderId())
                 .collection("Messages")
                 .add(chatMessage).get().get().get().toObject(ChatMessage.class);
 
-
-       return firestore.collection("ChatRooms").document(chatMessage.getSenderId()+chatMessage.getRecipientId())
+        return firestore.collection("ChatRooms").document(chatMessage.getSenderId() + chatMessage.getRecipientId())
                 .collection("Messages")
                 .add(chatMessage).get().get().get().toObject(ChatMessage.class);
     }
 
-
-    //FIXME
     public List<ChatMessage> findChatMessagesByChatRoomId(String chatRoomId) {
-
 
         List<ChatMessage> chatMessages = new ArrayList<>();
 
@@ -49,7 +44,6 @@ public class ChatMessageRepository {
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-            // Handle exceptions
         }
 
         return chatMessages;

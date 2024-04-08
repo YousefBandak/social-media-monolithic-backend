@@ -19,8 +19,7 @@ public class DataTypeUtils {
             gzip.finish();
             return bos.toByteArray();
         } catch (IOException e) {
-            // Log error, throw a custom exception, or handle it based on your application
-            // needs
+
             throw new RuntimeException("Compression error", e);
         }
     }
@@ -32,8 +31,7 @@ public class DataTypeUtils {
         if (isGzipCompressed(data)) {
             return decompress(data);
         } else {
-            // Return the data as is, assuming it's either uncompressed or in a format we're
-            // not handling
+
             return data;
         }
     }
@@ -47,7 +45,7 @@ public class DataTypeUtils {
     }
 
     private static byte[] decompress(byte[] compressedData) {
-        
+
         try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedData);
                 GZIPInputStream gzip = new GZIPInputStream(bis);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
@@ -59,8 +57,7 @@ public class DataTypeUtils {
             logger.info("safely decomposed");
             return bos.toByteArray();
         } catch (IOException e) {
-            // Log error, throw a custom exception, or handle it based on your application
-            // needs
+
             throw new RuntimeException("Decompression error", e);
         }
     }

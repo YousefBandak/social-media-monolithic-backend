@@ -1,21 +1,19 @@
 package object_orienters.techspot.security.blacklist;
 
-
-
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Entity 
+@Entity
 @Table
 public class TokenBlackList {
 
     @Id
     private String token;
 
-    private LocalDateTime blacklistDate; 
+    private LocalDateTime blacklistDate;
 
     // Standard getters and setters
     public String getToken() {

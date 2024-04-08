@@ -12,7 +12,7 @@ public class SignupRequest {
     @Email
     private String email;
 
-    //changed to be one value no need for a set here
+    
 
     @NotBlank
     @Size(min = 6, max = 40)
@@ -52,4 +52,3 @@ public class SignupRequest {
         this.name = name;
     }
 }
-

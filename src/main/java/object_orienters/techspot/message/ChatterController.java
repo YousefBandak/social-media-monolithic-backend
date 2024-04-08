@@ -19,14 +19,14 @@ public class ChatterController {
     private ChatterService chatterService;
 
     @MessageMapping("/user.add")
-    @SendTo("/user/public") //NOTE: broadcast to all subscribers of /chatter/public that a new chatter has been added
+    @SendTo("/user/public")
     public Chatter addChatter(@Payload Chatter chatter) {
         chatterService.saveChatter(chatter);
         return chatter;
     }
 
     @MessageMapping("/user.disconnect")
-    @SendTo("/user/public") //NOTE: broadcast to all subscribers of /chatter/public that a chatter has been disconnected
+    @SendTo("/user/public")
     public Chatter disconnectChatter(@Payload Chatter chatter) {
         chatterService.disconnectChatter(chatter);
         return chatter;

@@ -2,10 +2,8 @@ package object_orienters.techspot.post;
 
 import java.util.List;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,6 +24,7 @@ public class Post extends ReactableContent {
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
     private int numOfShares;
+    @ElementCollection
     private List<String> tags;
 
     public Post(DataType mediaData, Privacy privacy, Profile author) {

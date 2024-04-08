@@ -21,18 +21,20 @@ public class ChatMessageController {
 
     @GetMapping("/messages/{senderId}/{recipientId}")
     public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable String senderId, @PathVariable String recipientId) {
-        chatMessageService.saveChatMessage(ChatMessage.builder()
-                .id(ChatMessage.incrementAndGet())
-                .senderId(senderId)
-                .recipientId(recipientId)
-                .content("Hello")
-                .build());
+//        chatMessageService.saveChatMessage(ChatMessage.builder()
+//                .id(ChatMessage.incrementAndGet())
+//                .senderId(senderId)
+//                .recipientId(recipientId)
+//                .content("Hello")
+//                .build());
+
         return ResponseEntity.ok(chatMessageService.findChatMessages(senderId, recipientId));
         //return null;
     }
 
     @MessageMapping("/chat")
     public void processMessage(@Payload ChatMessage chatMessage) {
+        chatMessage.setId(ChatMessage.incrementAndGet());
         ChatMessage saveChatMessage = chatMessageService.saveChatMessage(chatMessage);
         messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId(), "/queue/messages",
                 ChatNotification.builder()

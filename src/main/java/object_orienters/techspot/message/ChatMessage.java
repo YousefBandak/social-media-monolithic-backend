@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,6 +21,8 @@ import java.time.LocalDateTime;
 public class ChatMessage {
 
     private static int count = 0;
+
+    //@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String chatRoomId;
     private String senderId;

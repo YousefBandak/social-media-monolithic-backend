@@ -28,6 +28,8 @@ public class ChatMessageRepository {
         return chatMessage;
     }
 
+
+    //FIXME
     public List<ChatMessage> findChatMessagesByChatRoomId(String chatRoomId){
         try {
             return Collections.singletonList(firestore.collection("chatMessages").document(chatRoomId).get().get().toObject(ChatMessage.class));

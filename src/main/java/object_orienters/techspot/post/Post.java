@@ -1,8 +1,5 @@
 package object_orienters.techspot.post;
 
-import java.util.List;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -11,6 +8,8 @@ import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -40,17 +39,18 @@ public class Post extends ReactableContent {
         this.setContentAuthor(author);
     }
 
-    public String toString() {
-        return "Post{" +
-                "contentId=" + getContentID() +
-                ", author=" + this.getContentAuthor().getUsername() +
-                ", content='" + this.getMediaData() + '\'' +
-                ", privacy=" + privacy +
-                ", numOfComments=" + this.getNumOfComments() +
-                ", numOfReactions=" + this.getNumOfReactions() +
-                ", numOfShares=" + numOfShares +
-                '}';
-    }
+
+    // public String toString() {
+    //     return "Post{" +
+    //             "contentId=" + getContentID() +
+    //             ", author=" + this.getContentAuthor().getUsername() +
+    //             ", content='" + this.getMediaData() + '\'' +
+    //             ", privacy=" + privacy +
+    //             ", numOfComments=" + this.getNumOfComments() +
+    //             ", numOfReactions=" + this.getNumOfReactions() +
+    //             ", numOfShares=" + numOfShares +
+    //             '}';
+    // }
 
     @Override
     public Profile getMainAuthor() {

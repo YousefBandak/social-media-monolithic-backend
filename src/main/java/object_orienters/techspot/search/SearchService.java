@@ -12,6 +12,7 @@ import object_orienters.techspot.profile.Profile;
 public class SearchService {
     HashMap<String, SearchStrategy> strategyMap = new HashMap<>();
 
+    @SuppressWarnings("null")
     public List<Profile> search(String keyword, SearchType type, int offset, int limit) {
         List<Profile> users = new ArrayList<>();
         if (strategyMap.containsKey(type.name().concat(keyword))) {

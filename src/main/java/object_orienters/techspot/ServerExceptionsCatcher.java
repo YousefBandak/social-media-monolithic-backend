@@ -26,6 +26,7 @@ import java.util.Map;
         "object_orienters.techspot.reaction"
 })
 public class ServerExceptionsCatcher extends ResponseEntityExceptionHandler {
+    @SuppressWarnings("rawtypes")
     @ExceptionHandler({Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody

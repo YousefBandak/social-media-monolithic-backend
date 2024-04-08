@@ -41,9 +41,8 @@ public class Profile extends UserBase {
     @Size(min = 3, max = 30, message = "Name size should be between 3 and 30 characters.")
     private String name;
     private String profession;
-
+    // @Enumerated(EnumType.STRING)
     private Gender gender;
-    // @NotNull(message = "Date of Birth shouldn't be null.")
     @Past(message = "Date of Birth should be in the past.")
     private LocalDate dob;
 
@@ -57,15 +56,12 @@ public class Profile extends UserBase {
     private List<Profile> followers;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> publishedPosts;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER)
-    private List<SharedPost> sharedPosts; // TODO: Change to Post or SharedPost or Content
-
-    // @OneToMany(mappedBy = "profile", fetch = FetchType.EAGER)
-    // private Set<Chat> Inbox;
+    @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SharedPost> sharedPosts;
 
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
             String dob) {

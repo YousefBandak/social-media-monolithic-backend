@@ -1,6 +1,3 @@
-// In case remove the reaction when update the type What should the type be????
-// Like the reaction was a like, how to remove it atoll (REMOVE THE REACTION).
-
 package object_orienters.techspot.reaction;
 
 import jakarta.validation.Valid;
@@ -57,10 +54,6 @@ public class ReactionController {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
             List<Reaction> reactionList = reactionService.getReactions(contentID);
             logger.info(">>>>Reactions Retrieved. @ " + getTimestamp() + "<<<<");
-            // CollectionModel<EntityModel<Reaction>> reactionModel =
-            // CollectionModel.of(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()),
-            // linkTo(methodOn(ReactionController.class).getReactions(contentID)).withSelfRel(),
-            // linkTo(methodOn(PostController.class).getPost(contentID)).withRel("post"));
             return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
@@ -105,20 +98,19 @@ public class ReactionController {
     }
 
     @DeleteMapping("/reactions/{reactionId}")
-    @PreAuthorize("reactionService.isReactor(authentication.principal.username, #reactionId)")
+    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
     public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId) {
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
             reactionService.deleteReaction(reactionId);
             logger.info(">>>>Reaction Deleted. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok("Reaction deleted successfully");
+            return ResponseEntity.noContent().build();
         } catch (ReactionNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
     }
-
 
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";

@@ -13,7 +13,6 @@ import object_orienters.techspot.security.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,20 +69,12 @@ public class ImpleProfileService implements ProfileService {
     @Transactional
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException {
         Profile updatedUser = repo.findByUsername(username).map(user -> {
-            // user.getOwner.(newUser.getUsername()); //NOTE: user cannot change username
-            // user.setProfilePic(newUser.getProfilePic());
             user.setDob(newUser.getDob());
             user.setEmail(newUser.getEmail());
             user.getOwner().setEmail(newUser.getEmail());
-            user.setFollowers(newUser.getFollowers());
-            user.setFollowing(newUser.getFollowing());
             user.setName(newUser.getName());
-            // user.setUsername(newUser.getUsername());
-            // user.getOwner().setUsername(newUser.getUsername());
             user.setProfession(newUser.getProfession());
             user.setGender(newUser.getGender());
-            user.setPublishedPosts(newUser.getPublishedPosts());
-            // user.setSharedPosts(newUser.getSharedPosts());
             return repo.save(user);
         }).orElseThrow(() -> new UserNotFoundException(username));
         return updatedUser;
@@ -96,7 +87,8 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public Profile getFollowerByUsername(String username, String followerUserName) throws UserNotFoundException {
-        return repo.findFollowerByUsername(username, followerUserName);
+        return repo.findFollowerByUsername(username, followerUserName)
+                .orElseThrow(() -> new UserNotFoundException(followerUserName));
     }
 
     @Override
@@ -105,7 +97,8 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
-    public Profile getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException {
+    public Optional<Profile> getFollowingByUsername(String username, String followingUsername)
+            throws UserNotFoundException {
         return repo.findFollowingByUsername(username, followingUsername);
     }
 
@@ -125,12 +118,13 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     public void deleteFollower(String username, String deletedUser) throws UserNotFoundException {
-        Optional<Profile> profile = repo.findById(username);
-        Optional<Profile> deletedProfile = repo.findByUsername(deletedUser);
-        profile.get().getFollowers().remove(deletedProfile.get());
-        deletedProfile.get().getFollowing().remove(profile.get());
-        repo.save(profile.get());
-        repo.save(deletedProfile.get());
+        Profile profile = repo.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile deletedProfile = repo.findByUsername(deletedUser)
+                .orElseThrow(() -> new UserNotFoundException(deletedUser));
+        profile.getFollowers().remove(deletedProfile);
+        deletedProfile.getFollowing().remove(profile);
+        repo.save(profile);
+        repo.save(deletedProfile);
     }
 
     public void deleteFollowing(String username, String deletedUser) throws UserNotFoundException {
@@ -143,15 +137,18 @@ public class ImpleProfileService implements ProfileService {
     }
 
     @Override
+    @Transactional
     public Profile addProfilePic(String username, MultipartFile file, String text) // TODO: theres a problem
             throws UserNotFoundException, IOException {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         DataType profilePic = new DataType();
         if (file != null && !file.isEmpty()) {
-            if (!file.getContentType().equalsIgnoreCase("image/jpeg") ||
-                    !file.getContentType().equals("image/png")) {
-                throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
-            }
+            // if (!file.getContentType().equalsIgnoreCase("image/jpeg") ||
+            // !file.getContentType().equals("image/png") ||
+            // !file.getContentType().equals("image/jpg")) {
+            // throw new IllegalArgumentException("Unsupported file type. Please upload a
+            // JPEG or PNG image.");
+            // }
             profilePic.setData(file.getBytes());
             profilePic.setType(file.getContentType());
         }

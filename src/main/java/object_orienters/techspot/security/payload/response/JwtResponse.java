@@ -1,9 +1,7 @@
 package object_orienters.techspot.security.payload.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Value;
 
 @Getter
 @Setter

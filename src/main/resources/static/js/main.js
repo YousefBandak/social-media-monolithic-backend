@@ -15,7 +15,7 @@ let fullname = null;
 let selectedUserId = null;
 
 function connect(event) {
-    username = document.querySelector('#nickname').value.trim();
+    username = document.querySelector('#username').value.trim();
     fullname = document.querySelector('#fullname').value.trim();
 
     if (username && fullname) {

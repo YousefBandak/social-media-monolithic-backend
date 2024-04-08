@@ -22,7 +22,6 @@ public class ChatRoomService {
            } else {
                 if (createIfNotExist) {
                      String chatId = createChatRoom(senderId, recipientId);
-                     System.out.println("Chat room created: " + chatId);
                      return Optional.of(chatId);
                 } else {
                      return Optional.empty();

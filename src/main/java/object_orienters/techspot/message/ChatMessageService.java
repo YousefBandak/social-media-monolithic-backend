@@ -19,9 +19,6 @@ public class ChatMessageService {
 
 
     public ChatMessage saveChatMessage(ChatMessage chatMessage) throws ExecutionException, InterruptedException {
-        System.out.println("Chat message saved " + chatMessage);
-        System.out.println("From saveChatMessage: "+chatRoomService.getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true));
-
         String chatRoomId = chatRoomService.getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
                 .orElseThrow(() -> new RuntimeException("Chat room not found"));
         chatMessage.setChatRoomId(chatRoomId);

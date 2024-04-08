@@ -46,7 +46,6 @@ public class ChatMessageRepository {
 
             for (DocumentReference document : messagesCollectionRef.listDocuments()) {
                 chatMessages.add(document.get().get().toObject(ChatMessage.class));
-                System.out.println("added to chatMessages");
             }
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();

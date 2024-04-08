@@ -11,20 +11,17 @@ import object_orienters.techspot.profile.Profile;
 
 @Entity
 @NoArgsConstructor
+@Getter
+@Setter
 public class SharedPost extends Content {
     @ManyToOne
     @JoinColumn(name = "profile_id")
     @JsonBackReference
-    @Getter
-    @Setter
     private Profile sharer;
+
     @ManyToOne(cascade = CascadeType.ALL)
-    @Getter
-    @Setter
     private Post post;
 
-    @Getter
-    @Setter
     private Privacy privacy;
 
     public SharedPost(Profile sharer, Post post, Privacy privacy) {

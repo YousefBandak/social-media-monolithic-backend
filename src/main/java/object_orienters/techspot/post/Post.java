@@ -18,12 +18,11 @@ import java.util.List;
 @Valid
 public class Post extends ReactableContent {
 
-    // private String content;
-
     @Enumerated(EnumType.STRING)
     private Privacy privacy;
+
     private int numOfShares;
-    @ElementCollection
+
     private List<String> tags;
 
     public Post(DataType mediaData, Privacy privacy, Profile author) {
@@ -40,17 +39,17 @@ public class Post extends ReactableContent {
     }
 
 
-    // public String toString() {
-    //     return "Post{" +
-    //             "contentId=" + getContentID() +
-    //             ", author=" + this.getContentAuthor().getUsername() +
-    //             ", content='" + this.getMediaData() + '\'' +
-    //             ", privacy=" + privacy +
-    //             ", numOfComments=" + this.getNumOfComments() +
-    //             ", numOfReactions=" + this.getNumOfReactions() +
-    //             ", numOfShares=" + numOfShares +
-    //             '}';
-    // }
+     public String toString() {
+         return "Post{" +
+                 "contentId=" + getContentID() +
+                 ", author=" + this.getContentAuthor().getUsername() +
+                 ", content='" + this.getMediaData() + '\'' +
+                 ", privacy=" + privacy +
+                 ", numOfComments=" + this.getNumOfComments() +
+                 ", numOfReactions=" + this.getNumOfReactions() +
+                 ", numOfShares=" + numOfShares +
+                 '}';
+     }
 
     @Override
     public Profile getMainAuthor() {

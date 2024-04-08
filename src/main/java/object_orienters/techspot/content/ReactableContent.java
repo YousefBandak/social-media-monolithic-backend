@@ -19,7 +19,6 @@ import java.util.List;
 public abstract class ReactableContent extends Content {
 
     @ManyToOne(cascade = CascadeType.ALL)
-    // @JsonBackReference
     private Profile contentAuthor;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

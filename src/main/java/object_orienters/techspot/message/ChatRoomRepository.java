@@ -35,7 +35,6 @@ public class ChatRoomRepository {
         if (chatRoom.getId() == null || chatRoom.getId().trim().isEmpty()) {
             throw new IllegalArgumentException("ChatRoom id must not be null or empty");
         }
-        System.out.println("Saving chatRoom with id: " + chatRoom.getId());
         ApiFuture<WriteResult> collectionApiFuture = firestore.collection("ChatRooms").document(chatRoom.getId()).set(chatRoom);
     }
 

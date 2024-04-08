@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,7 +34,7 @@ public class ChatMessageController {
     }
 
     @MessageMapping("/chat")
-    public void processMessage(@Payload ChatMessage chatMessage) {
+    public void processMessage(@Payload ChatMessage chatMessage) throws ExecutionException, InterruptedException {
         chatMessage.setId(ChatMessage.incrementAndGet());
         ChatMessage saveChatMessage = chatMessageService.saveChatMessage(chatMessage);
         messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId(), "/queue/messages",

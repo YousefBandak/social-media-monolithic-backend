@@ -28,7 +28,7 @@ public class ChatRoomRepository {
 
     public Optional<ChatRoom> findBySenderIdAndRecipientId(String senderId, String recipientId) throws ExecutionException, InterruptedException {
 
-        return Optional.ofNullable(firestore.collection("chatRooms").document(senderId + recipientId).get().get().toObject(ChatRoom.class));
+        return Optional.ofNullable(firestore.collection("ChatRooms").document(senderId + recipientId).get().get().toObject(ChatRoom.class));
     }
 
     public void saveChatRoom(ChatRoom chatRoom) {
@@ -36,7 +36,7 @@ public class ChatRoomRepository {
             throw new IllegalArgumentException("ChatRoom id must not be null or empty");
         }
         System.out.println("Saving chatRoom with id: " + chatRoom.getId());
-        ApiFuture<WriteResult> collectionApiFuture = firestore.collection("chatRooms").document(chatRoom.getId()).set(chatRoom);
+        ApiFuture<WriteResult> collectionApiFuture = firestore.collection("ChatRooms").document(chatRoom.getId()).set(chatRoom);
     }
 
 

@@ -27,15 +27,15 @@ public class FirestoreChatterRepository {
     }
 
     public String saveChatter(Chatter chatter) {
-        ApiFuture<WriteResult> collectionApiFuture = firestore.collection("chatters").document(chatter.getUsername()).set(chatter);
+        ApiFuture<WriteResult> collectionApiFuture = firestore.collection("Chatters").document(chatter.getUsername()).set(chatter);
         return "Chatter saved";
     }
 
     public Optional<Chatter> getChatter(String username) throws ExecutionException, InterruptedException {
-        return Optional.ofNullable(firestore.collection("chatters").document(username).get().get().toObject(Chatter.class));
+        return Optional.ofNullable(firestore.collection("Chatters").document(username).get().get().toObject(Chatter.class));
     }
 
     public List<Chatter> getChattersByStatus(Status status) throws ExecutionException, InterruptedException {
-        return firestore.collection("chatters").whereEqualTo("status", status).get().get().toObjects(Chatter.class);
+        return firestore.collection("Chatters").whereEqualTo("status", status).get().get().toObjects(Chatter.class);
     }
 }

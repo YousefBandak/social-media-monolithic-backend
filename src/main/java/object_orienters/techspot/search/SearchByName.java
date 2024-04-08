@@ -18,7 +18,7 @@ public class SearchByName extends SearchStrategy {
     @Override
     public void operate() {
         this.getUsersList().addAll(profileRepository.findByName(name));
-    
+
     }
 
 }

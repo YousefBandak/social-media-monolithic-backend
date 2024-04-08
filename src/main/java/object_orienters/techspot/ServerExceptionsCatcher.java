@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ControllerAdvice(basePackages = {
-        //"object_orienters.techspot.message",
+        // "object_orienters.techspot.message",
         "object_orienters.techspot.comment",
         "object_orienters.techspot.profile",
         "object_orienters.techspot.security",
@@ -27,7 +27,7 @@ import java.util.Map;
 })
 public class ServerExceptionsCatcher extends ResponseEntityExceptionHandler {
     @SuppressWarnings("rawtypes")
-    @ExceptionHandler({Exception.class})
+    @ExceptionHandler({ Exception.class })
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ResponseEntity handleAuthenticationException(Exception ex) {
@@ -39,6 +39,7 @@ public class ServerExceptionsCatcher extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
+
     @ExceptionHandler(ContentNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
@@ -49,7 +50,5 @@ public class ServerExceptionsCatcher extends ResponseEntityExceptionHandler {
         body.put("errors", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
-
-
 
 }

@@ -53,16 +53,13 @@ public class ImpleReactionService implements ReactionService {
     }
 
     @Override
-    @Transactional // CHECK THIS
+    @Transactional 
     public void deleteReaction(Long reactionId) {
         ReactableContent content = reactionRepository.findById(reactionId)
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId)).getContent();
         content.getReactions().remove(reactionRepository.findById(reactionId).get());
-        // reactionRepository.save(reactionRepository.findById(reactionId).get());
         content.setNumOfReactions(content.getNumOfReactions() - 1);
         contentRepository.save(content);
-        // content.getReactions().removeIf(r -> r.getReactionID().equals(reactionId));
-        // reactionRepository.findById(reactionId).ifPresent(reactionRepository::delete);
         reactionRepository.deleteByReactionID(reactionId);
     }
 

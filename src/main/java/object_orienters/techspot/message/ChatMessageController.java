@@ -1,7 +1,6 @@
 package object_orienters.techspot.message;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -21,16 +20,10 @@ public class ChatMessageController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/messages/{senderId}/{recipientId}")
-    public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable String senderId, @PathVariable String recipientId) {
-//        chatMessageService.saveChatMessage(ChatMessage.builder()
-//                .id(ChatMessage.incrementAndGet())
-//                .senderId(senderId)
-//                .recipientId(recipientId)
-//                .content("Hello")
-//                .build());
+    public ResponseEntity<List<ChatMessage>> getChatMessages(@PathVariable String senderId,
+            @PathVariable String recipientId) {
 
         return ResponseEntity.ok(chatMessageService.findChatMessages(senderId, recipientId));
-        //return null;
     }
 
     @MessageMapping("/chat")
@@ -39,11 +32,10 @@ public class ChatMessageController {
         ChatMessage saveChatMessage = chatMessageService.saveChatMessage(chatMessage);
         messagingTemplate.convertAndSendToUser(chatMessage.getRecipientId(), "/queue/messages",
                 ChatNotification.builder()
-                .id(saveChatMessage.getId())
-                .recipientId(saveChatMessage.getRecipientId())
-                .senderId(saveChatMessage.getSenderId())
-                .content(saveChatMessage.getContent())
-                .build()
-        );
+                        .id(saveChatMessage.getId())
+                        .recipientId(saveChatMessage.getRecipientId())
+                        .senderId(saveChatMessage.getSenderId())
+                        .content(saveChatMessage.getContent())
+                        .build());
     }
 }

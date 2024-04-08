@@ -5,8 +5,6 @@ import object_orienters.techspot.post.ContentIsPrivateException;
 import object_orienters.techspot.post.ImplePostService;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.profile.ImpleProfileService;
-import object_orienters.techspot.profile.Profile;
 
 import org.slf4j.Logger;
 import org.springframework.hateoas.CollectionModel;
@@ -33,17 +31,15 @@ public class CommentController {
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
     private final ImplePostService postService;
-    private final ImpleProfileService profileService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService,
-            ImplePostService postService, ImpleProfileService profileService) {
+            ImplePostService postService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
         this.postService = postService;
-        this.profileService = profileService;
     }
 
     @GetMapping("/comments")
@@ -91,8 +87,6 @@ public class CommentController {
 
     @PutMapping("/comments/{commentID}")
     @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
-    // @PreAuthorize("isCommentAuthor(authentication.principal.username,
-    // #commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws IOException {
@@ -115,8 +109,7 @@ public class CommentController {
             @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "text", required = false) String text
-    ) throws IOException {
+            @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
 
@@ -133,10 +126,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
-    // @PreAuthorize("isCommentAuthor(authentication.principal.username,
-    // #commentID)")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
@@ -148,7 +138,6 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
         }
-        //TODO: FIX THIS ERROR ON POSTMAN
     }
 
     private static String getTimestamp() {

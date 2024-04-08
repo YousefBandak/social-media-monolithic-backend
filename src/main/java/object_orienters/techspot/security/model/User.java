@@ -38,6 +38,4 @@ public class User extends UserBase {
         return "User [email=" + getEmail() + ", password=" + password + ", username=" + getUsername() + "]";
     }
 
-
-
 }

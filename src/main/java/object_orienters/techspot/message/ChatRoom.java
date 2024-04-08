@@ -13,7 +13,6 @@ public class ChatRoom {
     private String senderId;
     private String recipientId;
 
-
     public void setId(String id) {
         this.id = id;
     }

@@ -1,6 +1,5 @@
 package object_orienters.techspot.message;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,7 +8,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Chatter {
-
 
     private String username;
     private String fullName;
@@ -21,6 +19,4 @@ public class Chatter {
         this.fullName = fullName;
     }
 
-
 }
-

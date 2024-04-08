@@ -13,5 +13,4 @@ public class ChatNotification {
     private String recipientId;
     private String content;
 
-
 }

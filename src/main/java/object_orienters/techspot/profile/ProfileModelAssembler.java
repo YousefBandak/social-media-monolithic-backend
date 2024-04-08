@@ -17,7 +17,6 @@ public class ProfileModelAssembler implements RepresentationModelAssembler<Profi
     @Nonnull
     public EntityModel<Profile> toModel(@Nonnull Profile user) throws UserNotFoundException {
 
-        
         return EntityModel.of(user,
                 linkTo(methodOn(ProfileController.class).one(user.getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).Followers(user.getUsername())).withRel("followers"),

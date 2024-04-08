@@ -10,6 +10,7 @@ public interface ProfileService {
     public Profile getUserByUsername(String username) throws UserNotFoundException;
 
     public Profile createNewProfile(String username, String email, String name, MultipartFile file) throws IOException;
+
     public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException;
 
     public List<Profile> getUserFollowersByUsername(String username) throws UserNotFoundException;
@@ -18,7 +19,8 @@ public interface ProfileService {
 
     public List<Profile> getUserFollowingByUsername(String username) throws UserNotFoundException;
 
-    public Optional<Profile> getFollowingByUsername(String username, String followingUsername) throws UserNotFoundException;
+    public Optional<Profile> getFollowingByUsername(String username, String followingUsername)
+            throws UserNotFoundException;
 
     public Profile addNewFollower(String username, String newFollower) throws UserNotFoundException;
 

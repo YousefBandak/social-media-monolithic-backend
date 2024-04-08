@@ -22,9 +22,9 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
-
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException)
             throws IOException, ServletException {
         if (isAuthenticationError(authException)) {
             logger.error("Unauthorized error: {}", authException.getMessage());
@@ -42,15 +42,14 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(response.getOutputStream(), body);
         } else {
-            
+
             throw authException;
         }
     }
 
     private boolean isAuthenticationError(AuthenticationException authException) {
-        
+
         return authException instanceof AuthenticationException;
     }
-
 
 }

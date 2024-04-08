@@ -1,7 +1,5 @@
 package object_orienters.techspot.security.blacklist;
 
-
-
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +20,7 @@ public class ImpleTokenBlackListService implements TokenBlackListService {
         repository.save(blacklistedToken);
     }
 
-    
     public boolean isTokenBlacklisted(String token) {
         return repository.findById(token).isPresent();
     }
 }
-

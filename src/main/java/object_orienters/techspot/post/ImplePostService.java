@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-
-
 @Service
 public class ImplePostService implements PostService {
     private final PostRepository postRepository;
@@ -68,10 +66,11 @@ public class ImplePostService implements PostService {
             dataType.setType(file.getContentType());
         }
         dataType.setType(dataType.getType() != null ? dataType.getType() : "text/plain");
+        dataType.setData(dataType.getData() != null ? dataType.getData() : new byte[10]);
         dataTypeRepository.save(dataType);
         Post post = new Post();
         post.setTags(tags);
-        post.setTextData(text == null ? "" : text);
+        post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
         post.setMediaData(dataType);
         post.setContentAuthor(prof);
@@ -80,19 +79,6 @@ public class ImplePostService implements PostService {
         profileRepository.save(prof);
         return post;
     }
-
-    // // Todo: add shared post implementation
-    // public SharedPost addSharedPost(String username, Post post, Privacy privacy)
-    // throws UserNotFoundException {
-    // Profile user = profileRepository.findByUsername(username)
-    // .orElseThrow(() -> new UserNotFoundException(username));
-    // SharedPost sharedPost = new SharedPost(user, post, privacy);
-    // sharedPostRepository.save(sharedPost);
-    // user.getSharedPosts().add(sharedPost);
-    // profileRepository.save(user);
-
-    // return sharedPost;
-    // }
 
     @Override
     public Post editTimelinePost(String username, long postId, MultipartFile file,
@@ -131,12 +117,21 @@ public class ImplePostService implements PostService {
                 .orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
         List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
-        sharedPostRepository.deleteAll(sharedPosts);
-        dataTypeRepository.delete(post.getMediaData());
+        sharedPosts.stream()
+                .map(SharedPost::getSharer)
+                .distinct()
+                .forEach(sharer -> {
+                    List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
+                    sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
+                    profileRepository.save(sharer);
+                });
+        DataType mediaData = post.getMediaData();
+        post.setContentAuthor(null);
+        post.setMediaData(null);
+        dataTypeRepository.delete(mediaData);
         user.getPublishedPosts().remove(post);
-        profileRepository.save(user);
         postRepository.delete(post);
-        // TODO: HANDLE SHAREDPOSTS FOR A DELTED POST   
+        profileRepository.save(user);
     }
 
     @Override

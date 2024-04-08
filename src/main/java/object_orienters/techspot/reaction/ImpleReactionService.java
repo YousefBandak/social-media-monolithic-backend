@@ -1,6 +1,5 @@
 package object_orienters.techspot.reaction;
 
-
 import jakarta.transaction.Transactional;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
@@ -83,11 +82,16 @@ public class ImpleReactionService implements ReactionService {
     public boolean isReactor(String username, Long reactionID) {
         Optional<Reaction> reactionOptional = reactionRepository.findById(reactionID);
         if (reactionOptional.isPresent()) {
-           Reaction reaction = reactionOptional.get();
-            logger.info(">>>>Checking if the user is the reactor... @ " + getReaction(reactionID).getReactor().getUsername() + "<<<<");
-            return reaction.getReactor().getUsername().equals(username);
+            Reaction reaction = reactionOptional.get();
+            logger.info(">>>>Checking if the user is the reactor... @ "
+                    + getReaction(reactionID).getReactor().getUsername() + "<<<<");
+            boolean x = reaction.getReactor().getUsername().equals(username);
+            if (x) {
+                return true;
+            }
+            return false;
         }
-        return false; 
+        return false;
     }
 
 }

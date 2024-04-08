@@ -44,8 +44,10 @@ public class ImpleCommentService implements CommentService {
             comment.setData(DataTypeUtils.compress(file.getBytes()));
             comment.setType(file.getContentType());
         }
+        comment.setType(comment.getType() != null ? comment.getType() : "text/plain");
+        comment.setData(comment.getData() != null ? comment.getData() : new byte[10]);
         Comment newComment = new Comment(comment, prof, content);
-        newComment.setTextData(text == null ? "" : text);
+        newComment.setTextData(text != null ? text : "");
         content.setNumOfComments(content.getNumOfComments() + 1);
         content.getComments().add(newComment);
         dataTypeRepository.save(comment);

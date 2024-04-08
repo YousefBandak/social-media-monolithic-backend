@@ -98,20 +98,19 @@ public class ReactionController {
     }
 
     @DeleteMapping("/reactions/{reactionId}")
-    @PreAuthorize("reactionService.isReactor(authentication.principal.username, #reactionId)")
+    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
     public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId) {
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
             reactionService.deleteReaction(reactionId);
             logger.info(">>>>Reaction Deleted. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok("Reaction deleted successfully");
+            return ResponseEntity.noContent().build();
         } catch (ReactionNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
-        }   //TODO: FIX THIS ERROR ON POSTMAN
+        }
     }
-
 
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";

@@ -23,7 +23,7 @@ public abstract class ReactableContent extends Content {
     private Profile contentAuthor;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = true)
     private DataType mediaData;
     private String textData;
 

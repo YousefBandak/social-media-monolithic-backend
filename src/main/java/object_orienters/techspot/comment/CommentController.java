@@ -131,6 +131,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
+    //@PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     // @PreAuthorize("isCommentAuthor(authentication.principal.username,
     // #commentID)")

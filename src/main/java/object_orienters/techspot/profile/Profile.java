@@ -56,11 +56,11 @@ public class Profile extends UserBase {
     private List<Profile> followers;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> publishedPosts;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SharedPost> sharedPosts;
 
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,

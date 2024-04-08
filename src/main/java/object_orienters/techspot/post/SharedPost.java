@@ -16,14 +16,16 @@ public class SharedPost extends Content {
     @JoinColumn(name = "profile_id")
     @JsonBackReference
     @Getter
+    @Setter
     private Profile sharer;
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @Getter
+    @Setter
     private Post post;
 
     @Getter
     @Setter
-    Privacy privacy;
+    private Privacy privacy;
 
     public SharedPost(Profile sharer, Post post, Privacy privacy) {
         this.sharer = sharer;

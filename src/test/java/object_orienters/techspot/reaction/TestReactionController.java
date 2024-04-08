@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,8 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-//@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
-//@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
+//@EnableMethodSecurity
 @WebMvcTest(ReactionController.class)
 
 class TestReactionController {
@@ -174,8 +174,8 @@ class TestReactionController {
         doNothing().when(reactionService).deleteReaction(postReaction.getReactionID());
 
         mockMvc.perform(delete("/content/{contentID}/reactions/{reactionId}", post.getContentID(), postReaction.getReactionID()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Reaction deleted successfully"));
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -185,8 +185,8 @@ class TestReactionController {
         System.out.println(commentReaction.getReactionID());
 
         mockMvc.perform(delete("/content/{contentID}/reactions/{reactionId}", comment.getContentID(), commentReaction.getReactionID()))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Reaction deleted successfully"));
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
     }
 
     @Test

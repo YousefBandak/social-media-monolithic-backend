@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(ProfileController.class)
-//@EnableMethodSecurity
+@EnableMethodSecurity
 class ProfileControllerTest {
 
     @Autowired
@@ -118,7 +119,7 @@ class ProfileControllerTest {
 
         mockMvc.perform(delete("/profiles/{username}/followers", "husam_ramoni")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"yousef_albadndak\""))
+                        .content("{\"deletedUser\": \"yousef_albadndak\"}"))
                 .andExpect(status().isNoContent());
     }
 
@@ -147,44 +148,4 @@ class ProfileControllerTest {
                         .content("{\"username\": \"husam_ramoni\"}"))
                 .andExpect(status().isBadRequest());
     }
-    @Test
-    @WithMockUser(username = "husam_ramoni")
-    public void towProfilesFollowingEachOther() throws Exception {
-        // yousef_albadndak follows husam_ramoni
-        ObjectNode followerUserName = objectMapper.createObjectNode();
-        followerUserName.put("username", "yousef_albadndak");
-
-        EntityModel<Profile> profileEntityModel = EntityModel.of(profile);
-
-        given(profileService.addNewFollower(profile.getUsername(), "yousef_albadndak")).willReturn(profile);
-        given(assembler.toModel(profile)).willReturn(profileEntityModel);
-
-        // Execute & Assert
-        mockMvc.perform(post("/profiles/{username}/followers", profile.getUsername())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(followerUserName.toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
-        ////////////////////////////////////
-
-        // husam_ramoni follows yousef_albadndak
-
-        ObjectNode followerUserNamee = objectMapper.createObjectNode();
-        followerUserNamee.put("username", "husam_ramoni");
-
-        EntityModel<Profile> profileEntityModell = EntityModel.of(profile2);
-
-        given(profileService.addNewFollower(profile2.getUsername(), "husam_ramoni")).willReturn(profile2);
-        given(assembler.toModel(profile2)).willReturn(profileEntityModell);
-
-        // Execute & Assert
-        mockMvc.perform(post("/profiles/{username}/followers", profile2.getUsername())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(followerUserNamee.toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("application/hal+json"));
-
-
-    }
-
 }

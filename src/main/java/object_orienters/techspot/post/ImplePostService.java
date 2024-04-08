@@ -81,8 +81,7 @@ public class ImplePostService implements PostService {
     }
 
     @Override
-    public Post editTimelinePost(String username, long postId, MultipartFile file,
-            String text, Privacy privacy)
+    public Post editTimelinePost(String username, long postId, MultipartFile file, String text, Privacy privacy)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException {
 
         Profile user = profileRepository.findByUsername(username)

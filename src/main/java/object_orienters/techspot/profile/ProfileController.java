@@ -102,9 +102,6 @@ public class ProfileController {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
             logger.info(">>>>Follower Retrieved. " + getTimestamp() + "<<<<");
-            if (follower != null) {
-                throw new UserNotFoundException(follower.getUsername());
-            }
             return ResponseEntity.ok(assembler.toModel(follower));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");

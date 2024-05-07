@@ -18,13 +18,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class WebSecurityConfig {
+public class WebSecurityConfig implements WebMvcConfigurer {
     @Autowired
     ImpleUserDetailsService userDetailsService;
 
@@ -59,6 +61,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())
+                .cors(c -> c.disable() ) //TODO
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
@@ -66,7 +69,8 @@ public class WebSecurityConfig {
                         // "auth/usernameExists/**")
                         .requestMatchers("/**")
                         .permitAll()
-                        .anyRequest().authenticated())
+                       // .anyRequest().authenticated()
+                )
                 .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
                         .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true))
@@ -88,5 +92,14 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        // Setting up CORS for /profiles/ endpoint
+        registry.addMapping("/feed/**") // Applies CORS to all subpaths under /profiles/
+                .allowedOrigins("http://localhost:3000") // Only allow requests from localhost:3000
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed HTTP methods from the origin
+                .allowedHeaders("*") // Allow all headers
+                .allowCredentials(true); // Allow credentials like cookies, authorization headers, etc.
+    }
     Logger logger = org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class);
 }

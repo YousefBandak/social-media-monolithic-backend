@@ -3,6 +3,8 @@ package object_orienters.techspot.feed;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
+import java.util.List;
+
 public class addByFollowingStrategy extends Strategy {
 
     Profile profile;
@@ -13,8 +15,11 @@ public class addByFollowingStrategy extends Strategy {
 
     @Override
     public void operate() {
-        profile.getFollowing()
+        this.getContentList().clear();
+         profile.getFollowing()
                 .forEach(following -> this.getContentList().addAll(following.getTimelinePostsByPrivacy(Privacy.PUBLIC)
-                        .stream().filter(content -> content.getTimestamp().after(profile.getLastLogin())).toList()));
+                        .stream()
+                       // .filter(content -> content.getTimestamp().after(profile.getLastLogin()))
+                        .toList()));
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +31,17 @@ public class FeedController {
 
     @GetMapping("/feed")
     //@PreAuthorize("@ClientUsername.get(\"username\").asText() == authentication.principal.username")
-    public ResponseEntity<?> feed(@RequestParam(defaultValue = "ALL_USERS") String feedType,
-            @RequestParam(defaultValue = "following") String value, @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "10") int limit, @RequestBody ObjectNode ClientUsername) {
+    public ResponseEntity<?> feed(
+            @RequestParam(defaultValue = "ALL_USERS") String feedType,
+            @RequestParam(defaultValue = "following") String value,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam String clientUsername)
+
+    {
         logger.info(">>>>Loading Feed... @ " + getTimestamp() + "<<<<");
-        List<Content> feed = feedService.feedContent(FeedService.FeedType.valueOf(feedType), value, offset, limit,
-                ClientUsername.get("username").asText());
+        Map<String, Object> feed = feedService.feedContent(FeedService.FeedType.valueOf(feedType), value, offset, limit,
+                clientUsername);
         logger.info(">>>> Feed Loaded Successfully... @ " + getTimestamp() + "<<<<");
         return ResponseEntity.ok(feed);
     }

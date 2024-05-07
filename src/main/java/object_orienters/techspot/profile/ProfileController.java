@@ -148,7 +148,7 @@ public class ProfileController {
 
     // add new follower to user
     @PostMapping("/{username}/followers")
-    @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
+   @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
             logger.info(">>>>Adding New Follower... " + getTimestamp() + "<<<<");

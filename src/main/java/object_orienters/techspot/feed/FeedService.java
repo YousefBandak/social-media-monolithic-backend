@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class FeedService {
@@ -18,10 +19,11 @@ public class FeedService {
 
     HashMap<String, Strategy> strategyMap = new HashMap<>();
 
-    public List<Content> feedContent(FeedType feedType, String value, int offset, int limit, String ClientUsername) {
-        List<Content> CurrentFeedReference = new ArrayList<>();
+    public Map<String, Object> feedContent(FeedType feedType, String value, int offset, int limit, String ClientUsername) {
+        Strategy strategyReference;
+        List<Content> currentFeedReference;
         if (strategyMap.containsKey(feedType.name().concat(value))) {
-            CurrentFeedReference = strategyMap.get(feedType.name().concat(value)).getContentList();
+            strategyReference = strategyMap.get(feedType.name().concat(value));
         } else {
             Strategy strategy = null;
             switch (feedType) {
@@ -36,13 +38,18 @@ public class FeedService {
                     break;
 
             }
+            strategyReference = strategy;
             strategyMap.put(feedType.name().concat(value), strategy);
-            strategy.operate();
-            CurrentFeedReference = strategy.getContentList();
-            CurrentFeedReference.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
-
         }
-        return CurrentFeedReference.subList(offset, Math.min(offset + limit, CurrentFeedReference.size()));
+        strategyReference.operate();
+        currentFeedReference = strategyReference.getContentList();
+        currentFeedReference.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+        Map<String, Object> map = new HashMap<>();
+        map.put("total", currentFeedReference.size());
+        map.put("offset", offset);
+        map.put("limit", limit);
+        map.put("data", currentFeedReference.subList(offset, Math.min(offset + limit, currentFeedReference.size())));
+        return map;
 
     }
 

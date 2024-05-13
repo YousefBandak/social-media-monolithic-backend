@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.message.Chatter;
 import object_orienters.techspot.message.ChatterService;
 import object_orienters.techspot.message.Status;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 public class ImpleProfileService implements ProfileService {
@@ -29,6 +31,8 @@ public class ImpleProfileService implements ProfileService {
 
     @Autowired
     ChatterService chatterService;
+    @Autowired
+    FileStorageService fileStorageService;
 
     Logger log = LoggerFactory.getLogger(ImpleProfileService.class.getName());
 
@@ -49,8 +53,14 @@ public class ImpleProfileService implements ProfileService {
             if (!file.getContentType().equals("image/jpeg") || !file.getContentType().equals("image/png")) {
                 throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
             }
-            profilePic.setData(file.getBytes());
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
             profilePic.setType(file.getContentType());
+            profilePic.setFileName(fileName);
+            profilePic.setFileUrl(fileDownloadUri);
         }
         newProfile.setProfilePic(profilePic);
         dataTypeRepository.save(profilePic);
@@ -138,19 +148,19 @@ public class ImpleProfileService implements ProfileService {
 
     @Override
     @Transactional
-    public Profile addProfilePic(String username, MultipartFile file, String text) // TODO: theres a problem
+    public Profile addProfilePic(String username, MultipartFile file, String text)
             throws UserNotFoundException, IOException {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         DataType profilePic = new DataType();
         if (file != null && !file.isEmpty()) {
-            // if (!file.getContentType().equalsIgnoreCase("image/jpeg") ||
-            // !file.getContentType().equals("image/png") ||
-            // !file.getContentType().equals("image/jpg")) {
-            // throw new IllegalArgumentException("Unsupported file type. Please upload a
-            // JPEG or PNG image.");
-            // }
-            profilePic.setData(file.getBytes());
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
             profilePic.setType(file.getContentType());
+            profilePic.setFileName(fileName);
+            profilePic.setFileUrl(fileDownloadUri);
         }
         user.setProfilePic(profilePic);
         dataTypeRepository.save(profilePic);

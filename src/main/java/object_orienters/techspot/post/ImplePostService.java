@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import object_orienters.techspot.DataTypeUtils;
+import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
@@ -15,11 +15,13 @@ import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Service
 public class ImplePostService implements PostService {
@@ -28,15 +30,17 @@ public class ImplePostService implements PostService {
     private final DataTypeRepository dataTypeRepository;
     private final UserRepository userRepository;
     private final SharedPostRepository sharedPostRepository;
+    private final FileStorageService fileStorageService;
 
     public ImplePostService(PostRepository postRepository, ProfileRepository profileRepository,
             DataTypeRepository dataTypeRepository, UserRepository userRepository,
-            SharedPostRepository sharedPostRepository) {
+            SharedPostRepository sharedPostRepository, FileStorageService fileStorageService) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.userRepository = userRepository;
         this.sharedPostRepository = sharedPostRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     public Privacy getAllowedPrincipalPrivacy(String username) {
@@ -61,11 +65,15 @@ public class ImplePostService implements PostService {
                 .orElseThrow(() -> new UserNotFoundException(username));
         DataType dataType = new DataType();
         if (file != null && !file.isEmpty()) {
-            dataType.setData(DataTypeUtils.compress(file.getBytes()));
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
             dataType.setType(file.getContentType());
+            dataType.setFileName(fileName);
+            dataType.setFileUrl(fileDownloadUri);
         }
-        dataType.setType(dataType.getType() != null ? dataType.getType() : "text/plain");
-        dataType.setData(dataType.getData() != null ? dataType.getData() : new byte[10]);
         dataTypeRepository.save(dataType);
         Post post = new Post();
         post.setTags(tags);
@@ -92,8 +100,15 @@ public class ImplePostService implements PostService {
             throw new PostUnrelatedToUserException(username, postId);
         }
         if (file != null && !file.isEmpty()) {
-            post.getMediaData().setData(DataTypeUtils.compress(file.getBytes()));
+
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
             post.getMediaData().setType(file.getContentType());
+            post.getMediaData().setFileName(fileName);
+            post.getMediaData().setFileUrl(fileDownloadUri);
         }
         post.setPrivacy(privacy == null ? post.getPrivacy() : privacy);
         post.setTextData(text == null ? "" : text);

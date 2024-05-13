@@ -1,6 +1,7 @@
 package object_orienters.techspot.comment;
 
 import object_orienters.techspot.DataTypeUtils;
+import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
@@ -13,6 +14,7 @@ import object_orienters.techspot.reaction.ReactionRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.transaction.Transactional;
 import java.io.IOException;
@@ -27,15 +29,17 @@ public class ImpleCommentService implements CommentService {
     private final ProfileRepository profileRepository;
     private final DataTypeRepository dataTypeRepository;
     private final ReactionRepository reactionRepository;
+    private final FileStorageService fileStorageService;
 
     public ImpleCommentService(CommentRepository commentRepository, ReactableContentRepository contentRepository,
             ProfileRepository profileRepository, DataTypeRepository dataTypeRepository,
-            ReactionRepository reactionRepository) {
+            ReactionRepository reactionRepository, FileStorageService fileStorageService) {
         this.commentRepository = commentRepository;
         this.contentRepository = contentRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.reactionRepository = reactionRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -47,11 +51,20 @@ public class ImpleCommentService implements CommentService {
         Profile prof = profileRepository.findById(username).get();
         DataType comment = new DataType();
         if (file != null && !file.isEmpty()) {
-            comment.setData(DataTypeUtils.compress(file.getBytes()));
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
+            // comment.setData(DataTypeUtils.compress(file.getBytes()));
             comment.setType(file.getContentType());
+            comment.setFileName(fileName);
+            comment.setFileUrl(fileDownloadUri);
         }
-        comment.setType(comment.getType() != null ? comment.getType() : "text/plain");
-        comment.setData(comment.getData() != null ? comment.getData() : new byte[10]);
+        // comment.setType(comment.getType() != null ? comment.getType() :
+        // "text/plain");
+        // comment.setData(comment.getData() != null ? comment.getData() : new
+        // byte[10]);
         Comment newComment = new Comment(comment, prof, content);
         newComment.setTextData(text != null ? text : "");
         content.setNumOfComments(content.getNumOfComments() + 1);
@@ -120,11 +133,18 @@ public class ImpleCommentService implements CommentService {
         Comment comment = commentRepository.findById(commentID)
                 .orElseThrow(() -> new CommentNotFoundException(commentID));
         if (file != null && !file.isEmpty()) {
-            comment.getMediaData().setData(DataTypeUtils.compress(file.getBytes()));
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/download/")
+                    .path(fileName)
+                    .toUriString();
             comment.getMediaData().setType(file.getContentType());
+            comment.getMediaData().setFileName(fileName);
+            comment.getMediaData().setFileUrl(fileDownloadUri);
         }
         comment.setTextData(text == null ? "" : text);
         return commentRepository.save(comment);
+
     }
 
     public boolean isCommentAuthor(String username, Long commentID) {

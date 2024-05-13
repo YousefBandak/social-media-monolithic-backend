@@ -17,10 +17,11 @@ public class DataType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "datatype_id")
     private Long id;
-
+    private String fileName;
+    private String fileUrl;
     private String type;
 
-    @Lob
-    @Column(name = "Data", length = 1000000000)
-    private byte[] data;
+    // @Lob
+    // @Column(name = "Data", length = 1000000000)
+    // private byte[] data;
 }

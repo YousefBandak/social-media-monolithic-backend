@@ -1,5 +1,7 @@
 package object_orienters.techspot.comment;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -26,7 +28,7 @@ public class Comment extends ReactableContent {
     private int numOfReactions;
     private int numOfReplies;
 
-    public Comment(DataType comment, Profile commentor, ReactableContent commentedOn) {
+    public Comment(List<DataType> comment, Profile commentor, ReactableContent commentedOn) {
         this.setMediaData(comment);
         this.setContentAuthor(commentor);
         this.commentedOn = commentedOn;
@@ -34,7 +36,7 @@ public class Comment extends ReactableContent {
 
     }
 
-    public Comment(DataType comment, Profile commentor, ReactableContent commentedOn, String text) {
+    public Comment(List<DataType> comment, Profile commentor, ReactableContent commentedOn, String text) {
         this.setMediaData(comment);
         this.setContentAuthor(commentor);
         this.setTextData(text);

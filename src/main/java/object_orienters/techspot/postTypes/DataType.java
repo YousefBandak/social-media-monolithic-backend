@@ -1,13 +1,10 @@
 package object_orienters.techspot.postTypes;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.*;
 import lombok.Data;
+import object_orienters.techspot.content.ReactableContent;
 
 @Entity
 @Table(name = "data_types")
@@ -17,11 +14,13 @@ public class DataType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "datatype_id")
     private Long id;
+
     private String fileName;
     private String fileUrl;
     private String type;
 
-    // @Lob
-    // @Column(name = "Data", length = 1000000000)
-    // private byte[] data;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "content_id")
+    private ReactableContent content;
 }

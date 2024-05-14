@@ -88,11 +88,11 @@ public class CommentController {
     @PutMapping("/comments/{commentID}")
     @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
-            Comment updatedComment = commentService.updateComment(contentID, commentID, file, text);
+            Comment updatedComment = commentService.updateComment(contentID, commentID, files, text);
             EntityModel<Comment> commentModel = assembler.toModel(updatedComment);
             logger.info(">>>>Comment Updated. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
@@ -108,13 +108,13 @@ public class CommentController {
     public ResponseEntity<?> addComment(
             @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Adding Comment... @ " + getTimestamp() + "<<<<");
 
             Comment createdComment = commentService.addComment(contentID,
-                    commenter, file, text);
+                    commenter, files, text);
             EntityModel<Comment> commentModel = assembler.toModel(createdComment);
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);

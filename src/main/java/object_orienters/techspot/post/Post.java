@@ -25,7 +25,7 @@ public class Post extends ReactableContent {
 
     private List<String> tags;
 
-    public Post(DataType mediaData, Privacy privacy, Profile author) {
+    public Post(List<DataType> mediaData, Privacy privacy, Profile author) {
         this.setMediaData(mediaData);
         this.privacy = privacy;
         this.setContentAuthor(author);

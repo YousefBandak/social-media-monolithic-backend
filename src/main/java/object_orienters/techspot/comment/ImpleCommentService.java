@@ -1,6 +1,5 @@
 package object_orienters.techspot.comment;
 
-import object_orienters.techspot.DataTypeUtils;
 import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
@@ -44,32 +43,39 @@ public class ImpleCommentService implements CommentService {
 
     @Override
     @Transactional
-    public Comment addComment(Long contentId, String username, MultipartFile file, String text)
+    public Comment addComment(Long contentId, String username, List<MultipartFile> files, String text)
             throws ContentNotFoundException, IOException {
         ReactableContent content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Profile prof = profileRepository.findById(username).get();
-        DataType comment = new DataType();
-        if (file != null && !file.isEmpty()) {
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
-                    .path(fileName)
-                    .toUriString();
-            // comment.setData(DataTypeUtils.compress(file.getBytes()));
-            comment.setType(file.getContentType());
-            comment.setFileName(fileName);
-            comment.setFileUrl(fileDownloadUri);
+        List<DataType> allMedia = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            System.out.println("hello");
+            files.stream().forEach((file) -> {
+                DataType media = new DataType();
+                String fileName = fileStorageService.storeFile(file);
+                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/download/")
+                        .path(fileName)
+                        .toUriString();
+                media.setType(file.getContentType());
+                media.setFileName(fileName);
+                media.setFileUrl(fileDownloadUri);
+                allMedia.add(media);
+            });
+
         }
-        // comment.setType(comment.getType() != null ? comment.getType() :
-        // "text/plain");
-        // comment.setData(comment.getData() != null ? comment.getData() : new
-        // byte[10]);
-        Comment newComment = new Comment(comment, prof, content);
+        Comment newComment = new Comment();
+        newComment.setMediaData(allMedia);
+        newComment.setContentAuthor(prof);
+        newComment.setCommentedOn(content);
         newComment.setTextData(text != null ? text : "");
         content.setNumOfComments(content.getNumOfComments() + 1);
         content.getComments().add(newComment);
-        dataTypeRepository.save(comment);
+        allMedia.forEach(media -> {
+            media.setContent(newComment);
+        });
+        dataTypeRepository.saveAll(allMedia);
         commentRepository.save(newComment);
         contentRepository.save(content);
         return newComment;
@@ -94,7 +100,7 @@ public class ImpleCommentService implements CommentService {
         ReactableContent content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Comment com = commentRepository.findById(commentId).get();
-        DataType media = com.getMediaData();
+        List<DataType> media = com.getMediaData();
         com.setMediaData(null);
         List<Reaction> reactions = com.getReactions();
         List<Comment> comments = com.getComments();
@@ -105,7 +111,7 @@ public class ImpleCommentService implements CommentService {
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
         commentRepository.delete(commentRepository.findById(commentId).get());
-        dataTypeRepository.delete(media);
+        dataTypeRepository.deleteAll(media);
         reactions.stream().forEach(reaction -> {
             Profile prof = reaction.getReactor();
             reaction.setContent(null);
@@ -126,23 +132,34 @@ public class ImpleCommentService implements CommentService {
     }
 
     @Override
-
-    public Comment updateComment(Long contentID, Long commentID, MultipartFile file, String text)
+    @Transactional
+    public Comment updateComment(Long contentID, Long commentID, List<MultipartFile> files, String text)
             throws ContentNotFoundException, CommentNotFoundException, IOException {
         contentRepository.findById(contentID).orElseThrow(() -> new ContentNotFoundException(contentID));
         Comment comment = commentRepository.findById(commentID)
                 .orElseThrow(() -> new CommentNotFoundException(commentID));
-        if (file != null && !file.isEmpty()) {
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
-                    .path(fileName)
-                    .toUriString();
-            comment.getMediaData().setType(file.getContentType());
-            comment.getMediaData().setFileName(fileName);
-            comment.getMediaData().setFileUrl(fileDownloadUri);
+        List<DataType> allMedia = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            dataTypeRepository.deleteAll(comment.getMediaData());
+            files.stream().forEach(file -> {
+                DataType media = new DataType();
+                String fileName = fileStorageService.storeFile(file);
+                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/download/")
+                        .path(fileName)
+                        .toUriString();
+                media.setType(file.getContentType());
+                media.setFileName(fileName);
+                media.setFileUrl(fileDownloadUri);
+                allMedia.add(media);
+            });
         }
-        comment.setTextData(text == null ? "" : text);
+        comment.setMediaData(allMedia);
+        comment.setTextData(text != null ? text : "");
+        allMedia.forEach(media -> {
+            media.setContent(comment);
+        });
+        dataTypeRepository.saveAll(allMedia);
         return commentRepository.save(comment);
 
     }

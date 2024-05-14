@@ -63,7 +63,7 @@ public class PostController {
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "privacy") Privacy privacy,
             @RequestParam(value = "tags", required = false) String tags)
@@ -71,7 +71,7 @@ public class PostController {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
             List<String> tagsList = Arrays.asList(tags);
-            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,
+            Post profilePost = postService.addTimelinePosts(username, files, text, privacy,
                     tagsList);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -90,12 +90,12 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "privacy") Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
-            Post editedPost = postService.editTimelinePost(username, postId, file, text, privacy);
+            Post editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
         } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {

@@ -1,6 +1,7 @@
 package object_orienters.techspot.post;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,7 +16,6 @@ import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -57,68 +57,83 @@ public class ImplePostService implements PostService {
 
     @Override
     @Transactional
-    public Post addTimelinePosts(String username, MultipartFile file,
+    public Post addTimelinePosts(String username, List<MultipartFile> files,
             String text, Privacy privacy, List<String> tags) throws UserNotFoundException, IOException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         Profile prof = profileRepository.findByOwner(user)
                 .orElseThrow(() -> new UserNotFoundException(username));
-        DataType dataType = new DataType();
-        if (file != null && !file.isEmpty()) {
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
-                    .path(fileName)
-                    .toUriString();
-            dataType.setType(file.getContentType());
-            dataType.setFileName(fileName);
-            dataType.setFileUrl(fileDownloadUri);
+        List<DataType> allMedia = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            files.stream().forEach((file) -> {
+                DataType media = new DataType();
+                String fileName = fileStorageService.storeFile(file);
+                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/download/")
+                        .path(fileName)
+                        .toUriString();
+                media.setType(file.getContentType());
+                media.setFileName(fileName);
+                media.setFileUrl(fileDownloadUri);
+                allMedia.add(media);
+            });
+
         }
-        dataTypeRepository.save(dataType);
         Post post = new Post();
         post.setTags(tags);
         post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
-        post.setMediaData(dataType);
+        post.setMediaData(allMedia);
         post.setContentAuthor(prof);
         prof.getPublishedPosts().add(post);
+        allMedia.forEach(media -> {
+            media.setContent(post);
+        });
+        dataTypeRepository.saveAll(allMedia);
         postRepository.save(post);
         profileRepository.save(prof);
+
         return post;
     }
 
     @Override
-    public Post editTimelinePost(String username, long postId, MultipartFile file, String text, Privacy privacy)
+    @Transactional
+    public Post editTimelinePost(String username, long postId, List<MultipartFile> files, String text, Privacy privacy)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException {
 
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException(postId));
-
         if ((!post.getContentAuthor().equals(user) ||
                 !user.getPublishedPosts().contains(post))) {
             throw new PostUnrelatedToUserException(username, postId);
         }
-        if (file != null && !file.isEmpty()) {
-
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
-                    .path(fileName)
-                    .toUriString();
-            post.getMediaData().setType(file.getContentType());
-            post.getMediaData().setFileName(fileName);
-            post.getMediaData().setFileUrl(fileDownloadUri);
+        List<DataType> allMedia = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            dataTypeRepository.deleteAll(post.getMediaData());
+            files.stream().forEach(file -> {
+                DataType media = new DataType();
+                String fileName = fileStorageService.storeFile(file);
+                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/download/")
+                        .path(fileName)
+                        .toUriString();
+                media.setType(file.getContentType());
+                media.setFileName(fileName);
+                media.setFileUrl(fileDownloadUri);
+                allMedia.add(media);
+            });
         }
-        post.setPrivacy(privacy == null ? post.getPrivacy() : privacy);
-        post.setTextData(text == null ? "" : text);
-        // post.setAuthor(user);
-
-        // post.setMediaData(newPost.getMediaData());
-        // post.setPrivacy(newPost.getPrivacy());
-        // post.setTextData(newPost.getTextData());
+        post.setMediaData(allMedia);
+        System.out.println(privacy);
+        post.setPrivacy(privacy != null ? privacy : post.getPrivacy());
+        System.out.println(text);
+        post.setTextData(text != null ? text : post.getTextData());
+        allMedia.forEach(media -> {
+            media.setContent(post);
+        });
+        dataTypeRepository.saveAll(allMedia);
         postRepository.save(post);
-        // user.getPublishedPosts().add(post);
         profileRepository.save(user);
         return post;
     }
@@ -138,10 +153,9 @@ public class ImplePostService implements PostService {
                     sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
                     profileRepository.save(sharer);
                 });
-        DataType mediaData = post.getMediaData();
         post.setContentAuthor(null);
-        post.setMediaData(null);
-        dataTypeRepository.delete(mediaData);
+        post.setMediaData(new ArrayList<>());
+        dataTypeRepository.deleteAll(post.getMediaData());
         user.getPublishedPosts().remove(post);
         postRepository.delete(post);
         profileRepository.save(user);

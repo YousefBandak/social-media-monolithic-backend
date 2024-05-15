@@ -150,7 +150,7 @@
 
 
          EntityModel<Content> entityModel = EntityModel.of(post);
-         given(postService.addTimelinePosts("husam_ramoni",mockFile,"Post husam",Privacy.PUBLIC, new ArrayList<>())).willReturn(post);
+         //given(postService.addTimelinePosts("husam_ramoni",mockFile,"Post husam",Privacy.PUBLIC, new ArrayList<>())).willReturn(post);
          given(assembler.toModel(any(Post.class))).willReturn(entityModel);
 
          // Act & Assert

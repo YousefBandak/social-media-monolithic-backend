@@ -6,11 +6,26 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import object_orienters.techspot.postTypes.DataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
 public class DataTypeUtils {
     private static Logger logger = LoggerFactory.getLogger(DataTypeUtils.class);
+
+    public static DataType createDataType(MultipartFile file) throws IOException {
+        DataType dataType = new DataType();
+        if (file != null && !file.isEmpty()) {
+            dataType.setType(file.getContentType());
+            dataType.setData(compress(file.getBytes()));
+        } else {
+            dataType.setType("text/plain");  // Default type if no file is provided
+            dataType.setData(new byte[0]);  // Empty data if no file is provided
+        }
+        return dataType;
+    }
+
 
     public static byte[] compress(byte[] data) {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();

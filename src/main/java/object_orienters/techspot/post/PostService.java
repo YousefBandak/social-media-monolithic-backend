@@ -14,8 +14,7 @@ public interface PostService {
 
         Collection<? extends Content> getPosts(String username) throws UserNotFoundException;
 
-        public Post addTimelinePosts(String username, MultipartFile file, String text, Privacy privacy,
-                        List<String> tags) throws UserNotFoundException, IOException;
+        public Post addTimelinePosts(String username, MultipartFile file, String text, Privacy privacy) throws UserNotFoundException, IOException;
 
         public Post editTimelinePost(String username, long postId, MultipartFile file,
                         String text, Privacy privacy)

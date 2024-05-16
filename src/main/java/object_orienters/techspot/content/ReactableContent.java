@@ -21,9 +21,8 @@ public abstract class ReactableContent extends Content {
     @ManyToOne(cascade = CascadeType.ALL)
     private Profile contentAuthor;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = true)
-    private DataType mediaData;
+    @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<DataType> mediaData;
     private String textData;
 
     @JsonIgnore

@@ -1,6 +1,8 @@
 package object_orienters.techspot.post;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ImpleProfileService;
@@ -63,16 +65,13 @@ public class PostController {
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
-            @RequestParam(value = "privacy") Privacy privacy,
-            @RequestParam(value = "tags", required = false) String tags)
+            @RequestParam(value = "privacy") Privacy privacy)
             throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            List<String> tagsList = Arrays.asList(tags);
-            Post profilePost = postService.addTimelinePosts(username, file, text, privacy,
-                    tagsList);
+            Post profilePost = postService.addTimelinePosts(username, files, text, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -84,18 +83,20 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+
         }
     }
 
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "privacy") Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
-            Post editedPost = postService.editTimelinePost(username, postId, file, text, privacy);
+            Post editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
         } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {

@@ -4,12 +4,17 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.profile.Profile;
 
+
 import java.util.List;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -23,9 +28,10 @@ public class Post extends ReactableContent {
 
     private int numOfShares;
 
-    private List<String> tags;
 
-    public Post(DataType mediaData, Privacy privacy, Profile author) {
+    private String tags;
+
+    public Post(List<DataType> mediaData, Privacy privacy, Profile author) {
         this.setMediaData(mediaData);
         this.privacy = privacy;
         this.setContentAuthor(author);
@@ -48,6 +54,7 @@ public class Post extends ReactableContent {
                 ", numOfReactions=" + this.getNumOfReactions() +
                 ", numOfShares=" + numOfShares +
                 '}';
+
     }
 
     @Override

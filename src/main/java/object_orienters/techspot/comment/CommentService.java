@@ -14,13 +14,13 @@ public interface CommentService {
 
         public List<Comment> getComments(Long contentId) throws ContentNotFoundException;
 
-        public Comment addComment(Long contentId, String username, MultipartFile file, String text)
+        public Comment addComment(Long contentId, String username, List<MultipartFile> files, String text)
                         throws PostNotFoundException, ContentNotFoundException, IOException;
 
         public void deleteComment(Long contentId, Long commentId)
                         throws PostNotFoundException, ContentNotFoundException, CommentNotFoundException;
 
-        public Comment updateComment(Long contentID, Long commentID, MultipartFile file, String text)
+        public Comment updateComment(Long contentID, Long commentID, List<MultipartFile> files, String text)
                         throws ContentNotFoundException, CommentNotFoundException, IOException;
 
 }

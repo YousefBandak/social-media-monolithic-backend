@@ -82,7 +82,7 @@ public class ImplePostService implements PostService {
                 DataType media = new DataType();
                 String fileName = fileStorageService.storeFile(file);
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
+                        .path("/media_uploads/")
                         .path(fileName)
                         .toUriString();
                 media.setType(file.getContentType());
@@ -158,7 +158,7 @@ public class ImplePostService implements PostService {
                 DataType media = new DataType();
                 String fileName = fileStorageService.storeFile(file);
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
+                        .path("/media_uploads/")
                         .path(fileName)
                         .toUriString();
                 media.setType(file.getContentType());
@@ -197,8 +197,12 @@ public class ImplePostService implements PostService {
                     profileRepository.save(sharer);
                 });
         post.setContentAuthor(null);
+        post.getMediaData().stream().forEach(media-> {
+            System.out.println("deleting medias");
+            fileStorageService.deleteFile(media.getFileName());
+            dataTypeRepository.delete(media);
+        });
         post.setMediaData(new ArrayList<>());
-        dataTypeRepository.deleteAll(post.getMediaData());
         user.getPublishedPosts().remove(post);
         postRepository.delete(post);
         profileRepository.save(user);

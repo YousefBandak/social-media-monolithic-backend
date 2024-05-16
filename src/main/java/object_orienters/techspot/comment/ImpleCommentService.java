@@ -50,12 +50,11 @@ public class ImpleCommentService implements CommentService {
         Profile prof = profileRepository.findById(username).get();
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            System.out.println("hello");
             files.stream().forEach((file) -> {
                 DataType media = new DataType();
                 String fileName = fileStorageService.storeFile(file);
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
+                        .path("/media_uploads/")
                         .path(fileName)
                         .toUriString();
                 media.setType(file.getContentType());
@@ -63,7 +62,6 @@ public class ImpleCommentService implements CommentService {
                 media.setFileUrl(fileDownloadUri);
                 allMedia.add(media);
             });
-
         }
         Comment newComment = new Comment();
         newComment.setMediaData(allMedia);
@@ -100,10 +98,14 @@ public class ImpleCommentService implements CommentService {
         ReactableContent content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Comment com = commentRepository.findById(commentId).get();
-        List<DataType> media = com.getMediaData();
-        com.setMediaData(null);
         List<Reaction> reactions = com.getReactions();
         List<Comment> comments = com.getComments();
+        List<DataType> medias = com.getMediaData();
+        medias.stream().forEach(media -> {
+            fileStorageService.deleteFile(media.getFileName());
+            dataTypeRepository.delete(media);
+        });
+        com.setMediaData(null);
         com.setReactions(new ArrayList<>());
         com.setComments(new ArrayList<>());
         com.setContentAuthor(null);
@@ -111,7 +113,6 @@ public class ImpleCommentService implements CommentService {
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
         commentRepository.delete(commentRepository.findById(commentId).get());
-        dataTypeRepository.deleteAll(media);
         reactions.stream().forEach(reaction -> {
             Profile prof = reaction.getReactor();
             reaction.setContent(null);
@@ -145,7 +146,7 @@ public class ImpleCommentService implements CommentService {
                 DataType media = new DataType();
                 String fileName = fileStorageService.storeFile(file);
                 String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
+                        .path("/media_uploads/")
                         .path(fileName)
                         .toUriString();
                 media.setType(file.getContentType());

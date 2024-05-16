@@ -1,6 +1,8 @@
 package object_orienters.techspot.post;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ImpleProfileService;
@@ -65,14 +67,11 @@ public class PostController {
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
-            @RequestParam(value = "privacy") Privacy privacy,
-            @RequestParam(value = "tags", required = false) String tags)
+            @RequestParam(value = "privacy") Privacy privacy)
             throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
-            List<String> tagsList = Arrays.asList(tags);
-            Post profilePost = postService.addTimelinePosts(username, files, text, privacy,
-                    tagsList);
+            Post profilePost = postService.addTimelinePosts(username, files, text, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
@@ -84,12 +83,14 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+
         }
     }
 
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
+
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "privacy") Privacy privacy) throws IOException {

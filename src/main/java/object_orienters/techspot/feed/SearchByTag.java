@@ -15,7 +15,7 @@ public class SearchByTag extends Strategy {
 
     @Override
     public void operate() {
-        this.getContentList().addAll(postRepository.findByTag(tag));
+        this.getContentList().addAll(postRepository.findByTagName(tag));
     }
 
 }

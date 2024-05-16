@@ -11,9 +11,9 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
+    // Assuming Tag has a 'tagName' field, and you want to find Posts by tagName
+    @Query(value = "SELECT * FROM posts WHERE tags LIKE %:tagName%", nativeQuery = true)
+    List<Post> findByTagName(@Param("tagName") String tagName);
 
-    Collection<Post> findByContentAuthor(Profile user);
-
-    @Query("SELECT p FROM Post p JOIN p.tags t WHERE t = :tag")
-    List<Post> findByTag(@Param("tag") String tag);
 }
+

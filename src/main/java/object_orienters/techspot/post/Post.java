@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
@@ -13,8 +12,6 @@ import object_orienters.techspot.profile.Profile;
 
 import java.util.List;
 
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Data

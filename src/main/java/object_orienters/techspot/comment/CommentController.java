@@ -2,7 +2,7 @@ package object_orienters.techspot.comment;
 
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.post.ContentIsPrivateException;
-import object_orienters.techspot.post.ImplePostService;
+import object_orienters.techspot.post.PostService;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostNotFoundException;
 
@@ -30,13 +30,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class CommentController {
     private final CommentModelAssembler assembler;
     private final ImpleCommentService commentService;
-    private final ImplePostService postService;
+    private final PostService postService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService,
-            ImplePostService postService) {
+            PostService postService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
         this.postService = postService;

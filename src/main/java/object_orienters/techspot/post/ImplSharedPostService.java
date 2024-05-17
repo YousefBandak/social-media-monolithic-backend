@@ -48,7 +48,7 @@ public class ImplSharedPostService implements SharedPostService {
     @Transactional
     public SharedPost createSharedPost(String sharerUsername, Long postID, String privacy)
             throws UserNotFoundException, PostNotFoundException {
-        Post originalPost = postRepository.findById(postID).orElseThrow(() -> new PostNotFoundException(postID));
+        Post originalPost = postRepository.findByContentID(postID).orElseThrow(() -> new PostNotFoundException(postID));
         Profile sharer = profileRepository.findById(sharerUsername)
                 .orElseThrow(() -> new UserNotFoundException(sharerUsername));
         Privacy privacyType = Privacy.valueOf(privacy);
@@ -57,7 +57,7 @@ public class ImplSharedPostService implements SharedPostService {
         originalPost.setNumOfShares(originalPost.getNumOfShares() + 1);
         sharedPostRepository.save(sharedPost);
 
-        sharer.getSharedPosts().add(sharedPost);
+       // sharer.getSharedPosts().add(sharedPost);
         profileRepository.save(sharer);
         return sharedPost;
     }
@@ -78,7 +78,7 @@ public class ImplSharedPostService implements SharedPostService {
         SharedPost post = getSharedPost(sharedPostId);
         Post orignalPost = post.getPost();
         orignalPost.setNumOfShares(post.getPost().getNumOfShares() - 1);
-        prof.getSharedPosts().remove(post);
+       // prof.getSharedPosts().remove(post);
         post.setPost(null);
         post.setSharer(null);
         sharedPostRepository.delete(post);

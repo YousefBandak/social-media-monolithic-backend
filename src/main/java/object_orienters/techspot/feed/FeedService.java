@@ -1,61 +1,67 @@
 package object_orienters.techspot.feed;
 
-import object_orienters.techspot.content.Content;
+import object_orienters.techspot.post.Post;
+import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class FeedService {
 
-    @Autowired
+
     private ProfileRepository profileRepository;
+    private FeedByFollowingStrategy feedByFollowingStrategy;
+    private FeedByTag feedByTag;
+    private FeedByAuthor feedByAuthor;
+    private ReactionsByContent reactionsByContent;
+    private CommentsByContent commentsByContent;
+    private SearchByName searchByName;
 
-    HashMap<String, Strategy> strategyMap = new HashMap<>();
 
-    public Map<String, Object> feedContent(FeedType feedType, String value, int offset, int limit, String ClientUsername) {
-        Strategy strategyReference;
-        List<Content> currentFeedReference;
-        if (strategyMap.containsKey(feedType.name().concat(value))) {
-            strategyReference = strategyMap.get(feedType.name().concat(value));
-        } else {
-            Strategy strategy = null;
-            switch (feedType) {
+    @Autowired
+    public FeedService(FeedByFollowingStrategy feedByFollowingStrategy,
+                       ProfileRepository profileRepository,
+                       FeedByTag feedByTag,
+                       FeedByAuthor feedByAuthor,
+                       CommentsByContent commentsByContent,
+                       ReactionsByContent reactionsByContent,
+                       SearchByName searchByName) {
+        this.feedByFollowingStrategy = feedByFollowingStrategy;
+        this.profileRepository = profileRepository;
+        this.feedByTag = feedByTag;
+        this.feedByAuthor = feedByAuthor;
+        this.commentsByContent = commentsByContent;
+        this.reactionsByContent = reactionsByContent;
+        this.searchByName = searchByName;
+    }
 
-                case ALL_USERS:
-                    strategy = new addByFollowingStrategy(
-                            profileRepository.findByUsername(ClientUsername)
-                                    .orElseThrow((() -> new ProfileNotFoundException(ClientUsername))));
-                    break;
-                case TOPIC:
-                    strategy = new SearchByTag(value);
-                    break;
+    public Page<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
+        switch (feedType) {
 
-            }
-            strategyReference = strategy;
-            strategyMap.put(feedType.name().concat(value), strategy);
+            case ALL_USERS:
+                Profile profile = profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername));
+                return feedByFollowingStrategy.operate(profile, pageNumber, pageSize);
+            case ONE_USER:
+                return feedByAuthor.operate(profileRepository.findByUsername(value).orElseThrow(() -> new ProfileNotFoundException(value)), pageNumber, pageSize);
+            case TOPIC:
+                return feedByTag.operate(value, pageNumber, pageSize);
+            case COMMENTS:
+                return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+            case REACTIONS:
+                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+            case PROFILES:
+                return searchByName.operate(value, pageNumber, pageSize);
+            default:
+                return Page.empty();
         }
-        strategyReference.operate();
-        currentFeedReference = strategyReference.getContentList();
-        currentFeedReference.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
-        Map<String, Object> map = new HashMap<>();
-        map.put("total", currentFeedReference.size());
-        map.put("offset", offset);
-        map.put("limit", limit);
-        map.put("data", currentFeedReference.subList(offset, Math.min(offset + limit, currentFeedReference.size())));
-        return map;
+
 
     }
 
     enum FeedType {
-        ALL_USERS,
-        ONE_USER,
-        TOPIC
+        ALL_USERS, ONE_USER, TOPIC, COMMENTS, REACTIONS, PROFILES
     }
 }

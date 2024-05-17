@@ -25,14 +25,13 @@ public class Post extends ReactableContent {
 
     private int numOfShares;
 
-
     private String tags;
 
     public Post(List<DataType> mediaData, Privacy privacy, Profile author) {
         this.setMediaData(mediaData);
         this.privacy = privacy;
         this.setContentAuthor(author);
-        author.getPublishedPosts().add(this);
+        //author.getPublishedPosts().add(this);
     }
 
     public Post(String textData, Privacy privacy, Profile author) {

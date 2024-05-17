@@ -1,12 +1,15 @@
 package object_orienters.techspot.reaction;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
+
+import java.sql.Timestamp;
 
 @Entity
 @Data
@@ -30,6 +33,9 @@ public class Reaction {
     @JsonBackReference
     @NotNull(message = "Content should not be null.")
     private ReactableContent content;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+    private Timestamp timestamp;
 
     public Reaction(Profile reactor, ReactionType reactionType, ReactableContent content) {
         this.reactor = reactor;

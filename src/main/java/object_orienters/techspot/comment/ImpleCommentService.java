@@ -45,7 +45,7 @@ public class ImpleCommentService implements CommentService {
     @Transactional
     public Comment addComment(Long contentId, String username, List<MultipartFile> files, String text)
             throws ContentNotFoundException, IOException {
-        ReactableContent content = contentRepository.findById(contentId)
+        ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Profile prof = profileRepository.findById(username).get();
         List<DataType> allMedia = new ArrayList<>();
@@ -81,13 +81,13 @@ public class ImpleCommentService implements CommentService {
 
     @Override
     public Comment getComment(Long commentId) throws ContentNotFoundException {
-        return commentRepository.findById(commentId)
+        return commentRepository.findByContentID(commentId)
                 .orElseThrow(() -> new ContentNotFoundException(commentId));
     }
 
     @Override
     public List<Comment> getComments(Long contentId) throws ContentNotFoundException {
-        ReactableContent content = contentRepository.findById(contentId)
+        ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         return content.getComments();
     }
@@ -95,9 +95,10 @@ public class ImpleCommentService implements CommentService {
     @Override
     @Transactional
     public void deleteComment(Long contentId, Long commentId) throws ContentNotFoundException {
-        ReactableContent content = contentRepository.findById(contentId)
+        ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
-        Comment com = commentRepository.findById(commentId).get();
+        Comment com = commentRepository.findByContentID(commentId).get();
+
         List<Reaction> reactions = com.getReactions();
         List<Comment> comments = com.getComments();
         List<DataType> medias = com.getMediaData();
@@ -112,7 +113,7 @@ public class ImpleCommentService implements CommentService {
         com.setCommentedOn(null);
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
-        commentRepository.delete(commentRepository.findById(commentId).get());
+        commentRepository.delete(commentRepository.findByContentID(commentId).get());
         reactions.stream().forEach(reaction -> {
             Profile prof = reaction.getReactor();
             reaction.setContent(null);
@@ -136,8 +137,8 @@ public class ImpleCommentService implements CommentService {
     @Transactional
     public Comment updateComment(Long contentID, Long commentID, List<MultipartFile> files, String text)
             throws ContentNotFoundException, CommentNotFoundException, IOException {
-        contentRepository.findById(contentID).orElseThrow(() -> new ContentNotFoundException(contentID));
-        Comment comment = commentRepository.findById(commentID)
+        contentRepository.findByContentID(contentID).orElseThrow(() -> new ContentNotFoundException(contentID));
+        Comment comment = commentRepository.findByContentID(commentID)
                 .orElseThrow(() -> new CommentNotFoundException(commentID));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
@@ -169,7 +170,7 @@ public class ImpleCommentService implements CommentService {
     }
 
     public boolean isCommentAuthor(String username, Long commentID) {
-        Optional<Comment> commentOptional = commentRepository.findById(commentID);
+        Optional<Comment> commentOptional = commentRepository.findByContentID(commentID);
         if (commentOptional.isPresent()) {
             Comment comment = commentOptional.get();
             return comment.getContentAuthor().getUsername().equals(username);

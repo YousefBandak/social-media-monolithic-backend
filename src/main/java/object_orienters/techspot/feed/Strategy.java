@@ -1,19 +1,40 @@
 package object_orienters.techspot.feed;
 
-import lombok.Getter;
-import object_orienters.techspot.content.Content;
+import object_orienters.techspot.comment.Comment;
+import object_orienters.techspot.comment.CommentRepository;
+import object_orienters.techspot.content.ReactableContentRepository;
+import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.post.Post;
+import object_orienters.techspot.post.PostRepository;
+import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.reaction.ReactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.swing.text.AbstractDocument;
 import java.util.List;
 
-@Getter
-public abstract class Strategy {
+@Service
+public abstract  class Strategy<P, T> {
 
-    private List<Content> contentList;
+    @Autowired
+    PostRepository postRepository = null;
 
-    Strategy() {
-        contentList = new ArrayList<>();
-    }
+    @Autowired
+    ReactableContentRepository reactableContentRepository = null;
 
-    public abstract void operate();
+    @Autowired
+    CommentRepository commentRepository = null;
+
+    @Autowired
+    ReactionRepository reactionRepository = null;
+
+    @Autowired
+    ProfileRepository profileRepository = null;
+
+
+    abstract Page<P> operate(T factor, int pageNumber, int pageSize);
+
 }

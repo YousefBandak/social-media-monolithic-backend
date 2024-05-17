@@ -1,8 +1,6 @@
 package object_orienters.techspot.post;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ImpleProfileService;
@@ -20,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/profiles/{username}")
@@ -29,14 +30,14 @@ public class PostController {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final PostModelAssembler assembler;
     private final SharedPostModelAssembler sharedPostAssembler;
-    private final ImplePostService postService;
+    private final PostService postService;
     private final ImplSharedPostService sharedPostService;
 
     private final ImpleProfileService profileService;
 
-    PostController(PostModelAssembler assembler, ImplePostService postService,
-            SharedPostModelAssembler sharedPostAssembler,
-            ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
+    PostController(PostModelAssembler assembler, PostService postService,
+                   SharedPostModelAssembler sharedPostAssembler,
+                   ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
@@ -49,10 +50,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<?> getTimelinePosts(@PathVariable String username) {
+    public ResponseEntity<?> getTimelinePosts(@PathVariable String username, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
-            Collection<? extends Content> posts = postService.getPosts(username);
+            Collection<? extends Content> posts = postService.getPosts(username, offset, limit);
             logger.info(">>>>Timeline Posts Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toCollectionModel(posts));
         } catch (UserNotFoundException exception) {
@@ -65,9 +66,9 @@ public class PostController {
     @PostMapping("/posts")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addTimelinePosts(@PathVariable String username,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files,
-            @RequestParam(value = "text", required = false) String text,
-            @RequestParam(value = "privacy") Privacy privacy)
+                                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                              @RequestParam(value = "text", required = false) String text,
+                                              @RequestParam(value = "privacy") Privacy privacy)
             throws IOException {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
@@ -91,9 +92,9 @@ public class PostController {
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
 
-            @RequestParam(value = "files", required = false) List<MultipartFile> files,
-            @RequestParam(value = "text", required = false) String text,
-            @RequestParam(value = "privacy") Privacy privacy) throws IOException {
+                                              @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                              @RequestParam(value = "text", required = false) String text,
+                                              @RequestParam(value = "privacy") Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
             Post editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
@@ -159,7 +160,7 @@ public class PostController {
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap['sharer'] == authentication.principal.username")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
-            @RequestBody Map<String, String> bodyMap) {
+                                             @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
             SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId,
@@ -240,7 +241,7 @@ public class PostController {
     @PutMapping("/sharedPosts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-            @Valid @RequestBody Map<String, String> bodyMap) {
+                                              @Valid @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
             SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,

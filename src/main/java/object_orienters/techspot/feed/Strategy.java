@@ -1,19 +1,30 @@
 package object_orienters.techspot.feed;
 
-import lombok.Getter;
-import object_orienters.techspot.content.Content;
+import object_orienters.techspot.comment.Comment;
+import object_orienters.techspot.comment.CommentRepository;
+import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.post.Post;
+import object_orienters.techspot.post.PostRepository;
+import object_orienters.techspot.profile.Profile;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import javax.swing.text.AbstractDocument;
 import java.util.List;
 
-@Getter
-public abstract class Strategy {
+@Service
+public abstract  class Strategy<T> {
 
-    private List<Content> contentList;
+    @Autowired
+    PostRepository postRepository = null;
 
-    Strategy() {
-        contentList = new ArrayList<>();
-    }
+    @Autowired
+    CommentRepository commentRepository = null;
 
-    public abstract void operate();
+
+
+    abstract Page<Post> operate(T profile, int pageNumber, int pageSize);
+
+    abstract Long getPostCount(Profile profile);
 }

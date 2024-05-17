@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
@@ -35,7 +34,7 @@ public class Post extends ReactableContent {
         this.setMediaData(mediaData);
         this.privacy = privacy;
         this.setContentAuthor(author);
-        author.getPublishedPosts().add(this);
+        //author.getPublishedPosts().add(this);
     }
 
     public Post(String textData, Privacy privacy, Profile author) {

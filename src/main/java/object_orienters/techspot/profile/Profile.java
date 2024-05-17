@@ -9,19 +9,16 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import object_orienters.techspot.content.Content;
-import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.model.UserBase;
-import object_orienters.techspot.post.Post;
-import object_orienters.techspot.post.SharedPost;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.security.model.User;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({"unchecked", "rawtypes"})
 @Entity
 @Data
 @NoArgsConstructor
@@ -59,16 +56,8 @@ public class Profile extends UserBase {
     @JsonIgnore
     private List<Profile> followers;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> publishedPosts;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "sharer", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SharedPost> sharedPosts;
-
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
-            String dob) {
+                   String dob) {
         this.owner = user;
         this.setName(name);
         this.profession = profession;
@@ -77,15 +66,13 @@ public class Profile extends UserBase {
         this.gender = gender;
         this.followers = new ArrayList<>();
         this.following = new ArrayList<>();
-        this.publishedPosts = new ArrayList<>();
         this.dob = LocalDate.parse(dob);
         this.setUsername(user.getUsername());
     }
 
     public String toString() {
         return "Username: " + getUsername() + " Name: " + getName() + " Profession: " + profession + " Email: "
-                + getEmail()
-                + "User: " + owner;
+                + getEmail();
     }
 
     public List<Profile> getFollowing() {
@@ -95,41 +82,9 @@ public class Profile extends UserBase {
         return following;
     }
 
-    @JsonIgnore
-    private List<? extends Content> getPrivateAndPublicTimelinePosts() {
-        List<? extends Content> timeline = new ArrayList<>();
-        timeline.addAll((Collection) this.getSharedPosts());
-        timeline.addAll((Collection) this.getPublishedPosts());
-        return timeline;
-    }
 
-    @JsonIgnore
-    public List<? extends Content> getTimelinePostsByPrivacy(Privacy privacy) {
-        return switch (privacy) {
-            case PUBLIC -> this.getPublicTimelinePosts();
-            case PRIVATE -> this.getPrivateAndPublicTimelinePosts();
-        };
-    }
 
-    @JsonIgnore
-    private List<? extends Content> getPublicTimelinePosts() {
-        return this.getPrivateAndPublicTimelinePosts().stream()
-                .filter(content -> content.getPrivacy().equals(Privacy.PUBLIC)).toList();
-    }
 
-    public List<Post> getPublishedPosts() {
-        if (this.publishedPosts == null) {
-            this.publishedPosts = new ArrayList<>();
-        }
-        return publishedPosts;
-    }
-
-    public List<SharedPost> getSharedPosts() {
-        if (this.sharedPosts == null) {
-            this.sharedPosts = new ArrayList<>();
-        }
-        return sharedPosts;
-    }
 
     public Timestamp getLastLogin() {
         return owner.getLastLogin();

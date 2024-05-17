@@ -8,43 +8,51 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Service
 public class FeedService {
 
 
     private ProfileRepository profileRepository;
-    private AddByFollowingStrategy addByFollowingStrategy;
-    private SearchByTag searchByTag;
+    private FeedByFollowingStrategy feedByFollowingStrategy;
+    private FeedByTag feedByTag;
+    private FeedByAuthor feedByAuthor;
+
+    private CommentsByContent commentsByContent;
 
     @Autowired
-    public FeedService(AddByFollowingStrategy addByFollowingStrategy, ProfileRepository profileRepository, SearchByTag searchByTag) {
-        this.addByFollowingStrategy = addByFollowingStrategy;
+    public FeedService(FeedByFollowingStrategy feedByFollowingStrategy,
+                       ProfileRepository profileRepository,
+                       FeedByTag feedByTag,
+                       FeedByAuthor feedByAuthor,
+                       CommentsByContent commentsByContent) {
+        this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
-        this.searchByTag = searchByTag;
+        this.feedByTag = feedByTag;
+        this.feedByAuthor = feedByAuthor;
+        this.commentsByContent = commentsByContent;
+
     }
 
-    public Page<Post> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
+    public Page<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
         switch (feedType) {
 
             case ALL_USERS:
                 Profile profile = profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername));
-                return addByFollowingStrategy.operate(profile, pageNumber, pageSize);
+                return feedByFollowingStrategy.operate(profile, pageNumber, pageSize);
             case ONE_USER:
-                return null;
+                return feedByAuthor.operate(profileRepository.findByUsername(value).orElseThrow(() -> new ProfileNotFoundException(value)), pageNumber, pageSize);
             case TOPIC:
-                return searchByTag.operate(value, pageNumber, pageSize);
+                return feedByTag.operate(value, pageNumber, pageSize);
+            case COMMENTS:
+                return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
             default:
-                return null;
+                return Page.empty();
         }
-
 
 
     }
 
     enum FeedType {
-        ALL_USERS, ONE_USER, TOPIC
+        ALL_USERS, ONE_USER, TOPIC, COMMENTS
     }
 }

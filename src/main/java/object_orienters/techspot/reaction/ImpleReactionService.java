@@ -37,7 +37,7 @@ public class ImpleReactionService implements ReactionService {
 
     @Override
     public List<Reaction> getReactions(Long contentId) {
-        ReactableContent content = contentRepository.findById(contentId)
+        ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         return content.getReactions();
     }
@@ -68,7 +68,7 @@ public class ImpleReactionService implements ReactionService {
         Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
         Profile reactor = profileRepository.findById(reactorID)
                 .orElseThrow(() -> new UserNotFoundException(reactorID));
-        ReactableContent content = contentRepository.findById(contentId)
+        ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         content.setNumOfReactions(content.getNumOfReactions() + 1);
         Reaction createdReaction = new Reaction(reactor, reactionTypee, content);

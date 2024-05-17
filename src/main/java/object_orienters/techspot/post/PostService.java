@@ -62,7 +62,8 @@ public class PostService {
 
     public Collection<? extends Content> getPosts(String username, int offset, int limit) throws UserNotFoundException {
         Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
-        return postRepository.findAllByContentAuthor(user, PageRequest.of(offset, limit));
+
+        return postRepository.findAllByContentAuthorAndPrivacy(user, getAllowedPrincipalPrivacy(username), PageRequest.of(offset, limit));
     }
 
 

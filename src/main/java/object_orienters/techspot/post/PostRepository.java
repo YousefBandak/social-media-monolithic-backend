@@ -14,8 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
-    @Query("SELECT p FROM Post p JOIN p.tags t WHERE t = :tag")
-    List<Post> findByTag(@Param("tag") String tag, Pageable pageable);
 
     Optional<Post> findByContentID(Long Id);
 
@@ -23,8 +21,8 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
 
     void delete(Post post);
 
-    @Query(value = "SELECT * FROM posts WHERE tags LIKE %:tagName%", nativeQuery = true)
-    List<Post> findByTagName(@Param("tagName") String tagName);
+    @Query("SELECT p FROM Post p WHERE p.tags LIKE CONCAT('%', :tagName, '%') AND p.privacy IN :privacies")
+    Page<Post> findByTagNameAndPrivacy(@Param("tagName") String tagName, @Param("privacies") List<Privacy> privacies, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.contentAuthor IN :authors AND p.privacy IN :privacies")
     Page<Post> findPostsByContentAuthorsAndPrivacy(@Param("authors") List<Profile> authors, @Param("privacies") List<Privacy> privacies, Pageable pageable);

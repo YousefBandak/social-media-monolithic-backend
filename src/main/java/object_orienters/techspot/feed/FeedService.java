@@ -17,40 +17,30 @@ public class FeedService {
 
     private ProfileRepository profileRepository;
     private AddByFollowingStrategy addByFollowingStrategy;
+    private SearchByTag searchByTag;
 
     @Autowired
-    public FeedService(AddByFollowingStrategy addByFollowingStrategy, ProfileRepository profileRepository) {
+    public FeedService(AddByFollowingStrategy addByFollowingStrategy, ProfileRepository profileRepository, SearchByTag searchByTag) {
         this.addByFollowingStrategy = addByFollowingStrategy;
         this.profileRepository = profileRepository;
+        this.searchByTag = searchByTag;
     }
 
     public Page<Post> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
-        Profile profile = profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername));
-        System.out.println("Profile: " + profile);
-        Strategy strategyReference = null;
         switch (feedType) {
 
             case ALL_USERS:
-                System.out.println("ALL_USERS");
-                strategyReference = addByFollowingStrategy;
-                break;
+                Profile profile = profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername));
+                return addByFollowingStrategy.operate(profile, pageNumber, pageSize);
+            case ONE_USER:
+                return null;
             case TOPIC:
-                //  strategy = new SearchByTag(value);
-                break;
-
+                return searchByTag.operate(value, pageNumber, pageSize);
+            default:
+                return null;
         }
 
-//        System.out.println("Strategy: " + strategyReference);
-//        System.out.println("count: " + strategyReference.getPostCount(profile));
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("total", strategyReference.getPostCount(profile));
-//        map.put("offset", offset);
-//        map.put("limit", limit);
-//        map.put("data", strategyReference.operate(profile, limit, offset));
-//        System.out.println("Map: " + map);
-//        return map;
 
-        return strategyReference.operate(profile, pageNumber, pageSize);
 
     }
 

@@ -22,9 +22,6 @@ public abstract  class Strategy<T> {
     @Autowired
     CommentRepository commentRepository = null;
 
+    abstract Page<Post> operate(T pageable, int pageNumber, int pageSize);
 
-
-    abstract Page<Post> operate(T profile, int pageNumber, int pageSize);
-
-    abstract Long getPostCount(Profile profile);
 }

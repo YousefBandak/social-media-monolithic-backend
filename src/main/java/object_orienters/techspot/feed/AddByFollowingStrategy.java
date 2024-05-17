@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,22 +20,7 @@ public class AddByFollowingStrategy extends Strategy<Profile> {
     }
 
     public Page<Post> operate(Profile profile, int pageNumber, int pageSize) {
-        List<Privacy> privacies = new ArrayList<>();
-        privacies.add(Privacy.PUBLIC);
-
-        Page e = postRepository.findPostsByContentAuthorsAndPrivacy(profile.getFollowing(), privacies, PageRequest.of(pageNumber,pageSize , Sort.by("timestamp").descending()));
-        System.out.println("Posts: " + e);
-        return e;
-    }
-
-
-
-    @Override
-    public Long getPostCount(Profile profile){
-       //List<Profile> authors = List.copyOf();
-      //  authors.add(profile);
-        List<Privacy> privacies = new ArrayList<>();
-        privacies.add(Privacy.PUBLIC);
-        return postRepository.countPostsByContentAuthorsAndPrivacy(profile.getFollowing(), privacies);
+        return postRepository.findPostsByContentAuthorsAndPrivacy(profile.getFollowing(),
+                List.of(Privacy.PUBLIC), PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
     }
 }

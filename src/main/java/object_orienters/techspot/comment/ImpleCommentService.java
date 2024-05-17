@@ -141,7 +141,10 @@ public class ImpleCommentService implements CommentService {
                 .orElseThrow(() -> new CommentNotFoundException(commentID));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            dataTypeRepository.deleteAll(comment.getMediaData());
+            comment.getMediaData().stream().forEach(media -> {
+                fileStorageService.deleteFile(media.getFileName());
+                dataTypeRepository.delete(media);
+            });
             files.stream().forEach(file -> {
                 DataType media = new DataType();
                 String fileName = fileStorageService.storeFile(file);

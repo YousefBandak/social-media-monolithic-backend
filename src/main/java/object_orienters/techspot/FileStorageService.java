@@ -16,10 +16,10 @@ public class FileStorageService {
 
     public String storeFile(MultipartFile file) {
         try {
-            Path fileStorageLocation = Paths.get(uploadDir)
-                .toAbsolutePath().normalize();
+            Path fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
+                                                                                          
             Files.createDirectories(fileStorageLocation);
-            
+
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             Path targetLocation = fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -29,4 +29,16 @@ public class FileStorageService {
             throw new RuntimeException("Could not store file " + file.getOriginalFilename() + ". Please try again!", e);
         }
     }
+
+    public void deleteFile(String fileName) {
+        try {
+            Path fileStorageLocation = Paths.get(uploadDir).toAbsolutePath()
+                    .toAbsolutePath().normalize();
+            Path filePath = fileStorageLocation.resolve(fileName).normalize();
+            Files.deleteIfExists(filePath);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not delete file " + fileName + ". Please try again!", e);
+        }
+    }
+
 }

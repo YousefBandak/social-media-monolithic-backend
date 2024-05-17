@@ -12,8 +12,6 @@ import object_orienters.techspot.profile.Profile;
 
 import java.util.List;
 
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Data

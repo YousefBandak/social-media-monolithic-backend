@@ -32,7 +32,7 @@ public class ImpleReactionService implements ReactionService {
     @Override
     public Reaction getReaction(Long reactionId) throws ReactionNotFoundException {
 
-        return reactionRepository.findById(reactionId).orElseThrow(() -> new ReactionNotFoundException(reactionId));
+        return reactionRepository.findByReactionID(reactionId).orElseThrow(() -> new ReactionNotFoundException(reactionId));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ImpleReactionService implements ReactionService {
 
     @Override
     public Reaction updateReaction(Long reactionId, String reactionType) {
-        Reaction existingReaction = reactionRepository.findById(reactionId)
+        Reaction existingReaction = reactionRepository.findByReactionID(reactionId)
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId));
         Reaction.ReactionType reactionTypee = Reaction.ReactionType.valueOf(reactionType);
         existingReaction.setType(reactionTypee);
@@ -55,9 +55,9 @@ public class ImpleReactionService implements ReactionService {
     @Override
     @Transactional 
     public void deleteReaction(Long reactionId) {
-        ReactableContent content = reactionRepository.findById(reactionId)
+        ReactableContent content = reactionRepository.findByReactionID(reactionId)
                 .orElseThrow(() -> new ReactionNotFoundException(reactionId)).getContent();
-        content.getReactions().remove(reactionRepository.findById(reactionId).get());
+        content.getReactions().remove(reactionRepository.findByReactionID(reactionId).get());
         content.setNumOfReactions(content.getNumOfReactions() - 1);
         contentRepository.save(content);
         reactionRepository.deleteByReactionID(reactionId);
@@ -77,7 +77,7 @@ public class ImpleReactionService implements ReactionService {
     }
 
     public boolean isReactor(String username, Long reactionID) {
-        Optional<Reaction> reactionOptional = reactionRepository.findById(reactionID);
+        Optional<Reaction> reactionOptional = reactionRepository.findByReactionID(reactionID);
         if (reactionOptional.isPresent()) {
             Reaction reaction = reactionOptional.get();
             logger.info(">>>>Checking if the user is the reactor... @ "

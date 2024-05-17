@@ -7,6 +7,8 @@ import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.reaction.ReactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,13 @@ public abstract  class Strategy<P, T> {
 
     @Autowired
     CommentRepository commentRepository = null;
+
+    @Autowired
+    ReactionRepository reactionRepository = null;
+
+    @Autowired
+    ProfileRepository profileRepository = null;
+
 
     abstract Page<P> operate(T factor, int pageNumber, int pageSize);
 

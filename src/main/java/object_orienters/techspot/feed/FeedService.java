@@ -16,21 +16,26 @@ public class FeedService {
     private FeedByFollowingStrategy feedByFollowingStrategy;
     private FeedByTag feedByTag;
     private FeedByAuthor feedByAuthor;
-
+    private ReactionsByContent reactionsByContent;
     private CommentsByContent commentsByContent;
+    private SearchByName searchByName;
+
 
     @Autowired
     public FeedService(FeedByFollowingStrategy feedByFollowingStrategy,
                        ProfileRepository profileRepository,
                        FeedByTag feedByTag,
                        FeedByAuthor feedByAuthor,
-                       CommentsByContent commentsByContent) {
+                       CommentsByContent commentsByContent,
+                       ReactionsByContent reactionsByContent,
+                       SearchByName searchByName) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
         this.feedByTag = feedByTag;
         this.feedByAuthor = feedByAuthor;
         this.commentsByContent = commentsByContent;
-
+        this.reactionsByContent = reactionsByContent;
+        this.searchByName = searchByName;
     }
 
     public Page<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
@@ -45,6 +50,10 @@ public class FeedService {
                 return feedByTag.operate(value, pageNumber, pageSize);
             case COMMENTS:
                 return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+            case REACTIONS:
+                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+            case PROFILES:
+                return searchByName.operate(value, pageNumber, pageSize);
             default:
                 return Page.empty();
         }
@@ -53,6 +62,6 @@ public class FeedService {
     }
 
     enum FeedType {
-        ALL_USERS, ONE_USER, TOPIC, COMMENTS
+        ALL_USERS, ONE_USER, TOPIC, COMMENTS, REACTIONS, PROFILES
     }
 }

@@ -14,13 +14,13 @@ import org.springframework.stereotype.Repository;
 public interface ProfileRepository extends PagingAndSortingRepository<Profile, String> {
 
     @Query("SELECT f FROM Profile u JOIN u.followers f WHERE u.owner.username = :userName")
-    List<Profile> findFollowersByUserId(String userName);
+    Page<Profile> findFollowersByUserId(String userName, Pageable pageable);
 
     @Query("SELECT f FROM Profile u JOIN u.followers f WHERE f.owner.username = :username AND u.owner.username = :accountUsername")
     Optional<Profile> findFollowerByUsername(String accountUsername, String username);
 
     @Query("SELECT f FROM Profile u JOIN u.following f WHERE u.owner.username = :userName")
-    List<Profile> findFollowingByUserId(String userName);
+    Page<Profile> findFollowingByUserId(String userName, Pageable pageable);
 
     @Query("SELECT f FROM Profile u JOIN u.following f WHERE f.owner.username = :username AND u.owner.username = :accountUsername")
     Optional<Profile> findFollowingByUsername(String accountUsername, String username);
@@ -43,5 +43,7 @@ public interface ProfileRepository extends PagingAndSortingRepository<Profile, S
             "OR lower(p.username) LIKE lower(concat('%', :searchTerm, '%')) " +
             "OR lower(p.email) LIKE lower(concat('%', :searchTerm, '%'))")
     Page<Profile> findBySearchCriteria(@Param("searchTerm") String searchTerm, Pageable pageable);
+    @Query("SELECT f FROM Profile u JOIN u.following v JOIN v.following f WHERE u.owner.username = :username")
+    Page<Profile> findFollowingOfFollowing(String username, Pageable pageable);
 
 }

@@ -3,6 +3,7 @@ package object_orienters.techspot.reaction;
 import jakarta.validation.Valid;
 import object_orienters.techspot.content.ContentNotFoundException;
 
+import object_orienters.techspot.security.PermissionService;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
@@ -27,12 +28,16 @@ public class ReactionController {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
-    public ReactionController(ImpleReactionService reactionService, ReactionModelAssembler assembler) {
+    private final PermissionService permissionService;
+
+    public ReactionController(ImpleReactionService reactionService, ReactionModelAssembler assembler, PermissionService permissionService) {
         this.reactionService = reactionService;
         this.assembler = assembler;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/reactions/{reactionId}")
+    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getReaction(@PathVariable Long reactionId, @PathVariable Long contentID) {
 
         try {
@@ -49,6 +54,7 @@ public class ReactionController {
     }
 
     @GetMapping("/reactions")
+    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getReactions(@PathVariable Long contentID) {
         try {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
@@ -63,6 +69,7 @@ public class ReactionController {
     }
 
     @PostMapping("/reactions")
+    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> createReaction(@Valid @RequestBody Map<String, String> reaction,
             @PathVariable Long contentID) {
         try {

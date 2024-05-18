@@ -6,6 +6,7 @@ import object_orienters.techspot.post.PostService;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostNotFoundException;
 
+import object_orienters.techspot.security.PermissionService;
 import org.slf4j.Logger;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -33,16 +34,22 @@ public class CommentController {
     private final PostService postService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
+    private final PermissionService permissionService;
+
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
-    CommentController(CommentModelAssembler commentModelAssembler, ImpleCommentService commentService,
-            PostService postService) {
+    CommentController(CommentModelAssembler commentModelAssembler,
+                      ImpleCommentService commentService,
+                      PostService postService,
+                      PermissionService permissionService) {
         this.assembler = commentModelAssembler;
         this.commentService = commentService;
         this.postService = postService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/comments")
+    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getComments(@PathVariable long contentID) {
         try {
             logger.info(">>>>Retrieving Comments... @ " + getTimestamp() + "<<<<");
@@ -71,6 +78,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments/{commentID}")
+    @PreAuthorize("@permissionService.canAccessComment(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getComment(@PathVariable Long commentID, @PathVariable Long contentID) {
         try {
             logger.info(">>>>Retrieving Comment... @ " + getTimestamp() + "<<<<");
@@ -104,7 +112,7 @@ public class CommentController {
     }
 
     @PostMapping("/comments")
-    @PreAuthorize("#commenter == authentication.principal.username")
+    @PreAuthorize("#commenter == authentication.principal.username && @permissionService.canAccessPost(#contentID, #commenter)")
     public ResponseEntity<?> addComment(
             @PathVariable long contentID,
             @RequestParam(value = "commenter") String commenter,

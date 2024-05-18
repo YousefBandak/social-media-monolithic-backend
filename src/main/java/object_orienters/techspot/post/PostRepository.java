@@ -27,5 +27,6 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.contentAuthor IN :authors AND p.privacy IN :privacies")
     Page<Post> findPostsByContentAuthorsAndPrivacy(@Param("authors") List<Profile> authors, @Param("privacies") List<Privacy> privacies, Pageable pageable);
 
-    List<Post> findAllByContentAuthorAndPrivacy(Profile author, Privacy privacy, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.contentAuthor = :author AND p.privacy IN :privacies")
+    List<Post> findAllByContentAuthorAndPrivacy(Profile author, @Param("privacies") List<Privacy> privacy, Pageable pageable);
 }

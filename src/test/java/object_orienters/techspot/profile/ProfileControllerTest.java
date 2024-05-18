@@ -38,7 +38,7 @@ class ProfileControllerTest {
     private ProfileModelAssembler assembler;
 
     @MockBean
-    private ImpleProfileService profileService;
+    private ProfileService profileService;
 
     @InjectMocks
     private ProfileController profileController;

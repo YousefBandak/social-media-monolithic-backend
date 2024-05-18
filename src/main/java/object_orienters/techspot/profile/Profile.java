@@ -17,6 +17,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 @Entity
@@ -99,6 +100,10 @@ public class Profile extends UserBase {
         return getUsername() != null && getUsername().equals(((Profile) o).getUsername());
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getUsername());
+    }
     public enum Gender {
         MALE,
         FEMALE

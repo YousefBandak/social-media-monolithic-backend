@@ -3,8 +3,9 @@ package object_orienters.techspot.post;
 import jakarta.validation.Valid;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
-import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.profile.ProfileService;
 import object_orienters.techspot.profile.UserNotFoundException;
+import object_orienters.techspot.security.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -33,16 +34,22 @@ public class PostController {
     private final PostService postService;
     private final ImplSharedPostService sharedPostService;
 
-    private final ImpleProfileService profileService;
+    private final ProfileService profileService;
 
-    PostController(PostModelAssembler assembler, PostService postService,
+    private final PermissionService permissionService;
+
+    PostController(PostModelAssembler assembler,
+                   PostService postService,
                    SharedPostModelAssembler sharedPostAssembler,
-                   ImplSharedPostService sharedPostService, ImpleProfileService profileService) {
+                   ImplSharedPostService sharedPostService,
+                   ProfileService profileService,
+                   PermissionService permissionService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
         this.sharedPostService = sharedPostService;
         this.profileService = profileService;
+        this.permissionService = permissionService;
     }
 
     private static String getTimestamp() {
@@ -125,6 +132,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/{postId}")
+    @PreAuthorize("@permissionService.canAccessPost(#postId, #username)")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             profileService.getUserByUsername(username);
@@ -158,7 +166,7 @@ public class PostController {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @PostMapping("/posts/{postId}/share")
-    @PreAuthorize("#bodyMap['sharer'] == authentication.principal.username")
+    @PreAuthorize("#bodyMap['sharer'] == authentication.principal.username && @permissionService.isPostPublic(#postId)")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
                                              @RequestBody Map<String, String> bodyMap) {
         try {

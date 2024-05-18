@@ -30,7 +30,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/content/{contentID}")
 public class CommentController {
     private final CommentModelAssembler assembler;
-    private final ImpleCommentService commentService;
+    private final CommentService commentService;
     private final PostService postService;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -39,7 +39,7 @@ public class CommentController {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler,
-                      ImpleCommentService commentService,
+    CommentService commentService,
                       PostService postService,
                       PermissionService permissionService) {
         this.assembler = commentModelAssembler;

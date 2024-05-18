@@ -32,7 +32,7 @@ public class PostController {
     private final PostModelAssembler assembler;
     private final SharedPostModelAssembler sharedPostAssembler;
     private final PostService postService;
-    private final ImplSharedPostService sharedPostService;
+    private final SharedPostService sharedPostService;
 
     private final ProfileService profileService;
 
@@ -41,7 +41,7 @@ public class PostController {
     PostController(PostModelAssembler assembler,
                    PostService postService,
                    SharedPostModelAssembler sharedPostAssembler,
-                   ImplSharedPostService sharedPostService,
+                   SharedPostService sharedPostService,
                    ProfileService profileService,
                    PermissionService permissionService) {
         this.assembler = assembler;

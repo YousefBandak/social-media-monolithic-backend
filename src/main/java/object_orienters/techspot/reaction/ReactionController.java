@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/content/{contentID}")
 public class ReactionController {
-    private final ImpleReactionService reactionService;
+    private final ReactionService reactionService;
     private final ReactionModelAssembler assembler;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
     private final PermissionService permissionService;
 
-    public ReactionController(ImpleReactionService reactionService, ReactionModelAssembler assembler, PermissionService permissionService) {
+    public ReactionController(ReactionService reactionService, ReactionModelAssembler assembler, PermissionService permissionService) {
         this.reactionService = reactionService;
         this.assembler = assembler;
         this.permissionService = permissionService;

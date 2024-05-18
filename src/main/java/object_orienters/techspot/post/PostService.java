@@ -95,8 +95,6 @@ public class PostService {
         Post post = new Post();
         post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
-        System.out.println(privacy);
-        System.out.println(post.getPrivacy());
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
         // prof.getPublishedPosts().add(post);

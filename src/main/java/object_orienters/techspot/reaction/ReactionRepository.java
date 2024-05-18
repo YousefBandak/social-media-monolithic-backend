@@ -9,13 +9,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ReactionRepository extends PagingAndSortingRepository<Reaction, Long> {
+public interface ReactionRepository extends PagingAndSortingRepository<Reaction, String> {
 
     Page<Reaction> findByContent(ReactableContent content, Pageable pageable);
 
-    void deleteByReactionID(Long reactionID);
+    void deleteByReactionID(String reactionID);
 
-    Optional<Reaction> findByReactionID(Long reactionID);
+    Optional<Reaction> findByReactionID(String reactionID);
 
     Reaction save(Reaction reaction);
 

@@ -9,6 +9,8 @@ import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import org.slf4j.Logger;
@@ -36,22 +38,6 @@ public class ReactionController {
         this.permissionService = permissionService;
     }
 
-    @GetMapping("/reactions/{reactionId}")
-    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
-    public ResponseEntity<?> getReaction(@PathVariable Long reactionId, @PathVariable Long contentID) {
-
-        try {
-            logger.info(">>>>Adding Reaction to Post... @ " + getTimestamp() + "<<<<");
-            Reaction reaction = reactionService.getReaction(reactionId);
-            EntityModel<Reaction> reactionModel = assembler.toModel(reaction);
-            logger.info(">>>>Reaction Added to Post. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(reactionModel);
-        } catch (ReactionNotFoundException | ContentNotFoundException e) {
-            logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
-        }
-    }
 
     @GetMapping("/reactions")
     @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
@@ -86,30 +72,11 @@ public class ReactionController {
         }
 
     }
-
-    @PutMapping("/reactions/{reactionId}")
-    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
-    public ResponseEntity<?> updateReaction(@PathVariable Long reactionId,
-            @Valid @RequestBody Map<String, String> newReaction, @PathVariable Long contentID) {
-        try {
-            logger.info(">>>>Updating Reaction... @ " + getTimestamp() + "<<<<");
-            Reaction reaction = reactionService.updateReaction(reactionId, newReaction.get("reactionType"));
-            EntityModel<Reaction> reactionModel = assembler.toModel(reaction);
-            logger.info(">>>>Reaction Updated. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(reactionModel);
-        } catch (ReactionNotFoundException e) {
-            logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
-        }
-    }
-
-    @DeleteMapping("/reactions/{reactionId}")
-    @PreAuthorize("@impleReactionService.isReactor(authentication.principal.username, #reactionId)")
-    public ResponseEntity<?> deleteReaction(@PathVariable Long reactionId) {
+    @DeleteMapping("/reactions")
+    public ResponseEntity<?> deleteReaction(@PathVariable Long contentID) {
         try {
             logger.info(">>>>Deleting Reaction... @ " + getTimestamp() + "<<<<");
-            reactionService.deleteReaction(reactionId);
+            reactionService.deleteReaction(SecurityContextHolder.getContext().getAuthentication().getName()+contentID);
             logger.info(">>>>Reaction Deleted. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.noContent().build();
         } catch (ReactionNotFoundException e) {

@@ -13,14 +13,12 @@ import java.sql.Timestamp;
 
 @Entity
 @Data
-@NoArgsConstructor
 @Table(name = "reaction")
 public class Reaction {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reactionID;
+    private String reactionID;
 
-    @ManyToOne
+    @OneToOne
     @NotNull(message = "Reactor profile should not be null.")
     private Profile reactor;
 
@@ -38,9 +36,15 @@ public class Reaction {
     private Timestamp timestamp;
 
     public Reaction(Profile reactor, ReactionType reactionType, ReactableContent content) {
+        this.reactionID = reactor.getUsername() + content.getContentID();
         this.reactor = reactor;
         this.type = reactionType;
         this.content = content;
+        this.timestamp = new Timestamp(System.currentTimeMillis());
+    }
+
+    public Reaction() {
+        this.timestamp = new Timestamp(System.currentTimeMillis());
     }
 
     public boolean equals(Object o) {

@@ -16,8 +16,6 @@ public class ReactionModelAssembler implements RepresentationModelAssembler<Reac
         @NonNull
         public EntityModel<Reaction> toModel(@NonNull Reaction entity) {
                 return EntityModel.of(entity,
-                                linkTo(methodOn(ReactionController.class).getReaction(entity.getReactionID(),
-                                                entity.getContent().getContentID())).withSelfRel(),
                                 linkTo(methodOn(ProfileController.class).one(entity.getReactor().getUsername()))
                                                 .withRel("reactor"),
                                 linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID(),

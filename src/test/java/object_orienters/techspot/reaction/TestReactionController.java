@@ -41,7 +41,7 @@ class TestReactionController {
     private MockMvc mockMvc;
 
     @MockBean
-    private ImpleReactionService reactionService;
+    private ReactionService reactionService;
 
     @MockBean
     private ReactionModelAssembler assembler;

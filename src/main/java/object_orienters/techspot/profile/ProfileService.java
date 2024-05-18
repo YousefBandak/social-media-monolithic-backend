@@ -1,7 +1,6 @@
 package object_orienters.techspot.profile;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 import object_orienters.techspot.FileStorageService;

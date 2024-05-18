@@ -1,6 +1,5 @@
 package object_orienters.techspot.feed;
 
-import object_orienters.techspot.post.Post;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
@@ -19,16 +18,18 @@ public class FeedService {
     private ReactionsByContent reactionsByContent;
     private CommentsByContent commentsByContent;
     private SearchByName searchByName;
+    private GetFollowingofFollowing getFollowingofFollowing;
 
 
     @Autowired
-    public FeedService(FeedByFollowingStrategy feedByFollowingStrategy,
-                       ProfileRepository profileRepository,
+    public FeedService(ProfileRepository profileRepository,
+                       FeedByFollowingStrategy feedByFollowingStrategy,
                        FeedByTag feedByTag,
                        FeedByAuthor feedByAuthor,
                        CommentsByContent commentsByContent,
                        ReactionsByContent reactionsByContent,
-                       SearchByName searchByName) {
+                       SearchByName searchByName,
+                       GetFollowingofFollowing getFollowingofFollowing) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
         this.feedByTag = feedByTag;
@@ -36,14 +37,14 @@ public class FeedService {
         this.commentsByContent = commentsByContent;
         this.reactionsByContent = reactionsByContent;
         this.searchByName = searchByName;
+        this.getFollowingofFollowing = getFollowingofFollowing;
     }
 
     public Page<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
         switch (feedType) {
 
             case ALL_USERS:
-                Profile profile = profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername));
-                return feedByFollowingStrategy.operate(profile, pageNumber, pageSize);
+                return feedByFollowingStrategy.operate(profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername)), pageNumber, pageSize);
             case ONE_USER:
                 return feedByAuthor.operate(profileRepository.findByUsername(value).orElseThrow(() -> new ProfileNotFoundException(value)), pageNumber, pageSize);
             case TOPIC:
@@ -54,6 +55,8 @@ public class FeedService {
                 return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
             case PROFILES:
                 return searchByName.operate(value, pageNumber, pageSize);
+            case MUTUAL_FOLLOWING:
+                return getFollowingofFollowing.operate(value, pageNumber, pageSize);
             default:
                 return Page.empty();
         }
@@ -62,6 +65,6 @@ public class FeedService {
     }
 
     enum FeedType {
-        ALL_USERS, ONE_USER, TOPIC, COMMENTS, REACTIONS, PROFILES
+        ALL_USERS, ONE_USER, TOPIC, COMMENTS, REACTIONS, PROFILES, MUTUAL_FOLLOWING
     }
 }

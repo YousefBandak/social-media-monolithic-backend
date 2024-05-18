@@ -1,7 +1,7 @@
 package object_orienters.techspot.security;
 
 import jakarta.validation.Valid;
-import object_orienters.techspot.profile.ImpleProfileService;
+import object_orienters.techspot.profile.ProfileService;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -53,7 +53,7 @@ public class AuthController {
         UserCredentialsServices userCredentialsServices;
 
         @Autowired
-        ImpleProfileService profileService;
+        ProfileService profileService;
 
         @Autowired
         ProfileRepository profileRepository;

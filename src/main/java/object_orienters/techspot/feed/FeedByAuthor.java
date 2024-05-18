@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +22,13 @@ public class FeedByAuthor extends Strategy<Post, Profile> {
     }
 
     public Page<Post> operate(Profile  profile, int pageNumber, int pageSize) {
-        return postRepository.findPostsByContentAuthorsAndPrivacy(List.of(profile), List.of(Privacy.PUBLIC), PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
+        String currentUserPrincipal = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Privacy> privacies = List.of(Privacy.PUBLIC);
+        if (profile.getUsername().equals(currentUserPrincipal))
+            privacies = List.of(Privacy.PUBLIC, Privacy.FRIENDS, Privacy.PRIVATE);
+        else if (profile.getFollowers().contains(currentUserPrincipal))
+            privacies.add(Privacy.FRIENDS);
+        return postRepository.findPostsByContentAuthorsAndPrivacy(List.of(profile), privacies, PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
     }
 
 }

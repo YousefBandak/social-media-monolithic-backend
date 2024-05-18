@@ -28,10 +28,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class ProfileController {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final ProfileModelAssembler assembler;
-    private final ImpleProfileService profileService;
+    private final ProfileService profileService;
     private final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
-    public ProfileController(ProfileModelAssembler assembler, ImpleProfileService profileService) {
+    public ProfileController(ProfileModelAssembler assembler, ProfileService profileService) {
         this.assembler = assembler;
         this.profileService = profileService;
     }
@@ -78,10 +78,11 @@ public class ProfileController {
 
     // get user followers
     @GetMapping("/{username}/followers")
-    public ResponseEntity<?> Followers(@PathVariable String username) {
+    public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
-            List<EntityModel<Profile>> followers = profileService.getUserFollowersByUsername(username).stream()
+            List<EntityModel<Profile>> followers = profileService.getUserFollowersByUsername(username, page, size).stream()
                     .map(assembler::toModel)
                     .collect(Collectors.toList());
             logger.info(">>>>Followers List Retrieved. " + getTimestamp() + "<<<<");
@@ -112,10 +113,11 @@ public class ProfileController {
 
     // get user followers
     @GetMapping("/{username}/following")
-    public ResponseEntity<?> Following(@PathVariable String username) {
+    public ResponseEntity<?> Following(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
             logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
-            List<EntityModel<Profile>> following = profileService.getUserFollowingByUsername(username).stream()
+            List<EntityModel<Profile>> following = profileService.getUserFollowingByUsername(username, page, size).stream()
                     .map(userModel -> assembler.toModel(userModel))
                     .collect(Collectors.toList());
             logger.info(">>>>Following List Retrieved. " + getTimestamp() + "<<<<");

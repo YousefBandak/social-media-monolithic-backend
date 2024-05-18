@@ -4,6 +4,7 @@ import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
+import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.profile.Profile;
@@ -48,6 +49,13 @@ public class ImpleCommentService implements CommentService {
         ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Profile prof = profileRepository.findById(username).get();
+
+        if (content.getPrivacy().equals(Privacy.PRIVATE) && !content.getContentAuthor().getUsername().equals(username)) {
+            throw new ContentNotFoundException(contentId);
+        } else if (content.getPrivacy().equals(Privacy.FRIENDS) &&!content.getContentAuthor().getFollowers().contains(prof)) {
+            throw new ContentNotFoundException(contentId);
+        }
+
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
             files.stream().forEach((file) -> {

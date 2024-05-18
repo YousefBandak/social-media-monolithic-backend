@@ -1,5 +1,24 @@
 package object_orienters.techspot.post;
 
+import object_orienters.techspot.FileStorageService;
+import object_orienters.techspot.content.Content;
+import object_orienters.techspot.model.Privacy;
+import object_orienters.techspot.postTypes.DataType;
+import object_orienters.techspot.postTypes.DataTypeRepository;
+import object_orienters.techspot.profile.Profile;
+import object_orienters.techspot.profile.ProfileRepository;
+import object_orienters.techspot.profile.UserNotFoundException;
+import object_orienters.techspot.security.repository.UserRepository;
+import object_orienters.techspot.tag.Tag;
+import object_orienters.techspot.tag.TagExtractor;
+import object_orienters.techspot.tag.TagRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,27 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import object_orienters.techspot.FileStorageService;
-import object_orienters.techspot.content.Content;
-import object_orienters.techspot.model.Privacy;
-import object_orienters.techspot.postTypes.DataType;
-import object_orienters.techspot.postTypes.DataTypeRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.security.repository.UserRepository;
-import object_orienters.techspot.profile.Profile;
-import object_orienters.techspot.profile.ProfileRepository;
-
-import object_orienters.techspot.tag.Tag;
-import object_orienters.techspot.tag.TagExtractor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import object_orienters.techspot.tag.TagRepository;
 
 @Service
 public class PostService {
@@ -52,11 +50,16 @@ public class PostService {
     }
 
 
+    public List<Privacy> getAllowedPrincipalPrivacy(String username) {
+        Profile profile = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        String currentUserPrincipal = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Privacy> privacies = List.of(Privacy.PUBLIC);
 
-    public Privacy getAllowedPrincipalPrivacy(String username) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentPrincipalUsername = authentication.getName();
-        return currentPrincipalUsername.equals(username) ? Privacy.PRIVATE : Privacy.PUBLIC;
+        if (profile.getUsername().equals(currentUserPrincipal))
+            privacies = List.of(Privacy.PRIVATE, Privacy.FRIENDS, Privacy.PUBLIC);
+        else if (profile.getFollowers().contains(currentUserPrincipal))
+            privacies.add(Privacy.FRIENDS);
+        return privacies;
     }
 
 
@@ -67,10 +70,9 @@ public class PostService {
     }
 
 
-
     @Transactional
     public Post addTimelinePosts(String username, List<MultipartFile> files,
-            String text, Privacy privacy) throws UserNotFoundException, IOException {
+                                 String text, Privacy privacy) throws UserNotFoundException, IOException {
 
         Profile prof = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         List<DataType> allMedia = new ArrayList<>();
@@ -93,10 +95,11 @@ public class PostService {
         Post post = new Post();
         post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
-
+        System.out.println(privacy);
+        System.out.println(post.getPrivacy());
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
-       // prof.getPublishedPosts().add(post);
+        // prof.getPublishedPosts().add(post);
         allMedia.forEach(media -> {
             media.setContent(post);
         });
@@ -106,13 +109,11 @@ public class PostService {
         postRepository.save(post);
 
         // Extract tags and update or create them with the post ID
-        Set<Tag> tags = TagExtractor.extractTags(text, post, tagName -> {
-            return tagRepository.findByTagName(tagName).orElseGet(() -> {
-                Tag newTag = new Tag();
-                newTag.setTagName(tagName);
-                return newTag;
-            });
-        });
+        Set<Tag> tags = TagExtractor.extractTags(text, post, tagName -> tagRepository.findByTagName(tagName).orElseGet(() -> {
+            Tag newTag = new Tag();
+            newTag.setTagName(tagName);
+            return newTag;
+        }));
 
         // Convert tag set to comma-separated string of tag names
         String tagsString = tags.stream().map(Tag::getTagName).collect(Collectors.joining(", "));
@@ -126,15 +127,6 @@ public class PostService {
 
         return post;
     }
-
-
-
-
-
-
-
-
-
 
 
     @Transactional
@@ -202,14 +194,7 @@ public class PostService {
 
 
     public Post getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
-        Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
-        Privacy postPrivacy = post.getPrivacy();
-        if (postPrivacy.equals(Privacy.PUBLIC))
-            return post;
-        else if (Privacy.PRIVATE.equals(getAllowedPrincipalPrivacy(post.getContentAuthor().getUsername()))) {
-            return post;
-        } else
-            throw new ContentIsPrivateException();
+        return postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
     }
 

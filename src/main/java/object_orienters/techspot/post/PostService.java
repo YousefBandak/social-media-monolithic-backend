@@ -39,8 +39,9 @@ public class PostService {
     private static final Pattern TAG_PATTERN = Pattern.compile("#\\w+");
 
     public PostService(PostRepository postRepository, ProfileRepository profileRepository,
-                       DataTypeRepository dataTypeRepository, UserRepository userRepository,
-                       SharedPostRepository sharedPostRepository, FileStorageService fileStorageService, TagRepository tagRepository) {
+            DataTypeRepository dataTypeRepository, UserRepository userRepository,
+            SharedPostRepository sharedPostRepository, FileStorageService fileStorageService,
+            TagRepository tagRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
@@ -49,9 +50,9 @@ public class PostService {
         this.tagRepository = tagRepository;
     }
 
-
     public List<Privacy> getAllowedPrincipalPrivacy(String username) {
-        Profile profile = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile profile = profileRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
         String currentUserPrincipal = SecurityContextHolder.getContext().getAuthentication().getName();
         List<Privacy> privacies = List.of(Privacy.PUBLIC);
 
@@ -62,19 +63,20 @@ public class PostService {
         return privacies;
     }
 
-
     public Collection<? extends Content> getPosts(String username, int offset, int limit) throws UserNotFoundException {
-        Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile user = profileRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
 
-        return postRepository.findAllByContentAuthorAndPrivacy(user, getAllowedPrincipalPrivacy(username), PageRequest.of(offset, limit));
+        return postRepository.findAllByContentAuthorAndPrivacy(user, getAllowedPrincipalPrivacy(username),
+                PageRequest.of(offset, limit));
     }
-
 
     @Transactional
     public Post addTimelinePosts(String username, List<MultipartFile> files,
-                                 String text, Privacy privacy) throws UserNotFoundException, IOException {
+            String text, Privacy privacy) throws UserNotFoundException, IOException {
 
-        Profile prof = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile prof = profileRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
             files.stream().forEach((file) -> {
@@ -99,21 +101,21 @@ public class PostService {
         System.out.println(post.getPrivacy());
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
-        // prof.getPublishedPosts().add(post);
+        prof.getPublishedPosts().add(post);
         allMedia.forEach(media -> {
             media.setContent(post);
         });
         dataTypeRepository.saveAll(allMedia);
 
-
         postRepository.save(post);
 
         // Extract tags and update or create them with the post ID
-        Set<Tag> tags = TagExtractor.extractTags(text, post, tagName -> tagRepository.findByTagName(tagName).orElseGet(() -> {
-            Tag newTag = new Tag();
-            newTag.setTagName(tagName);
-            return newTag;
-        }));
+        Set<Tag> tags = TagExtractor.extractTags(text, post,
+                tagName -> tagRepository.findByTagName(tagName).orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setTagName(tagName);
+                    return newTag;
+                }));
 
         // Convert tag set to comma-separated string of tag names
         String tagsString = tags.stream().map(Tag::getTagName).collect(Collectors.joining(", "));
@@ -127,7 +129,6 @@ public class PostService {
 
         return post;
     }
-
 
     @Transactional
     public Post editTimelinePost(String username, long postId, List<MultipartFile> files, String text, Privacy privacy)
@@ -169,29 +170,27 @@ public class PostService {
         return post;
     }
 
-
     @Transactional
     public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
         List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
-//        sharedPosts.stream()
-//                .map(SharedPost::getSharer)
-//                .distinct()
-//                .forEach(sharer -> {
-//                    List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
-//                    sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
-//                    profileRepository.save(sharer);
-//                });
+        // sharedPosts.stream()
+        // .map(SharedPost::getSharer)
+        // .distinct()
+        // .forEach(sharer -> {
+        // List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
+        // sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
+        // profileRepository.save(sharer);
+        // });
         post.setContentAuthor(null);
         post.setMediaData(new ArrayList<>());
         dataTypeRepository.deleteAll(post.getMediaData());
-        //user.getPublishedPosts().remove(post);
+        user.getPublishedPosts().remove(post);
         postRepository.delete(post);
         profileRepository.save(user);
     }
-
 
     public Post getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
         return postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));

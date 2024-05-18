@@ -21,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -74,31 +75,15 @@ public class PostService {
     @Transactional
     public Post addTimelinePosts(String username, List<MultipartFile> files,
             String text, Privacy privacy) throws UserNotFoundException, IOException {
-
         Profile prof = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            files.stream().forEach((file) -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
-            });
-
+            handleAddMediaData(files, allMedia);
         }
-
         Post post = new Post();
         post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
-        System.out.println(privacy);
-        System.out.println(post.getPrivacy());
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
         prof.getPublishedPosts().add(post);
@@ -106,26 +91,8 @@ public class PostService {
             media.setContent(post);
         });
         dataTypeRepository.saveAll(allMedia);
-
+        handleAddTags(text, post);
         postRepository.save(post);
-
-        // Extract tags and update or create them with the post ID
-        Set<Tag> tags = TagExtractor.extractTags(text, post,
-                tagName -> tagRepository.findByTagName(tagName).orElseGet(() -> {
-                    Tag newTag = new Tag();
-                    newTag.setTagName(tagName);
-                    return newTag;
-                }));
-
-        // Convert tag set to comma-separated string of tag names
-        String tagsString = tags.stream().map(Tag::getTagName).collect(Collectors.joining(", "));
-        post.setTags(tagsString);
-
-        // Save updated tags
-        tags.forEach(tag -> tagRepository.save(tag));
-
-        // Save updates to the profile
-        profileRepository.save(prof);
 
         return post;
     }
@@ -140,24 +107,12 @@ public class PostService {
         if (!post.getContentAuthor().equals(user)) {
             throw new PostUnrelatedToUserException(username, postId);
         }
-        List<DataType> allMedia = new ArrayList<>();
+        List<DataType> allMedia = files == null ? post.getMediaData() : new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            dataTypeRepository.deleteAll(post.getMediaData());
-            files.stream().forEach(file -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
-            });
+            handleDeleteMediaData(post);
+            handleAddMediaData(files, allMedia);
         }
         post.setMediaData(allMedia);
-        System.out.println(privacy);
         post.setPrivacy(privacy != null ? privacy : post.getPrivacy());
         System.out.println(text);
         post.setTextData(text != null ? text : post.getTextData());
@@ -185,8 +140,9 @@ public class PostService {
         // profileRepository.save(sharer);
         // });
         post.setContentAuthor(null);
+        handleDeleteMediaData(post);
+        handleDeleteTags(post);
         post.setMediaData(new ArrayList<>());
-        dataTypeRepository.deleteAll(post.getMediaData());
         user.getPublishedPosts().remove(post);
         postRepository.delete(post);
         profileRepository.save(user);
@@ -195,6 +151,60 @@ public class PostService {
     public Post getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
         return postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
 
+    }
+
+    private void handleDeleteTags(Post post) {
+        String postTags = post.getTags();
+        String[] tagsArray = postTags.split(",");
+        List<String> tagsList = new ArrayList<>(Arrays.asList(tagsArray));
+        tagsList.stream().forEach(tagString -> {
+            Tag tag = tagRepository.findById(tagString).get();
+            String posts = tag.getPosts();
+            String[] postsArray = posts.split(",");
+            List<String> postList = new ArrayList<>(Arrays.asList(postsArray));
+            if (postList.size() == 1) {
+                tagRepository.delete(tag);
+            } else {
+                postList.remove(Long.toString(post.getContentID()));
+                tag.setPosts(String.join(",", postList));
+                tagRepository.save(tag);
+            }
+        });
+    }
+
+    private void handleAddTags(String text, Post post) {
+        Set<Tag> newTags = TagExtractor.extractTags(text, post, tagName -> {
+            return tagRepository.findByTagName(tagName).orElseGet(() -> {
+                Tag newTag = new Tag();
+                newTag.setTagName(tagName);
+                return newTag;
+            });
+        });
+        String tagsString = newTags.stream().map(Tag::getTagName).collect(Collectors.joining(", "));
+        post.setTags(tagsString);
+        newTags.forEach(tag -> tagRepository.save(tag));
+    }
+
+    private void handleAddMediaData(List<MultipartFile> files, List<DataType> allMedia) {
+        files.stream().forEach((file) -> {
+            DataType media = new DataType();
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/media_uploads/")
+                    .path(fileName)
+                    .toUriString();
+            media.setType(file.getContentType());
+            media.setFileName(fileName);
+            media.setFileUrl(fileDownloadUri);
+            allMedia.add(media);
+        });
+    }
+
+    private void handleDeleteMediaData(Post post) {
+        post.getMediaData().stream().forEach(media -> {
+            fileStorageService.deleteFile(media.getFileName());
+            dataTypeRepository.delete(media);
+        });
     }
 
 }

@@ -61,7 +61,7 @@ public class ProfileController {
     // update user profile
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody Profile newUser, @PathVariable String username) {
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfile newUser, @PathVariable String username) {
         try {
             logger.info(">>>>Updating Profile... " + getTimestamp() + "<<<<");
             Profile updatedUser = profileService.updateUserProfile(newUser, username);
@@ -222,16 +222,16 @@ public class ProfileController {
         }
     }
 
-    @DeleteMapping("/{username}/delete")
-    public ResponseEntity<?> deleteProfile(@PathVariable String username) throws UserNotFoundException {
-        try {
-            profileService.deleteProfile(username);
-            return ResponseEntity.noContent().build();
-        } catch (UserNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        }
-    }
+    // @DeleteMapping("/{username}/delete")
+    // public ResponseEntity<?> deleteProfile(@PathVariable String username) throws UserNotFoundException {
+    //     try {
+    //         profileService.deleteProfile(username);
+    //         return ResponseEntity.noContent().build();
+    //     } catch (UserNotFoundException exception) {
+    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    //                 .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+    //     }
+    // }
 
 }

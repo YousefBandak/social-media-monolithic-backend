@@ -4,7 +4,9 @@ import object_orienters.techspot.content.ReactableContent;
 import org.checkerframework.checker.units.qual.C;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -19,4 +21,5 @@ public interface CommentRepository extends PagingAndSortingRepository<Comment, L
     void delete(Comment comment);
 
     Page<Comment> findByCommentedOn(ReactableContent contentID, Pageable pageable);
+
 }

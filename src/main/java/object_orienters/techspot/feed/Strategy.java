@@ -2,6 +2,7 @@ package object_orienters.techspot.feed;
 
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.comment.CommentRepository;
+import object_orienters.techspot.content.ContentRepository;
 import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.post.Post;
@@ -33,6 +34,9 @@ public abstract  class Strategy<P, T> {
 
     @Autowired
     ProfileRepository profileRepository = null;
+
+    @Autowired
+    ContentRepository contentRepository = null;
 
 
     abstract Page<P> operate(T factor, int pageNumber, int pageSize);

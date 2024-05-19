@@ -1,6 +1,6 @@
 package object_orienters.techspot.post;
 
-import object_orienters.techspot.FileStorageService;
+import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentRepository;
 import object_orienters.techspot.model.ContentType;
@@ -13,8 +13,9 @@ import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.tag.TagExtractor;
 import object_orienters.techspot.tag.TagRepository;
+import object_orienters.techspot.utilities.MediaDataUtilities;
+import object_orienters.techspot.utilities.TagsUtilities;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -39,6 +41,9 @@ public class PostService {
     private final FileStorageService fileStorageService;
     private final TagRepository tagRepository;
     private final ContentRepository contentRepository;
+    private final MediaDataUtilities mediaDataUtilities;
+
+    TagsUtilities tagsUtilities;
 
     private static final Pattern TAG_PATTERN = Pattern.compile("#\\w+");
 
@@ -48,7 +53,10 @@ public class PostService {
                        SharedPostRepository sharedPostRepository,
                        FileStorageService fileStorageService,
                        TagRepository tagRepository,
-                       ContentRepository contentRepository) {
+                       ContentRepository contentRepository,
+                       TagsUtilities tagsUtilities,
+                       MediaDataUtilities mediaDataUtilities) {
+
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
@@ -56,6 +64,8 @@ public class PostService {
         this.fileStorageService = fileStorageService;
         this.tagRepository = tagRepository;
         this.contentRepository = contentRepository;
+        this.tagsUtilities = tagsUtilities;
+        this.mediaDataUtilities = mediaDataUtilities;
     }
 
 
@@ -77,62 +87,30 @@ public class PostService {
 
     }
 
-
     @Transactional
     public Post addTimelinePosts(String username, List<MultipartFile> files,
                                  String text, Privacy privacy) throws UserNotFoundException, IOException {
-
-        Profile prof = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Profile prof = profileRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            files.stream().forEach((file) -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
-            });
-
+            mediaDataUtilities.handleAddMediaData(files, allMedia);
         }
-
         Post post = new Post();
         post.setTextData(text != null ? text : "");
         post.setPrivacy(privacy);
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
+        prof.getPublishedPosts().add(post);
         allMedia.forEach(media -> {
             media.setContent(post);
         });
         dataTypeRepository.saveAll(allMedia);
-
-
+        tagsUtilities.handleAddTags(text, post);
         postRepository.save(post);
-
-        // Extract tags and update or create them with the post ID
-        Set<Tag> tags = TagExtractor.extractTags(text, post, tagName -> tagRepository.findByTagName(tagName).orElseGet(() -> {
-            Tag newTag = new Tag();
-            newTag.setTagName(tagName);
-            return newTag;
-        }));
-
-        // Convert tag set to comma-separated string of tag names
-        String tagsString = tags.stream().map(Tag::getTagName).collect(Collectors.joining(", "));
-        post.setTags(tagsString);
-
-        // Save updated tags
-        tags.forEach(tag -> tagRepository.save(tag));
-
-        // Save updates to the profile
-        profileRepository.save(prof);
 
         return post;
     }
-
 
     @Transactional
     public Content editTimelinePost(String username, long postId, List<MultipartFile> files, String text, Privacy privacy)
@@ -144,29 +122,16 @@ public class PostService {
         if (!content.getMainAuthor().equals(user)) {
             throw new PostUnrelatedToUserException(username, postId);
         }
+
         if (content instanceof Post) {
             Post post = (Post) content;
-
-            List<DataType> allMedia = new ArrayList<>();
+            List<DataType> allMedia = files == null ? post.getMediaData() : new ArrayList<>();
             if (files != null && !files.isEmpty()) {
-                dataTypeRepository.deleteAll(post.getMediaData());
-                files.stream().forEach(file -> {
-                    DataType media = new DataType();
-                    String fileName = fileStorageService.storeFile(file);
-                    String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                            .path("/download/")
-                            .path(fileName)
-                            .toUriString();
-                    media.setType(file.getContentType());
-                    media.setFileName(fileName);
-                    media.setFileUrl(fileDownloadUri);
-                    allMedia.add(media);
-                });
+                mediaDataUtilities.handleDeleteMediaData(post);
+                mediaDataUtilities.handleAddMediaData(files, allMedia);
             }
             post.setMediaData(allMedia);
-            System.out.println(privacy);
             post.setPrivacy(privacy != null ? privacy : post.getPrivacy());
-            System.out.println(text);
             post.setTextData(text != null ? text : post.getTextData());
             allMedia.forEach(media -> {
                 media.setContent(post);
@@ -182,8 +147,8 @@ public class PostService {
         } else {
             return content;
         }
-    }
 
+    }
 
     @Transactional
     public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
@@ -199,41 +164,27 @@ public class PostService {
             sharedPost.setSharer(null);
             sharedPostRepository.delete(sharedPost);
         } else if (content instanceof Post) {
-
-//            List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
-//            sharedPosts.stream()
-//                    .map(SharedPost::getSharer)
-//                    .distinct()
-//                    .forEach(sharer -> {
-//                        List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
-//                        sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
-//                        profileRepository.save(sharer);
-//                    });
             Post post = (Post) content;
-            sharedPostRepository.deleteAllByPost(post);
 
-            // Clear associations to avoid foreign key constraints issues
+            List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
+            sharedPosts.stream().forEach(sharedPost -> {
+                sharedPost.setContentAuthor(null);
+                sharedPost.setPost(null);
+                sharedPost.setSharer(null);
+                sharedPostRepository.delete(sharedPost);
+            });
+
             post.setContentAuthor(null);
-            postRepository.save(post);
-
-            // Delete all media data associated with this post
+            mediaDataUtilities.handleDeleteMediaData(post);
+            tagsUtilities.handleDeleteTags(post);
             post.setMediaData(new ArrayList<>());
-            dataTypeRepository.deleteAll(post.getMediaData());
-            postRepository.save(post);
-
-            // Finally, delete the post itself
+            user.getPublishedPosts().remove(post);
+            post.setComments(new ArrayList<>());
+            post.setReactions(new ArrayList<>());
             postRepository.delete(post);
+            profileRepository.save(user);
 
         }
-
-
-
-    }
-
-
-    public Content getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
-        Content c = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
-        return c;
 
     }
 
@@ -249,9 +200,14 @@ public class PostService {
         originalPost.setNumOfShares(originalPost.getNumOfShares() + 1);
         sharedPostRepository.save(sharedPost);
 
-        // sharer.getSharedPosts().add(sharedPost);
+        //sharer.getSharedPosts().add(sharedPost);
         profileRepository.save(sharer);
         return sharedPost;
+    }
+
+
+    public Content getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
+        return contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
     }
 
 }

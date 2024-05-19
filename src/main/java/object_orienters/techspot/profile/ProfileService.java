@@ -3,18 +3,17 @@ package object_orienters.techspot.profile;
 import java.io.IOException;
 import java.util.Optional;
 
-import object_orienters.techspot.FileStorageService;
+import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.message.Chatter;
 import object_orienters.techspot.message.ChatterService;
 import object_orienters.techspot.message.Status;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,15 +26,19 @@ public class ProfileService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
     @Autowired
     ChatterService chatterService;
+
     @Autowired
     FileStorageService fileStorageService;
 
-    Logger log = LoggerFactory.getLogger(ProfileService.class.getName());
+    @Autowired
+    PasswordEncoder encoder;
+
 
     public ProfileService(ProfileRepository repo) {
         this.repo = repo;
@@ -75,7 +78,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public Profile updateUserProfile(Profile newUser, String username) throws UserNotFoundException {
+    public Profile updateUserProfile(UpdateProfile newUser, String username) throws UserNotFoundException {
         Profile updatedUser = repo.findByUsername(username).map(user -> {
             user.setDob(newUser.getDob());
             user.setEmail(newUser.getEmail());
@@ -83,6 +86,7 @@ public class ProfileService {
             user.setName(newUser.getName());
             user.setProfession(newUser.getProfession());
             user.setGender(newUser.getGender());
+            user.getOwner().setPassword(encoder.encode(newUser.getPassword()));
             return repo.save(user);
         }).orElseThrow(() -> new UserNotFoundException(username));
         return updatedUser;
@@ -92,7 +96,6 @@ public class ProfileService {
             throws UserNotFoundException {
         return repo.findFollowingByUsername(username, followingUsername);
     }
-
 
     public Profile getFollowerByUsername(String username, String followerUserName) throws UserNotFoundException {
         return repo.findFollowerByUsername(username, followerUserName)
@@ -106,8 +109,6 @@ public class ProfileService {
     public Page<Profile> getUserFollowingByUsername(String username, int page, int size) throws UserNotFoundException {
         return repo.findFollowingByUserId(username, PageRequest.of(page, size));
     }
-
-
 
     public Profile addNewFollower(String username, String followerUserName) throws UserNotFoundException {
         if (username.equals(followerUserName)) {
@@ -161,8 +162,8 @@ public class ProfileService {
         return repo.save(user);
     }
 
-    public void deleteProfile(String username) throws UserNotFoundException {
-        repo.delete(repo.findById(username).get());
-    }
+    // public void deleteProfile(String username) throws UserNotFoundException {
+    // repo.delete(repo.findById(username).get());
+    // }
 
 }

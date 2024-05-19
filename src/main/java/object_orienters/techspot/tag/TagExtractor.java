@@ -15,7 +15,7 @@ public class TagExtractor {
         Set<Tag> tags = new HashSet<>();
         while (matcher.find()) {
             try {
-                String tagName = matcher.group().substring(1); // Remove the '#' prefix
+                String tagName = matcher.group().substring(1).toLowerCase().trim(); // Remove the '#' prefix
                 Tag tag = tagCreator.apply(tagName);
                 if (tag != null) {
                     updateTagWithPostId(tag, post);

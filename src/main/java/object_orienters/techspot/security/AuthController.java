@@ -1,7 +1,12 @@
 package object_orienters.techspot.security;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import object_orienters.techspot.profile.ProfileService;
+import object_orienters.techspot.utilities.FileStorageService;
+import object_orienters.techspot.comment.CommentRepository;
+import object_orienters.techspot.post.PostRepository;
+import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
@@ -15,6 +20,7 @@ import object_orienters.techspot.security.payload.request.TokenRefreshRequest;
 import object_orienters.techspot.security.payload.response.JwtResponse;
 import object_orienters.techspot.security.payload.response.MessageResponse;
 import object_orienters.techspot.security.payload.response.TokenRefreshResponse;
+import object_orienters.techspot.security.repository.RefreshTokenRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.security.service.ImpleUserDetails;
 import object_orienters.techspot.security.service.RefreshTokenService;
@@ -64,6 +70,17 @@ public class AuthController {
         @Autowired
         ImpleTokenBlackListService blackListService;
 
+        @Autowired
+        PostRepository postRepository;
+
+        @Autowired
+        CommentRepository commentRepository;
+
+        @Autowired
+        RefreshTokenRepository refreshTokenRepository;
+
+        @Autowired
+        FileStorageService fileStorageService;
         private final Logger logger = org.slf4j.LoggerFactory.getLogger(AuthController.class);
         private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -240,6 +257,7 @@ public class AuthController {
 
         // TODO: Test this endpoint
         @DeleteMapping("/delete")
+        @Transactional
         public ResponseEntity<?> deleteUser() {
                 Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 logger.info(">>>>Deleting User... @ " + getTimestamp() + "<<<<");
@@ -247,9 +265,19 @@ public class AuthController {
                         String username = userDetails.getUsername();
                         User user = userRepository.findByUsername(username)
                                         .orElseThrow(() -> new UserNotFoundException(username));
-                        profileRepository.delete(profileRepository.findByUsername(username)
-                                        .orElseThrow(() -> new ProfileNotFoundException(username)));
+                        Profile profile = profileRepository.findByUsername(username)
+                                        .orElseThrow(() -> new ProfileNotFoundException(username));
+                        // commentRepository.deleteAllByCommentAuthorUsername(username);
+                        
+                        profile.getPublishedPosts().stream().forEach(post -> {
+                                post.getMediaData().stream().forEach(media -> {
+                                        fileStorageService.deleteFile(media.getFileName());
+                                });
+                                postRepository.delete(post);
+                        });
+                        refreshTokenRepository.deleteByUser(user);
                         userRepository.delete(user);
+                        profileRepository.delete(profile);
                         logger.info(">>>>User Deleted Successfully. @ " + getTimestamp() + "<<<<");
                         return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
                 }

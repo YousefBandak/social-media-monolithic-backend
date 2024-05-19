@@ -1,7 +1,7 @@
 package object_orienters.techspot.comment;
 
 import jakarta.transaction.Transactional;
-import object_orienters.techspot.FileStorageService;
+import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
@@ -12,6 +12,7 @@ import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionRepository;
+import object_orienters.techspot.utilities.MediaDataUtilities;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,7 +23,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CommentService {
@@ -33,10 +33,16 @@ public class CommentService {
     private final ReactionRepository reactionRepository;
     private final FileStorageService fileStorageService;
     private final ReactableContentRepository reactableContentRepository;
+    private final MediaDataUtilities mediaDataUtilities;
 
-    public CommentService(CommentRepository commentRepository, ReactableContentRepository contentRepository,
-                          ProfileRepository profileRepository, DataTypeRepository dataTypeRepository,
-                          ReactionRepository reactionRepository, FileStorageService fileStorageService, ReactableContentRepository reactableContentRepository) {
+    public CommentService(CommentRepository commentRepository,
+                          ReactableContentRepository contentRepository,
+                          ProfileRepository profileRepository,
+                          DataTypeRepository dataTypeRepository,
+                          ReactionRepository reactionRepository,
+                          FileStorageService fileStorageService,
+                          ReactableContentRepository reactableContentRepository,
+                          MediaDataUtilities mediaDataUtilities) {
         this.commentRepository = commentRepository;
         this.contentRepository = contentRepository;
         this.profileRepository = profileRepository;
@@ -44,8 +50,8 @@ public class CommentService {
         this.reactionRepository = reactionRepository;
         this.fileStorageService = fileStorageService;
         this.reactableContentRepository = reactableContentRepository;
+        this.mediaDataUtilities = mediaDataUtilities;
     }
-
 
     @Transactional
     public Comment addComment(Long contentId, String username, List<MultipartFile> files, String text)
@@ -53,27 +59,16 @@ public class CommentService {
         ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Profile prof = profileRepository.findById(username).get();
-
-        if (content.getPrivacy().equals(Privacy.PRIVATE) && !content.getContentAuthor().getUsername().equals(username)) {
+        if (content.getPrivacy().equals(Privacy.PRIVATE)
+                && !content.getContentAuthor().getUsername().equals(username)) {
             throw new ContentNotFoundException(contentId);
         } else if (content.getPrivacy().equals(Privacy.FRIENDS) && !content.getContentAuthor().getFollowers().contains(prof)) {
+
             throw new ContentNotFoundException(contentId);
         }
-
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            files.stream().forEach((file) -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/media_uploads/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
-            });
+            mediaDataUtilities.handleAddMediaData(files, allMedia);
         }
         Comment newComment = new Comment();
         newComment.setMediaData(allMedia);
@@ -103,20 +98,14 @@ public class CommentService {
 
     }
 
-
     @Transactional
     public void deleteComment(Long contentId, Long commentId) throws ContentNotFoundException {
         ReactableContent content = contentRepository.findByContentID(contentId)
                 .orElseThrow(() -> new ContentNotFoundException(contentId));
         Comment com = commentRepository.findByContentID(commentId).get();
-
         List<Reaction> reactions = com.getReactions();
         List<Comment> comments = com.getComments();
-        List<DataType> medias = com.getMediaData();
-        medias.stream().forEach(media -> {
-            fileStorageService.deleteFile(media.getFileName());
-            dataTypeRepository.delete(media);
-        });
+        mediaDataUtilities.handleDeleteMediaData(com);
         com.setMediaData(null);
         com.setReactions(new ArrayList<>());
         com.setComments(new ArrayList<>());
@@ -124,7 +113,6 @@ public class CommentService {
         com.setCommentedOn(null);
         content.getComments().removeIf(c -> c.getContentID().equals(commentId));
         content.setNumOfComments(content.getNumOfComments() - 1);
-        commentRepository.delete(commentRepository.findByContentID(commentId).get());
         reactions.stream().forEach(reaction -> {
             Profile prof = reaction.getReactor();
             reaction.setContent(null);
@@ -139,7 +127,7 @@ public class CommentService {
             commentRepository.delete(comment);
             profileRepository.save(prof);
         });
-
+        commentRepository.delete(commentRepository.findByContentID(commentId).get());
         contentRepository.save(content);
 
     }
@@ -153,22 +141,8 @@ public class CommentService {
                 .orElseThrow(() -> new CommentNotFoundException(commentID));
         List<DataType> allMedia = new ArrayList<>();
         if (files != null && !files.isEmpty()) {
-            comment.getMediaData().stream().forEach(media -> {
-                fileStorageService.deleteFile(media.getFileName());
-                dataTypeRepository.delete(media);
-            });
-            files.stream().forEach(file -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/media_uploads/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
-            });
+            mediaDataUtilities.handleDeleteMediaData(comment);
+            mediaDataUtilities.handleAddMediaData(files, allMedia);
         }
         comment.setMediaData(allMedia);
         comment.setTextData(text != null ? text : "");
@@ -179,14 +153,4 @@ public class CommentService {
         return commentRepository.save(comment);
 
     }
-
-    public boolean isCommentAuthor(String username, Long commentID) {
-        Optional<Comment> commentOptional = commentRepository.findByContentID(commentID);
-        if (commentOptional.isPresent()) {
-            Comment comment = commentOptional.get();
-            return comment.getContentAuthor().getUsername().equals(username);
-        }
-        return false;
-    }
-
 }

@@ -1,11 +1,10 @@
 package object_orienters.techspot.post;
 
-import jakarta.validation.Valid;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ProfileService;
 import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.security.PermissionService;
+import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

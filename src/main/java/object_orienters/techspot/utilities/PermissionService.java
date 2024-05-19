@@ -1,4 +1,4 @@
-package object_orienters.techspot.security;
+package object_orienters.techspot.utilities;
 
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentRepository;

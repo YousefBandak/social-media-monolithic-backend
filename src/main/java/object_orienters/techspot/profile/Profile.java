@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import object_orienters.techspot.model.UserBase;
+import object_orienters.techspot.post.Post;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.security.model.User;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 @Entity
 @Data
 @NoArgsConstructor
@@ -53,12 +54,16 @@ public class Profile extends UserBase {
     @JsonIgnore
     private List<Profile> following;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> publishedPosts;
+
     @ManyToMany(mappedBy = "following", fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Profile> followers;
 
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
-                   String dob) {
+            String dob) {
         this.owner = user;
         this.setName(name);
         this.profession = profession;
@@ -83,10 +88,6 @@ public class Profile extends UserBase {
         return following;
     }
 
-
-
-
-
     public Timestamp getLastLogin() {
         return owner.getLastLogin();
     }
@@ -104,6 +105,7 @@ public class Profile extends UserBase {
     public int hashCode() {
         return Objects.hash(this.getUsername());
     }
+
     public enum Gender {
         MALE,
         FEMALE

@@ -6,7 +6,7 @@ import object_orienters.techspot.post.PostService;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostNotFoundException;
 
-import object_orienters.techspot.security.PermissionService;
+import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;

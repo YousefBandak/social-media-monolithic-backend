@@ -1,4 +1,4 @@
-package object_orienters.techspot;
+package object_orienters.techspot.utilities;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

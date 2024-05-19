@@ -23,4 +23,8 @@ public interface ContentRepository extends PagingAndSortingRepository<Content, L
     @Query("SELECT c FROM Content c WHERE c.contentAuthor = :author AND c.privacy IN :privacies AND c.contentType IN :contentTypes")
     Page<Content> findAllByMainAuthorAndContentTypeAndPrivacy(@Param("author") Profile author, @Param("privacies") List<Privacy> privacies, @Param("contentTypes") List<ContentType> contentTypes, Pageable pageable);
 
+    @Query("SELECT c FROM Content c WHERE c.contentAuthor IN :authors AND c.privacy IN :privacies AND c.contentType IN :contentTypes")
+    Page<Content> findAllByMainAuthorsAndContentTypeAndPrivacy(@Param("authors") List<Profile> authors, @Param("privacies") List<Privacy> privacies, @Param("contentTypes") List<ContentType> contentTypes, Pageable pageable);
+
+
 }

@@ -16,7 +16,4 @@ public interface SharedPostRepository extends JpaRepository<SharedPost, Long> {
 
     List<SharedPost> findByPost(Post post);
     void deleteAllByPost(Post post);
-
-    @Query("SELECT sp FROM SharedPost sp WHERE sp.sharer = :profile AND sp.privacy IN :privacies")
-    Page<SharedPost> findAllBySharerAndPrivacy(@Param("profile") Profile profile, @Param("privacies") List<Privacy> privacies, Pageable pageable);
 }

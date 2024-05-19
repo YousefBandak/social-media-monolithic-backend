@@ -2,17 +2,21 @@ package object_orienters.techspot.post;
 
 import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.Content;
+import object_orienters.techspot.content.ContentRepository;
+import object_orienters.techspot.model.ContentType;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.tag.TagExtractor;
 import object_orienters.techspot.tag.TagRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +25,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -35,18 +38,24 @@ public class PostService {
     private final SharedPostRepository sharedPostRepository;
     private final FileStorageService fileStorageService;
     private final TagRepository tagRepository;
+    private final ContentRepository contentRepository;
 
     private static final Pattern TAG_PATTERN = Pattern.compile("#\\w+");
 
-    public PostService(PostRepository postRepository, ProfileRepository profileRepository,
-                       DataTypeRepository dataTypeRepository, UserRepository userRepository,
-                       SharedPostRepository sharedPostRepository, FileStorageService fileStorageService, TagRepository tagRepository) {
+    public PostService(PostRepository postRepository,
+                       ProfileRepository profileRepository,
+                       DataTypeRepository dataTypeRepository,
+                       SharedPostRepository sharedPostRepository,
+                       FileStorageService fileStorageService,
+                       TagRepository tagRepository,
+                       ContentRepository contentRepository) {
         this.postRepository = postRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.sharedPostRepository = sharedPostRepository;
         this.fileStorageService = fileStorageService;
         this.tagRepository = tagRepository;
+        this.contentRepository = contentRepository;
     }
 
 
@@ -63,10 +72,13 @@ public class PostService {
     }
 
 
-    public Collection<? extends Content> getPosts(String username, int offset, int limit) throws UserNotFoundException {
+    public Page<? extends Content> getPosts(String username, int offset, int limit) throws UserNotFoundException {
         Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+        Page<Content> timelinePosts = contentRepository.findAllByMainAuthorAndContentTypeAndPrivacy(user, getAllowedPrincipalPrivacy(username), List.of(ContentType.Post, ContentType.SharedPost), PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
 
-        return postRepository.findAllByContentAuthorAndPrivacy(user, getAllowedPrincipalPrivacy(username), PageRequest.of(offset, limit));
+
+
+        return timelinePosts;
     }
 
 
@@ -128,71 +140,105 @@ public class PostService {
 
 
     @Transactional
-    public Post editTimelinePost(String username, long postId, List<MultipartFile> files, String text, Privacy privacy)
+    public Content editTimelinePost(String username, long postId, List<MultipartFile> files, String text, Privacy privacy)
             throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException, IOException {
 
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
-        Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
-        if (!post.getContentAuthor().equals(user)) {
+        Content content = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        if (!content.getMainAuthor().equals(user)) {
             throw new PostUnrelatedToUserException(username, postId);
         }
-        List<DataType> allMedia = new ArrayList<>();
-        if (files != null && !files.isEmpty()) {
-            dataTypeRepository.deleteAll(post.getMediaData());
-            files.stream().forEach(file -> {
-                DataType media = new DataType();
-                String fileName = fileStorageService.storeFile(file);
-                String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                        .path("/download/")
-                        .path(fileName)
-                        .toUriString();
-                media.setType(file.getContentType());
-                media.setFileName(fileName);
-                media.setFileUrl(fileDownloadUri);
-                allMedia.add(media);
+        if (content instanceof Post) {
+            Post post = (Post) content;
+
+            List<DataType> allMedia = new ArrayList<>();
+            if (files != null && !files.isEmpty()) {
+                dataTypeRepository.deleteAll(post.getMediaData());
+                files.stream().forEach(file -> {
+                    DataType media = new DataType();
+                    String fileName = fileStorageService.storeFile(file);
+                    String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                            .path("/download/")
+                            .path(fileName)
+                            .toUriString();
+                    media.setType(file.getContentType());
+                    media.setFileName(fileName);
+                    media.setFileUrl(fileDownloadUri);
+                    allMedia.add(media);
+                });
+            }
+            post.setMediaData(allMedia);
+            System.out.println(privacy);
+            post.setPrivacy(privacy != null ? privacy : post.getPrivacy());
+            System.out.println(text);
+            post.setTextData(text != null ? text : post.getTextData());
+            allMedia.forEach(media -> {
+                media.setContent(post);
             });
+            dataTypeRepository.saveAll(allMedia);
+            postRepository.save(post);
+            profileRepository.save(user);
+            return post;
+        } else if (content instanceof SharedPost) {
+            SharedPost sharedPost = (SharedPost) content;
+            sharedPost.setPrivacy(privacy != null ? privacy : sharedPost.getPrivacy());
+            return sharedPostRepository.save(sharedPost);
+        } else {
+            return content;
         }
-        post.setMediaData(allMedia);
-        System.out.println(privacy);
-        post.setPrivacy(privacy != null ? privacy : post.getPrivacy());
-        System.out.println(text);
-        post.setTextData(text != null ? text : post.getTextData());
-        allMedia.forEach(media -> {
-            media.setContent(post);
-        });
-        dataTypeRepository.saveAll(allMedia);
-        postRepository.save(post);
-        profileRepository.save(user);
-        return post;
     }
 
 
     @Transactional
-    public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException {
+    public void deletePost(String username, long postId) throws UserNotFoundException, PostNotFoundException, PostUnrelatedToUserException {
         Profile user = profileRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException(username));
-        Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
-        List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
-//        sharedPosts.stream()
-//                .map(SharedPost::getSharer)
-//                .distinct()
-//                .forEach(sharer -> {
-//                    List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
-//                    sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
-//                    profileRepository.save(sharer);
-//                });
-        post.setContentAuthor(null);
-        post.setMediaData(new ArrayList<>());
-        dataTypeRepository.deleteAll(post.getMediaData());
-        //user.getPublishedPosts().remove(post);
-        postRepository.delete(post);
-        profileRepository.save(user);
+        Content content = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        if (!content.getMainAuthor().equals(user)) {
+            throw new PostUnrelatedToUserException(username, postId);
+        }
+        if (content instanceof SharedPost) {
+            SharedPost sharedPost = (SharedPost) content;
+            sharedPost.setPost(null);
+            sharedPost.setSharer(null);
+            sharedPostRepository.delete(sharedPost);
+        } else if (content instanceof Post) {
+
+//            List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
+//            sharedPosts.stream()
+//                    .map(SharedPost::getSharer)
+//                    .distinct()
+//                    .forEach(sharer -> {
+//                        List<SharedPost> sharerSharedPosts = sharer.getSharedPosts();
+//                        sharerSharedPosts.removeIf(sp -> sp.getPost().getContentID() == postId);
+//                        profileRepository.save(sharer);
+//                    });
+            Post post = (Post) content;
+            sharedPostRepository.deleteAllByPost(post);
+
+            // Clear associations to avoid foreign key constraints issues
+            post.setContentAuthor(null);
+            postRepository.save(post);
+
+            // Delete all media data associated with this post
+            post.setMediaData(new ArrayList<>());
+            dataTypeRepository.deleteAll(post.getMediaData());
+            postRepository.save(post);
+
+            // Finally, delete the post itself
+            postRepository.delete(post);
+
+        }
+
+
+
     }
 
 
-    public Post getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
-        return postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+    public Content getPost(long postId) throws PostNotFoundException, ContentIsPrivateException {
+        Content c = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        return c;
 
     }
 

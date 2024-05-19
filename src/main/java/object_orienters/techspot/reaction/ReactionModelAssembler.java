@@ -21,7 +21,7 @@ public class ReactionModelAssembler implements RepresentationModelAssembler<Reac
                                 linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID(),
                                                 entity.getContent().getContentAuthor().getUsername())).withRel("post"),
                                 linkTo(methodOn(ReactionController.class)
-                                                .getReactions(entity.getContent().getContentID()))
+                                                .getReactions(entity.getContent().getContentID(), 0, 10))
                                                 .withRel("reactions"));
         }
 

@@ -1,6 +1,5 @@
 package object_orienters.techspot.feed;
 
-import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +13,9 @@ public class FeedService {
     private ProfileRepository profileRepository;
     private FeedByFollowingStrategy feedByFollowingStrategy;
     private FeedByTag feedByTag;
-    private FeedByAuthor feedByAuthor;
+    // private FeedByAuthor feedByAuthor;
     private ReactionsByContent reactionsByContent;
-    private CommentsByContent commentsByContent;
+    // private CommentsByContent commentsByContent;
     private SearchByName searchByName;
     private GetFollowingofFollowing getFollowingofFollowing;
 
@@ -25,17 +24,17 @@ public class FeedService {
     public FeedService(ProfileRepository profileRepository,
                        FeedByFollowingStrategy feedByFollowingStrategy,
                        FeedByTag feedByTag,
-                       FeedByAuthor feedByAuthor,
-                       CommentsByContent commentsByContent,
-                       ReactionsByContent reactionsByContent,
+//                     FeedByAuthor feedByAuthor,
+//                     CommentsByContent commentsByContent,
+//                       ReactionsByContent reactionsByContent,
                        SearchByName searchByName,
                        GetFollowingofFollowing getFollowingofFollowing) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
         this.feedByTag = feedByTag;
-        this.feedByAuthor = feedByAuthor;
-        this.commentsByContent = commentsByContent;
-        this.reactionsByContent = reactionsByContent;
+        // this.feedByAuthor = feedByAuthor;
+        // this.commentsByContent = commentsByContent;
+//        this.reactionsByContent = reactionsByContent;
         this.searchByName = searchByName;
         this.getFollowingofFollowing = getFollowingofFollowing;
     }
@@ -45,14 +44,14 @@ public class FeedService {
 
             case ALL_USERS:
                 return feedByFollowingStrategy.operate(profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername)), pageNumber, pageSize);
-            case ONE_USER:
-                return feedByAuthor.operate(profileRepository.findByUsername(value).orElseThrow(() -> new ProfileNotFoundException(value)), pageNumber, pageSize);
+//            case ONE_USER:
+//                return feedByAuthor.operate(profileRepository.findByUsername(value).orElseThrow(() -> new ProfileNotFoundException(value)), pageNumber, pageSize);
             case TOPIC:
                 return feedByTag.operate(value, pageNumber, pageSize);
-            case COMMENTS:
-                return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
-            case REACTIONS:
-                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+//            case COMMENTS:
+//                return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+//            case REACTIONS:
+//                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
             case PROFILES:
                 return searchByName.operate(value, pageNumber, pageSize);
             case MUTUAL_FOLLOWING:
@@ -65,6 +64,12 @@ public class FeedService {
     }
 
     enum FeedType {
-        ALL_USERS, ONE_USER, TOPIC, COMMENTS, REACTIONS, PROFILES, MUTUAL_FOLLOWING
+        ALL_USERS,
+        //  ONE_USER,
+        TOPIC,
+        // COMMENTS,
+       // REACTIONS,
+        PROFILES,
+        MUTUAL_FOLLOWING
     }
 }

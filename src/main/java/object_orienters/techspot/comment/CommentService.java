@@ -1,5 +1,6 @@
 package object_orienters.techspot.comment;
 
+import jakarta.transaction.Transactional;
 import object_orienters.techspot.FileStorageService;
 import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
@@ -11,12 +12,13 @@ import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionRepository;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,19 +32,21 @@ public class CommentService {
     private final DataTypeRepository dataTypeRepository;
     private final ReactionRepository reactionRepository;
     private final FileStorageService fileStorageService;
+    private final ReactableContentRepository reactableContentRepository;
 
     public CommentService(CommentRepository commentRepository, ReactableContentRepository contentRepository,
-            ProfileRepository profileRepository, DataTypeRepository dataTypeRepository,
-            ReactionRepository reactionRepository, FileStorageService fileStorageService) {
+                          ProfileRepository profileRepository, DataTypeRepository dataTypeRepository,
+                          ReactionRepository reactionRepository, FileStorageService fileStorageService, ReactableContentRepository reactableContentRepository) {
         this.commentRepository = commentRepository;
         this.contentRepository = contentRepository;
         this.profileRepository = profileRepository;
         this.dataTypeRepository = dataTypeRepository;
         this.reactionRepository = reactionRepository;
         this.fileStorageService = fileStorageService;
+        this.reactableContentRepository = reactableContentRepository;
     }
 
-    
+
     @Transactional
     public Comment addComment(Long contentId, String username, List<MultipartFile> files, String text)
             throws ContentNotFoundException, IOException {
@@ -52,7 +56,7 @@ public class CommentService {
 
         if (content.getPrivacy().equals(Privacy.PRIVATE) && !content.getContentAuthor().getUsername().equals(username)) {
             throw new ContentNotFoundException(contentId);
-        } else if (content.getPrivacy().equals(Privacy.FRIENDS) &&!content.getContentAuthor().getFollowers().contains(prof)) {
+        } else if (content.getPrivacy().equals(Privacy.FRIENDS) && !content.getContentAuthor().getFollowers().contains(prof)) {
             throw new ContentNotFoundException(contentId);
         }
 
@@ -87,20 +91,19 @@ public class CommentService {
         return newComment;
     }
 
-    
+
     public Comment getComment(Long commentId) throws ContentNotFoundException {
         return commentRepository.findByContentID(commentId)
                 .orElseThrow(() -> new ContentNotFoundException(commentId));
     }
 
-    
-    public List<Comment> getComments(Long contentId) throws ContentNotFoundException {
-        ReactableContent content = contentRepository.findByContentID(contentId)
-                .orElseThrow(() -> new ContentNotFoundException(contentId));
-        return content.getComments();
+
+    public Page<Comment> getComments(Long contentId, int pageNumber, int pageSize) throws ContentNotFoundException {
+        return commentRepository.findByCommentedOn(reactableContentRepository.findByContentID(contentId).orElseThrow(() -> new ContentNotFoundException(contentId)), PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
+
     }
 
-    
+
     @Transactional
     public void deleteComment(Long contentId, Long commentId) throws ContentNotFoundException {
         ReactableContent content = contentRepository.findByContentID(contentId)
@@ -141,7 +144,7 @@ public class CommentService {
 
     }
 
-    
+
     @Transactional
     public Comment updateComment(Long contentID, Long commentID, List<MultipartFile> files, String text)
             throws ContentNotFoundException, CommentNotFoundException, IOException {

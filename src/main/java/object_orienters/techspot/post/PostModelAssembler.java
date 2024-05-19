@@ -21,8 +21,8 @@ public class PostModelAssembler implements RepresentationModelAssembler<Content,
                 linkTo(methodOn(PostController.class).getPost(entity.getContentID(),
                         entity.getMainAuthor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getMainAuthor().getUsername())).withRel("author"),
-                linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID())).withRel("reactions"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentID())).withRel("comments"));
+                linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID(), 0, 10)).withRel("reactions"),
+                linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),0, 10 )).withRel("comments"));
 
     }
 }

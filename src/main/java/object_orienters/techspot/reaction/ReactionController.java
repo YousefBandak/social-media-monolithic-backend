@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import object_orienters.techspot.content.ContentNotFoundException;
 
 import object_orienters.techspot.security.PermissionService;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
@@ -41,10 +42,12 @@ public class ReactionController {
 
     @GetMapping("/reactions")
     @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
-    public ResponseEntity<?> getReactions(@PathVariable Long contentID) {
+    public ResponseEntity<?> getReactions(@PathVariable Long contentID,
+                                          @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
+                                          @RequestParam(value = "pageSize", defaultValue = "10") int pageSize){
         try {
             logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
-            List<Reaction> reactionList = reactionService.getReactions(contentID);
+            Page<Reaction> reactionList = reactionService.getReactions(contentID, pageNumber, pageSize);
             logger.info(">>>>Reactions Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
         } catch (ContentNotFoundException e) {

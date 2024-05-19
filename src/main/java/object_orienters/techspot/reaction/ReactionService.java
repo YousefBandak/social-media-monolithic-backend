@@ -9,6 +9,9 @@ import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -23,7 +26,8 @@ public class ReactionService {
     private final ProfileRepository profileRepository;
     Logger logger = LoggerFactory.getLogger(ReactionController.class);
 
-    public ReactionService(ReactionRepository reactionRepository, ReactableContentRepository contentRepository,
+    public ReactionService(ReactionRepository reactionRepository,
+                           ReactableContentRepository contentRepository,
                            ProfileRepository profileRepository) {
 
         this.reactionRepository = reactionRepository;
@@ -36,10 +40,12 @@ public class ReactionService {
         return reactionRepository.findByReactionID(reactionId).orElseThrow(() -> new ReactionNotFoundException(reactionId));
     }
 
-    public List<Reaction> getReactions(Long contentId) {
-        ReactableContent content = contentRepository.findByContentID(contentId)
-                .orElseThrow(() -> new ContentNotFoundException(contentId));
-        return content.getReactions();
+    public Page<Reaction> getReactions(Long contentId, int pageNumber, int pageSize) {
+//        ReactableContent content = contentRepository.findByContentID(contentId)
+//                .orElseThrow(() -> new ContentNotFoundException(contentId));
+//        return content.getReactions();
+        return reactionRepository.findByContent(contentRepository.findByContentID(contentId).orElseThrow(() -> new ContentNotFoundException(contentId)), PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
+
     }
 
     @Transactional

@@ -1,18 +1,17 @@
 package object_orienters.techspot.security;
 
+import object_orienters.techspot.content.Content;
+import object_orienters.techspot.content.ContentRepository;
+import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.post.PostNotFoundException;
-import object_orienters.techspot.post.PostRepository;
+import object_orienters.techspot.post.SharedPost;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.security.model.User;
-import object_orienters.techspot.security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.lang.runtime.SwitchBootstraps;
 
 @Service
 public class PermissionService {
@@ -21,18 +20,29 @@ public class PermissionService {
     private ProfileRepository profileRepository;
 
     @Autowired
-    private PostRepository postRepository;
+    private ContentRepository contentRepository;
 
     public boolean canAccessPost(Long postId, String username) throws PostNotFoundException {
-        Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        Content post = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
         Profile profile = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
         switch (post.getPrivacy()) {
             case PUBLIC:
                 return true;
             case PRIVATE:
-                return post.getContentAuthor().getUsername().equals(username);
+                Profile mainAuthor;
+                if (post instanceof ReactableContent)
+                    mainAuthor = ((ReactableContent) post).getContentAuthor();
+                else
+                    mainAuthor = ((SharedPost) post).getMainAuthor();
+                return mainAuthor.getUsername().equals(username);
             case FRIENDS:
-                return post.getContentAuthor().getUsername().equals(username) || profile.getFollowing().contains(post.getContentAuthor());
+                Profile contentAuthor;
+                if (post instanceof ReactableContent)
+                    contentAuthor = ((ReactableContent) post).getContentAuthor();
+                else
+                    contentAuthor = ((SharedPost) post).getMainAuthor();
+                return contentAuthor.getUsername().equals(username) ||
+                        profile.getFollowing().contains(contentAuthor);
             default:
                 return false;
         }
@@ -41,7 +51,7 @@ public class PermissionService {
     }
 
     public boolean isPostPublic(Long postId) throws PostNotFoundException {
-        Post post = postRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
+        Content post = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return post.getPrivacy().equals(Privacy.PUBLIC);
     }
 }

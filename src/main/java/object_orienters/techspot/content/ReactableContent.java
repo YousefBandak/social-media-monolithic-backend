@@ -18,8 +18,7 @@ import java.util.List;
 @Data
 public abstract class ReactableContent extends Content {
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    private Profile contentAuthor;
+
 
     @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<DataType> mediaData;
@@ -49,7 +48,5 @@ public abstract class ReactableContent extends Content {
         return this.getContentID() != null && this.getContentID().equals(((Post) o).getContentID());
     }
 
-    public Profile getContentAuthor() {
-        return contentAuthor;
-    }
+
 }

@@ -62,13 +62,6 @@ public class SharedPostService{
         return sharedPost;
     }
 
-    
-    public SharedPost updateSharedPost(long sharedPostId, Privacy newPrivacy)
-            throws PostNotFoundException, ContentIsPrivateException {
-        SharedPost sharedPost = getSharedPost(sharedPostId);
-        sharedPost.setPrivacy(newPrivacy);
-        return sharedPostRepository.save(sharedPost);
-    }
 
     
     @Transactional

@@ -8,7 +8,9 @@ import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.security.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/profiles/{username}")
@@ -60,9 +63,14 @@ public class PostController {
     public ResponseEntity<?> getTimelinePosts(@PathVariable String username, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit) {
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
-            Collection<? extends Content> posts = postService.getPosts(username, offset, limit);
+
+            Page<? extends Content> posts =  postService.getPosts(username, offset, limit);
+            PagedModel<EntityModel<? extends Content>> pagedModel = PagedModel.of(posts.stream().map(assembler::toModel).collect(Collectors.toList()),
+                    new PagedModel.PageMetadata(posts.getSize(), posts.getNumber(), posts.getTotalElements(), posts.getTotalPages()));
+
             logger.info(">>>>Timeline Posts Retrieved. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(assembler.toCollectionModel(posts));
+
+            return ResponseEntity.ok(pagedModel);
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -98,13 +106,12 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
-
                                               @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                               @RequestParam(value = "text", required = false) String text,
                                               @RequestParam(value = "privacy") Privacy privacy) throws IOException {
         try {
             logger.info(">>>>Editing Post... @ " + getTimestamp() + "<<<<");
-            Post editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
+            Content editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
         } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
@@ -116,7 +123,7 @@ public class PostController {
     }
 
     @DeleteMapping("/posts/{postId}")
-    @PreAuthorize("#username == authentication.principal.username")
+    @PreAuthorize("#username == authentication.principal.username && @permissionService.canAccessPost(#postId, #username)")
     public ResponseEntity<?> deleteTimelinePost(@PathVariable String username, @PathVariable long postId) {
         try {
             logger.info(">>>>Deleting Post... @ " + getTimestamp() + "<<<<");
@@ -127,6 +134,9 @@ public class PostController {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+        } catch (PostUnrelatedToUserException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(e.getMessage()));
         }
 
     }
@@ -137,8 +147,8 @@ public class PostController {
         try {
             profileService.getUserByUsername(username);
             logger.info(">>>>Retrieving Post... @ " + getTimestamp() + "<<<<");
-            Post post = postService.getPost(postId);
-            String aouther = post.getContentAuthor().getUsername();
+            Content post = postService.getPost(postId);
+            String aouther = post.getMainAuthor().getUsername();
             if (!Objects.equals(username, aouther)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Problem.create().withTitle("Not Found").withDetail(
@@ -146,7 +156,7 @@ public class PostController {
             }
 
             logger.info(">>>>Post Retrieved. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(assembler.toModel(post));
+            return ResponseEntity.ok(post);
         } catch (PostNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -190,82 +200,83 @@ public class PostController {
 
     }
 
-    @GetMapping("/sharedPosts/{postId}")
-    public ResponseEntity<?> getSharedPost(@PathVariable long postId, @PathVariable String username) {
-        try {
-            profileService.getUserByUsername(username);
-            logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
-            SharedPost sharedPost = sharedPostService.getSharedPost(postId);
-            String author = sharedPost.getSharer().getUsername();
-            if (!Objects.equals(username, author) && sharedPost.getPrivacy() != Privacy.PRIVATE) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Problem.create().withTitle("Not Found").withDetail(
-                                "User: " + username + " is not the author of this content." + "Author is: " + author));
-            }
-            logger.info(">>>>Sharing Post Retrieved. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(sharedPostAssembler.toModel(sharedPost));
-        } catch (PostNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle(" Post Not Found").withDetail(exception.getMessage()));
-        } catch (UserNotFoundException exception) {
-            logger.info(">>>>Error Occurred: " + exception.getMessage() + " @ " +
-                    getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        } catch (ContentIsPrivateException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }
+//    //NOTE TO BE REMOVED
+//    @GetMapping("/sharedPosts/{postId}")
+//    public ResponseEntity<?> getSharedPost(@PathVariable long postId, @PathVariable String username) {
+//        try {
+//            profileService.getUserByUsername(username);
+//            logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
+//            SharedPost sharedPost = sharedPostService.getSharedPost(postId);
+//            String author = sharedPost.getSharer().getUsername();
+//            if (!Objects.equals(username, author) && sharedPost.getPrivacy() != Privacy.PRIVATE) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                        .body(Problem.create().withTitle("Not Found").withDetail(
+//                                "User: " + username + " is not the author of this content." + "Author is: " + author));
+//            }
+//            logger.info(">>>>Sharing Post Retrieved. @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.ok(sharedPostAssembler.toModel(sharedPost));
+//        } catch (PostNotFoundException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Problem.create().withTitle(" Post Not Found").withDetail(exception.getMessage()));
+//        } catch (UserNotFoundException exception) {
+//            logger.info(">>>>Error Occurred: " + exception.getMessage() + " @ " +
+//                    getTimestamp() + "<<<<");
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+//        } catch (ContentIsPrivateException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+//        }
+//
+//    }
 
-    }
+//    @DeleteMapping("/sharedPosts/{postId}")
+//    @PreAuthorize("#username == authentication.principal.username")
+//    public ResponseEntity<?> deleteSharedPost(@PathVariable String username, @PathVariable Long postId) {
+//        try {
+//            logger.info(">>>>Deleting Shared Post... @ " + getTimestamp() + "<<<<");
+//            sharedPostService.deleteSharedPost(username, postId);
+//            logger.info(">>>>Shared Post Deleted. @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.noContent().build();
+//        } catch (PostNotFoundException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            exception = new PostNotFoundException(postId);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+//        } catch (UserNotFoundException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            exception = new UserNotFoundException(username);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+//        } catch (ContentIsPrivateException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+//        }
+//    }
 
-    @DeleteMapping("/sharedPosts/{postId}")
-    @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> deleteSharedPost(@PathVariable String username, @PathVariable Long postId) {
-        try {
-            logger.info(">>>>Deleting Shared Post... @ " + getTimestamp() + "<<<<");
-            sharedPostService.deleteSharedPost(username, postId);
-            logger.info(">>>>Shared Post Deleted. @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.noContent().build();
-        } catch (PostNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            exception = new PostNotFoundException(postId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
-        } catch (UserNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            exception = new UserNotFoundException(username);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        } catch (ContentIsPrivateException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }
-    }
-
-    @PutMapping("/sharedPosts/{postId}")
-    @PreAuthorize("#username == authentication.principal.username")
-    public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-                                              @Valid @RequestBody Map<String, String> bodyMap) {
-        try {
-            logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
-            SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,
-                    Privacy.valueOf(bodyMap.get("privacy")));
-            EntityModel<SharedPost> sharedPostModel = sharedPostAssembler.toModel(updatedSharedPost);
-            logger.info(">>>>Shared Post Edited.  @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(sharedPostModel);
-        } catch (PostNotFoundException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            exception = new PostNotFoundException(postId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
-        } catch (ContentIsPrivateException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-        }
-    }
+//    @PutMapping("/sharedPosts/{postId}")
+//    @PreAuthorize("#username == authentication.principal.username")
+//    public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
+//                                              @Valid @RequestBody Map<String, String> bodyMap) {
+//        try {
+//            logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
+//            SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,
+//                    Privacy.valueOf(bodyMap.get("privacy")));
+//            EntityModel<SharedPost> sharedPostModel = sharedPostAssembler.toModel(updatedSharedPost);
+//            logger.info(">>>>Shared Post Edited.  @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.ok(sharedPostModel);
+//        } catch (PostNotFoundException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            exception = new PostNotFoundException(postId);
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+//        } catch (ContentIsPrivateException exception) {
+//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+//        }
+//    }
 }

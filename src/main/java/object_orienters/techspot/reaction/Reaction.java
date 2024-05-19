@@ -18,7 +18,7 @@ public class Reaction {
     @Id
     private String reactionID;
 
-    @OneToOne
+    @ManyToOne
     @NotNull(message = "Reactor profile should not be null.")
     private Profile reactor;
 

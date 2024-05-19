@@ -59,8 +59,7 @@ public class PostService {
     }
 
 
-    public List<Privacy> getAllowedPrincipalPrivacy(String username) {
-        Profile profile = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
+    public List<Privacy> getAllowedPrincipalPrivacy(Profile profile) {
         String currentUserPrincipal = SecurityContextHolder.getContext().getAuthentication().getName();
         List<Privacy> privacies = List.of(Privacy.PUBLIC);
 
@@ -74,11 +73,8 @@ public class PostService {
 
     public Page<? extends Content> getPosts(String username, int offset, int limit) throws UserNotFoundException {
         Profile user = profileRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
-        Page<Content> timelinePosts = contentRepository.findAllByMainAuthorAndContentTypeAndPrivacy(user, getAllowedPrincipalPrivacy(username), List.of(ContentType.Post, ContentType.SharedPost), PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
+        return contentRepository.findAllByMainAuthorAndContentTypeAndPrivacy(user, getAllowedPrincipalPrivacy(user), List.of(ContentType.Post, ContentType.SharedPost), PageRequest.of(offset, limit, Sort.by("timestamp").descending()));
 
-
-
-        return timelinePosts;
     }
 
 
@@ -109,7 +105,6 @@ public class PostService {
         post.setPrivacy(privacy);
         post.setMediaData(allMedia);
         post.setContentAuthor(prof);
-        // prof.getPublishedPosts().add(post);
         allMedia.forEach(media -> {
             media.setContent(post);
         });
@@ -240,6 +235,23 @@ public class PostService {
         Content c = contentRepository.findByContentID(postId).orElseThrow(() -> new PostNotFoundException(postId));
         return c;
 
+    }
+
+    @Transactional
+    public SharedPost createSharedPost(String sharerUsername, Long postID, String privacy)
+            throws UserNotFoundException, PostNotFoundException {
+        Post originalPost = postRepository.findByContentID(postID).orElseThrow(() -> new PostNotFoundException(postID));
+        Profile sharer = profileRepository.findById(sharerUsername)
+                .orElseThrow(() -> new UserNotFoundException(sharerUsername));
+        Privacy privacyType = Privacy.valueOf(privacy);
+
+        SharedPost sharedPost = new SharedPost(sharer, originalPost, privacyType);
+        originalPost.setNumOfShares(originalPost.getNumOfShares() + 1);
+        sharedPostRepository.save(sharedPost);
+
+        // sharer.getSharedPosts().add(sharedPost);
+        profileRepository.save(sharer);
+        return sharedPost;
     }
 
 }

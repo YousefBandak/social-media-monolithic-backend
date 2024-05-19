@@ -35,8 +35,6 @@ public class PostController {
     private final PostModelAssembler assembler;
     private final SharedPostModelAssembler sharedPostAssembler;
     private final PostService postService;
-    private final SharedPostService sharedPostService;
-
     private final ProfileService profileService;
 
     private final PermissionService permissionService;
@@ -44,13 +42,11 @@ public class PostController {
     PostController(PostModelAssembler assembler,
                    PostService postService,
                    SharedPostModelAssembler sharedPostAssembler,
-                   SharedPostService sharedPostService,
                    ProfileService profileService,
                    PermissionService permissionService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
-        this.sharedPostService = sharedPostService;
         this.profileService = profileService;
         this.permissionService = permissionService;
     }
@@ -181,7 +177,7 @@ public class PostController {
                                              @RequestBody Map<String, String> bodyMap) {
         try {
             logger.info(">>>>Sharing Post... @ " + getTimestamp() + "<<<<");
-            SharedPost sharedPost = sharedPostService.createSharedPost(bodyMap.get("sharer"), postId,
+            SharedPost sharedPost = postService.createSharedPost(bodyMap.get("sharer"), postId,
                     bodyMap.get("privacy"));
             logger.info(">>>>Post Shared. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED).body(sharedPostAssembler.toModel(sharedPost));

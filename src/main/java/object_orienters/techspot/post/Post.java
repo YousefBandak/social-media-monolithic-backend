@@ -1,17 +1,11 @@
 package object_orienters.techspot.post;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.model.ContentType;
-import object_orienters.techspot.model.Privacy;
-import object_orienters.techspot.postTypes.DataType;
-import object_orienters.techspot.profile.Profile;
-
-
-import java.util.List;
 
 
 @Entity

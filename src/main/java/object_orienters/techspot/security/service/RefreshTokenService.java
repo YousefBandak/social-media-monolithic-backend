@@ -1,6 +1,6 @@
 package object_orienters.techspot.security.service;
 
-import object_orienters.techspot.security.TokenRefreshException;
+import object_orienters.techspot.exceptions.TokenRefreshException;
 import object_orienters.techspot.security.model.RefreshToken;
 import object_orienters.techspot.security.model.User;
 import object_orienters.techspot.security.repository.RefreshTokenRepository;

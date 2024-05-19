@@ -2,6 +2,8 @@ package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
+import object_orienters.techspot.exceptions.UserCannotFollowSelfException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.CollectionModel;
@@ -55,8 +57,6 @@ public class ProfileController {
                     .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
         }
     }
-
-    ;
 
     // update user profile
     @PutMapping("/{username}")

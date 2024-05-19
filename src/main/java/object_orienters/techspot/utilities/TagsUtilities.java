@@ -1,9 +1,7 @@
 package object_orienters.techspot.utilities;
 
-import com.google.auto.value.extension.serializable.SerializableAutoValue;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.tag.Tag;
-import object_orienters.techspot.tag.TagExtractor;
 import object_orienters.techspot.tag.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

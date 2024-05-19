@@ -1,7 +1,6 @@
 package object_orienters.techspot.utilities;
 
 import object_orienters.techspot.content.ReactableContent;
-import object_orienters.techspot.post.Post;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;

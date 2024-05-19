@@ -1,18 +1,19 @@
 package object_orienters.techspot.post;
 
-import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.content.ContentRepository;
+import object_orienters.techspot.exceptions.ContentIsPrivateException;
+import object_orienters.techspot.exceptions.PostNotFoundException;
+import object_orienters.techspot.exceptions.PostUnrelatedToUserException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.model.ContentType;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
-import object_orienters.techspot.tag.Tag;
-import object_orienters.techspot.tag.TagExtractor;
 import object_orienters.techspot.tag.TagRepository;
+import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.utilities.MediaDataUtilities;
 import object_orienters.techspot.utilities.TagsUtilities;
 import org.springframework.data.domain.Page;
@@ -22,15 +23,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -123,8 +120,7 @@ public class PostService {
             throw new PostUnrelatedToUserException(username, postId);
         }
 
-        if (content instanceof Post) {
-            Post post = (Post) content;
+        if (content instanceof Post post) {
             List<DataType> allMedia = files == null ? post.getMediaData() : new ArrayList<>();
             if (files != null && !files.isEmpty()) {
                 mediaDataUtilities.handleDeleteMediaData(post);
@@ -140,8 +136,7 @@ public class PostService {
             postRepository.save(post);
             profileRepository.save(user);
             return post;
-        } else if (content instanceof SharedPost) {
-            SharedPost sharedPost = (SharedPost) content;
+        } else if (content instanceof SharedPost sharedPost) {
             sharedPost.setPrivacy(privacy != null ? privacy : sharedPost.getPrivacy());
             return sharedPostRepository.save(sharedPost);
         } else {
@@ -158,13 +153,11 @@ public class PostService {
         if (!content.getMainAuthor().equals(user)) {
             throw new PostUnrelatedToUserException(username, postId);
         }
-        if (content instanceof SharedPost) {
-            SharedPost sharedPost = (SharedPost) content;
+        if (content instanceof SharedPost sharedPost) {
             sharedPost.setPost(null);
             sharedPost.setSharer(null);
             sharedPostRepository.delete(sharedPost);
-        } else if (content instanceof Post) {
-            Post post = (Post) content;
+        } else if (content instanceof Post post) {
 
             List<SharedPost> sharedPosts = sharedPostRepository.findByPost(post);
             sharedPosts.stream().forEach(sharedPost -> {

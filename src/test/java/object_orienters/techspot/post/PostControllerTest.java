@@ -10,7 +10,7 @@
 ////  import object_orienters.techspot.postTypes.DataType;
 ////  import object_orienters.techspot.profile.ImpleProfileService;
 ////  import object_orienters.techspot.profile.Profile;
-////  import object_orienters.techspot.profile.UserNotFoundException;
+////  import object_orienters.techspot.exceptions.UserNotFoundException;
 ////  import object_orienters.techspot.security.model.User;
 ////  import org.junit.jupiter.api.BeforeEach;
 ////  import org.junit.jupiter.api.Test;
@@ -198,7 +198,7 @@
 // import object_orienters.techspot.postTypes.DataType;
 // import object_orienters.techspot.profile.ImpleProfileService;
 // import object_orienters.techspot.profile.Profile;
-// import object_orienters.techspot.profile.UserNotFoundException;
+// import object_orienters.techspot.exceptions.UserNotFoundException;
 // import object_orienters.techspot.security.model.User;
 // import org.junit.jupiter.api.BeforeEach;
 // import org.junit.jupiter.api.Test;

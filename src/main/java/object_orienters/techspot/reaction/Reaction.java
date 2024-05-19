@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
 
@@ -56,7 +55,7 @@ public class Reaction {
     }
 
     public enum ReactionType {
-        LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
+        LIKE, DISLIKE, LOVE, SUPPORT, HAHA
     }
 
 }

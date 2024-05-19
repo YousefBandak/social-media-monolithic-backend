@@ -1,6 +1,7 @@
 package object_orienters.techspot.tag;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 @Entity

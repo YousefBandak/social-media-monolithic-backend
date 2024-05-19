@@ -2,6 +2,7 @@ package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import object_orienters.techspot.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.security.model.User;
 import org.junit.jupiter.api.BeforeEach;

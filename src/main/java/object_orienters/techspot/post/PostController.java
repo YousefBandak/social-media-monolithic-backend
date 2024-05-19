@@ -1,9 +1,12 @@
 package object_orienters.techspot.post;
 
 import object_orienters.techspot.content.Content;
+import object_orienters.techspot.exceptions.ContentIsPrivateException;
+import object_orienters.techspot.exceptions.PostNotFoundException;
+import object_orienters.techspot.exceptions.PostUnrelatedToUserException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ProfileService;
-import object_orienters.techspot.profile.UserNotFoundException;
 import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,8 +170,6 @@ public class PostController {
 
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     @PostMapping("/posts/{postId}/share")
     @PreAuthorize("#bodyMap['sharer'] == authentication.principal.username && @permissionService.isPostPublic(#postId)")
     public ResponseEntity<?> createSharePost(@PathVariable String username, @PathVariable Long postId,
@@ -193,84 +194,4 @@ public class PostController {
         }
 
     }
-
-//    //NOTE TO BE REMOVED
-//    @GetMapping("/sharedPosts/{postId}")
-//    public ResponseEntity<?> getSharedPost(@PathVariable long postId, @PathVariable String username) {
-//        try {
-//            profileService.getUserByUsername(username);
-//            logger.info(">>>>Retrieving Shared Post... @ " + getTimestamp() + "<<<<");
-//            SharedPost sharedPost = sharedPostService.getSharedPost(postId);
-//            String author = sharedPost.getSharer().getUsername();
-//            if (!Objects.equals(username, author) && sharedPost.getPrivacy() != Privacy.PRIVATE) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                        .body(Problem.create().withTitle("Not Found").withDetail(
-//                                "User: " + username + " is not the author of this content." + "Author is: " + author));
-//            }
-//            logger.info(">>>>Sharing Post Retrieved. @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.ok(sharedPostAssembler.toModel(sharedPost));
-//        } catch (PostNotFoundException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Problem.create().withTitle(" Post Not Found").withDetail(exception.getMessage()));
-//        } catch (UserNotFoundException exception) {
-//            logger.info(">>>>Error Occurred: " + exception.getMessage() + " @ " +
-//                    getTimestamp() + "<<<<");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-//        } catch (ContentIsPrivateException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-//        }
-//
-//    }
-
-//    @DeleteMapping("/sharedPosts/{postId}")
-//    @PreAuthorize("#username == authentication.principal.username")
-//    public ResponseEntity<?> deleteSharedPost(@PathVariable String username, @PathVariable Long postId) {
-//        try {
-//            logger.info(">>>>Deleting Shared Post... @ " + getTimestamp() + "<<<<");
-//            sharedPostService.deleteSharedPost(username, postId);
-//            logger.info(">>>>Shared Post Deleted. @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.noContent().build();
-//        } catch (PostNotFoundException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            exception = new PostNotFoundException(postId);
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
-//        } catch (UserNotFoundException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            exception = new UserNotFoundException(username);
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-//        } catch (ContentIsPrivateException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-//        }
-//    }
-
-//    @PutMapping("/sharedPosts/{postId}")
-//    @PreAuthorize("#username == authentication.principal.username")
-//    public ResponseEntity<?> updateSharedPost(@PathVariable String username, @PathVariable Long postId,
-//                                              @Valid @RequestBody Map<String, String> bodyMap) {
-//        try {
-//            logger.info(">>>>Editing Shared Post... @ " + getTimestamp() + "<<<<");
-//            SharedPost updatedSharedPost = sharedPostService.updateSharedPost(postId,
-//                    Privacy.valueOf(bodyMap.get("privacy")));
-//            EntityModel<SharedPost> sharedPostModel = sharedPostAssembler.toModel(updatedSharedPost);
-//            logger.info(">>>>Shared Post Edited.  @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.ok(sharedPostModel);
-//        } catch (PostNotFoundException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            exception = new PostNotFoundException(postId);
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
-//        } catch (ContentIsPrivateException exception) {
-//            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
-//        }
-//    }
 }

@@ -1,4 +1,4 @@
-package object_orienters.techspot.content;
+package object_orienters.techspot.exceptions;
 
 public class ContentNotFoundException extends RuntimeException {
     public ContentNotFoundException(Long contentId) {

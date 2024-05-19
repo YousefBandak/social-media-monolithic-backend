@@ -2,14 +2,14 @@ package object_orienters.techspot.security;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import object_orienters.techspot.profile.ProfileService;
-import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.comment.CommentRepository;
+import object_orienters.techspot.exceptions.ProfileNotFoundException;
+import object_orienters.techspot.exceptions.TokenRefreshException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.Profile;
-import object_orienters.techspot.profile.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
+import object_orienters.techspot.profile.ProfileService;
 import object_orienters.techspot.security.blacklist.ImpleTokenBlackListService;
 import object_orienters.techspot.security.jwt.JwtUtils;
 import object_orienters.techspot.security.model.RefreshToken;
@@ -24,6 +24,7 @@ import object_orienters.techspot.security.repository.RefreshTokenRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.security.service.ImpleUserDetails;
 import object_orienters.techspot.security.service.RefreshTokenService;
+import object_orienters.techspot.utilities.FileStorageService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -132,7 +133,7 @@ public class AuthController {
                 // Save the updated User object back to the database
                 userRepository.save(user);
 
-                logger.info(">>>>User " + user.toString() + " Authenticated Successfully. @ " + getTimestamp()
+                logger.info(">>>>User " + user + " Authenticated Successfully. @ " + getTimestamp()
                                 + "<<<<");
                 return ResponseEntity.ok(new JwtResponse(
                                 jwt,
@@ -192,7 +193,7 @@ public class AuthController {
                 // userCredentialsServices.setRole(signUpRequest);
                 userRepository.save(user);
                 profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName(), null);
-                logger.info(">>>>User " + user.toString() + " Registered Successfully. @ " + getTimestamp() + "<<<<");
+                logger.info(">>>>User " + user + " Registered Successfully. @ " + getTimestamp() + "<<<<");
                 return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
         }
 
@@ -243,8 +244,8 @@ public class AuthController {
                         user.setEmail(signUpRequest.getEmail());
                         user.setPassword(encoder.encode(signUpRequest.getPassword()));
                         user.setUsername(signUpRequest.getUsername());
-                        userRepository.save(user); // NOte this create a new user object
-                        logger.info(">>>>User " + user.toString() + " Updated Successfully. @ " + getTimestamp()
+                        userRepository.save(user);
+                        logger.info(">>>>User " + user + " Updated Successfully. @ " + getTimestamp()
                                         + "<<<<");
                         return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
                 }
@@ -255,7 +256,7 @@ public class AuthController {
 
         }
 
-        // TODO: Test this endpoint
+
         @DeleteMapping("/delete")
         @Transactional
         public ResponseEntity<?> deleteUser() {

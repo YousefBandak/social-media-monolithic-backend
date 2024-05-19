@@ -1,24 +1,23 @@
 package object_orienters.techspot.security.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import object_orienters.techspot.security.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 
 public class ImpleUserDetails implements UserDetails {
 
-    private String username;
-    private String email;
+    private final String username;
+    private final String email;
     @JsonIgnore
-    private String password;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
     public ImpleUserDetails(String username, String email, String password,
                             Collection<? extends GrantedAuthority> authorities) {

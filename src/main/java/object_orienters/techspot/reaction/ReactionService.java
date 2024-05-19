@@ -1,12 +1,13 @@
 package object_orienters.techspot.reaction;
 
 import jakarta.transaction.Transactional;
-import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
+import object_orienters.techspot.exceptions.ContentNotFoundException;
+import object_orienters.techspot.exceptions.ReactionNotFoundException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
-import object_orienters.techspot.profile.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -15,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -98,10 +98,7 @@ public class ReactionService {
             logger.info(">>>>Checking if the user is the reactor... @ "
                     + getReaction(reactionID).getReactor().getUsername() + "<<<<");
             boolean x = reaction.getReactor().getUsername().equals(username);
-            if (x) {
-                return true;
-            }
-            return false;
+            return x;
         }
         return false;
     }

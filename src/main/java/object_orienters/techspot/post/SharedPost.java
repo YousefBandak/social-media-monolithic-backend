@@ -1,9 +1,11 @@
 package object_orienters.techspot.post;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import object_orienters.techspot.content.Content;
 import object_orienters.techspot.model.ContentType;

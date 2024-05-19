@@ -1,8 +1,8 @@
 package object_orienters.techspot.profile;
 
-import java.time.LocalDate;
-
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 public class UpdateProfile {

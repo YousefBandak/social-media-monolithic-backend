@@ -1,11 +1,11 @@
 package object_orienters.techspot.comment;
 
-import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.post.ContentIsPrivateException;
-import object_orienters.techspot.post.PostService;
+import object_orienters.techspot.exceptions.CommentNotFoundException;
+import object_orienters.techspot.exceptions.ContentIsPrivateException;
+import object_orienters.techspot.exceptions.ContentNotFoundException;
+import object_orienters.techspot.exceptions.PostNotFoundException;
 import object_orienters.techspot.post.PostController;
-import object_orienters.techspot.post.PostNotFoundException;
-
+import object_orienters.techspot.post.PostService;
 import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Page;

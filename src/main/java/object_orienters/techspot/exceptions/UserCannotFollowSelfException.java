@@ -1,4 +1,4 @@
-package object_orienters.techspot.profile;
+package object_orienters.techspot.exceptions;
 
 public class UserCannotFollowSelfException extends RuntimeException {
     public UserCannotFollowSelfException(String username) {

@@ -6,7 +6,6 @@ import lombok.Data;
 import object_orienters.techspot.comment.Comment;
 import object_orienters.techspot.post.Post;
 import object_orienters.techspot.postTypes.DataType;
-import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.reaction.Reaction;
 
 import java.util.ArrayList;

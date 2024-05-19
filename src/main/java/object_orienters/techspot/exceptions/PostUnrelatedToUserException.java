@@ -1,4 +1,4 @@
-package object_orienters.techspot.post;
+package object_orienters.techspot.exceptions;
 
 public class PostUnrelatedToUserException extends Exception {
     public PostUnrelatedToUserException(String username, long postId) {

@@ -1,6 +1,6 @@
 package object_orienters.techspot.feed;
 
-import object_orienters.techspot.profile.ProfileNotFoundException;
+import object_orienters.techspot.exceptions.ProfileNotFoundException;
 import object_orienters.techspot.profile.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,14 +10,14 @@ import org.springframework.stereotype.Service;
 public class FeedService {
 
 
-    private ProfileRepository profileRepository;
-    private FeedByFollowingStrategy feedByFollowingStrategy;
-    private FeedByTag feedByTag;
+    private final ProfileRepository profileRepository;
+    private final FeedByFollowingStrategy feedByFollowingStrategy;
+    private final FeedByTag feedByTag;
     // private FeedByAuthor feedByAuthor;
-    private ReactionsByContent reactionsByContent;
+    //private ReactionsByContent reactionsByContent;
     // private CommentsByContent commentsByContent;
-    private SearchByName searchByName;
-    private GetFollowingofFollowing getFollowingofFollowing;
+    private final SearchByName searchByName;
+    private final GetFollowingofFollowing getFollowingofFollowing;
 
 
     @Autowired
@@ -26,7 +26,7 @@ public class FeedService {
                        FeedByTag feedByTag,
 //                     FeedByAuthor feedByAuthor,
 //                     CommentsByContent commentsByContent,
-//                       ReactionsByContent reactionsByContent,
+//                      ReactionsByContent reactionsByContent,
                        SearchByName searchByName,
                        GetFollowingofFollowing getFollowingofFollowing) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;

@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class ChatRoomRepository {
 
-    private Firestore firestore;
+    private final Firestore firestore;
 
     @Autowired
     public ChatRoomRepository(Firestore firestore) {

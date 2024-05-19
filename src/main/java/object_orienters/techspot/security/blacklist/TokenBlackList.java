@@ -1,10 +1,10 @@
 package object_orienters.techspot.security.blacklist;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table

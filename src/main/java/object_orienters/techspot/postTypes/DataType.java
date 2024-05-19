@@ -1,7 +1,6 @@
 package object_orienters.techspot.postTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import lombok.Data;
 import object_orienters.techspot.content.ReactableContent;

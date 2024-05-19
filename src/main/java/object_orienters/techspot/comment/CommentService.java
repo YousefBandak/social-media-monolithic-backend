@@ -1,10 +1,10 @@
 package object_orienters.techspot.comment;
 
 import jakarta.transaction.Transactional;
-import object_orienters.techspot.utilities.FileStorageService;
-import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.content.ReactableContentRepository;
+import object_orienters.techspot.exceptions.CommentNotFoundException;
+import object_orienters.techspot.exceptions.ContentNotFoundException;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
@@ -12,13 +12,13 @@ import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionRepository;
+import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.utilities.MediaDataUtilities;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;

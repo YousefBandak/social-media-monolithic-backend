@@ -6,6 +6,7 @@ import object_orienters.techspot.content.ReactableContentRepository;
 import object_orienters.techspot.post.PostRepository;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.reaction.ReactionRepository;
+import object_orienters.techspot.tag.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,9 @@ public abstract  class Strategy<P, T> {
 
     @Autowired
     ContentRepository contentRepository = null;
+
+    @Autowired
+    TagRepository tagRepository = null;
 
 
     abstract Page<P> operate(T factor, int pageNumber, int pageSize);

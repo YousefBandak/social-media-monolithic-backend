@@ -7,7 +7,6 @@ import object_orienters.techspot.exceptions.PostUnrelatedToUserException;
 import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ProfileService;
-import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,18 +37,14 @@ public class PostController {
     private final PostService postService;
     private final ProfileService profileService;
 
-    private final PermissionService permissionService;
-
     PostController(PostModelAssembler assembler,
                    PostService postService,
                    SharedPostModelAssembler sharedPostAssembler,
-                   ProfileService profileService,
-                   PermissionService permissionService) {
+                   ProfileService profileService) {
         this.assembler = assembler;
         this.postService = postService;
         this.sharedPostAssembler = sharedPostAssembler;
         this.profileService = profileService;
-        this.permissionService = permissionService;
     }
 
     private static String getTimestamp() {
@@ -61,7 +56,7 @@ public class PostController {
         try {
             logger.info(">>>>Retrieving Timeline Posts... @ " + getTimestamp() + "<<<<");
 
-            Page<? extends Content> posts =  postService.getPosts(username, offset, limit);
+            Page<? extends Content> posts = postService.getPosts(username, offset, limit);
             PagedModel<EntityModel<? extends Content>> pagedModel = PagedModel.of(posts.stream().map(assembler::toModel).collect(Collectors.toList()),
                     new PagedModel.PageMetadata(posts.getSize(), posts.getNumber(), posts.getTotalElements(), posts.getTotalPages()));
 
@@ -101,7 +96,7 @@ public class PostController {
     }
 
     @PutMapping("/posts/{postId}")
-    @PreAuthorize("#username == authentication.principal.username")
+    @PreAuthorize("#username == authentication.principal.username && @permissionService.canAccessPost(#postId, #username)")
     public ResponseEntity<?> editTimelinePost(@PathVariable String username, @PathVariable long postId,
                                               @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                               @RequestParam(value = "text", required = false) String text,
@@ -139,7 +134,7 @@ public class PostController {
     }
 
     @GetMapping("/posts/{postId}")
-    @PreAuthorize("@permissionService.canAccessPost(#postId, #username)")
+    @PreAuthorize("@permissionService.canAccessPost(#postId, authentication.principal.username)")
     public ResponseEntity<?> getPost(@PathVariable long postId, @PathVariable String username) {
         try {
             profileService.getUserByUsername(username);

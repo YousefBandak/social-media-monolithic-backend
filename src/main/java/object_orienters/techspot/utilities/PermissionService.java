@@ -6,7 +6,6 @@ import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.exceptions.PostNotFoundException;
 import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.model.Privacy;
-import object_orienters.techspot.post.SharedPost;
 import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;

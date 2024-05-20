@@ -42,7 +42,6 @@ public class ProfileController {
         return LocalDateTime.now().format(formatter) + " ";
     }
 
-    // get user profile
     @GetMapping("/{username}")
     public ResponseEntity<?> one(@PathVariable String username) {
         try {
@@ -58,7 +57,6 @@ public class ProfileController {
         }
     }
 
-    // update user profile
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfile newUser, @PathVariable String username) {
@@ -130,7 +128,6 @@ public class ProfileController {
         }
     }
 
-    // get specific user following
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
             @PathVariable String followingUsername) {
@@ -148,8 +145,7 @@ public class ProfileController {
         }
     }
 
-    // add new follower to user
-    @PostMapping("/{username}/followers")
+   @PostMapping("/{username}/followers")
    @PreAuthorize("#followerUserName.get(\"username\").asText() == authentication.principal.username")
     public ResponseEntity<?> newFollower(@PathVariable String username, @RequestBody ObjectNode followerUserName) {
         try {
@@ -202,6 +198,7 @@ public class ProfileController {
     }
 
     @PostMapping("/{username}/profilePic")
+    @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
             @RequestParam(value = "file") MultipartFile file,
             @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
@@ -222,16 +219,5 @@ public class ProfileController {
         }
     }
 
-    // @DeleteMapping("/{username}/delete")
-    // public ResponseEntity<?> deleteProfile(@PathVariable String username) throws UserNotFoundException {
-    //     try {
-    //         profileService.deleteProfile(username);
-    //         return ResponseEntity.noContent().build();
-    //     } catch (UserNotFoundException exception) {
-    //         logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-    //         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-    //                 .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-    //     }
-    // }
 
 }

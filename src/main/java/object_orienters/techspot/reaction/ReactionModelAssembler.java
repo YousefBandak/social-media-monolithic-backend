@@ -16,14 +16,12 @@ public class ReactionModelAssembler implements RepresentationModelAssembler<Reac
         @NonNull
         public EntityModel<Reaction> toModel(@NonNull Reaction entity) {
                 return EntityModel.of(entity,
-                                linkTo(methodOn(ReactionController.class).getReaction(entity.getReactionID(),
-                                                entity.getContent().getContentID())).withSelfRel(),
                                 linkTo(methodOn(ProfileController.class).one(entity.getReactor().getUsername()))
                                                 .withRel("reactor"),
                                 linkTo(methodOn(PostController.class).getPost(entity.getContent().getContentID(),
                                                 entity.getContent().getContentAuthor().getUsername())).withRel("post"),
                                 linkTo(methodOn(ReactionController.class)
-                                                .getReactions(entity.getContent().getContentID()))
+                                                .getReactions(entity.getContent().getContentID(), 0, 10))
                                                 .withRel("reactions"));
         }
 

@@ -1,6 +1,7 @@
 package object_orienters.techspot.profile;
 
 import jakarta.annotation.Nonnull;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.post.PostController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

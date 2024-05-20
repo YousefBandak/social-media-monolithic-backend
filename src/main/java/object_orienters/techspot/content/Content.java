@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
+import object_orienters.techspot.model.ContentType;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.Profile;
 
@@ -21,16 +22,34 @@ public abstract class Content {
     @Getter
     private Long contentID;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Profile contentAuthor;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     private Timestamp timestamp;
+
+    @Enumerated(EnumType.STRING)
+    private Privacy privacy;
+
+    @Enumerated(EnumType.STRING)
+    private ContentType contentType;
 
     public Content() {
         this.timestamp = new Timestamp(System.currentTimeMillis());
     }
 
-    public abstract Privacy getPrivacy();
+    public Privacy getPrivacy(){
+        return privacy;
+    }
 
     @JsonIgnore
-    public abstract Profile getMainAuthor();
+    public  Profile getMainAuthor(){
+        return contentAuthor;
+    }
+
+    public abstract ContentType getContentType();
+    public Profile getContentAuthor() {
+        return contentAuthor;
+    }
 
 }

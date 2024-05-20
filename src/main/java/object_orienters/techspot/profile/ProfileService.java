@@ -1,15 +1,15 @@
 package object_orienters.techspot.profile;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import object_orienters.techspot.FileStorageService;
+import object_orienters.techspot.exceptions.ProfileNotFoundException;
+import object_orienters.techspot.exceptions.UserCannotFollowSelfException;
+import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.message.Chatter;
 import object_orienters.techspot.message.ChatterService;
 import object_orienters.techspot.message.Status;
 import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
+import object_orienters.techspot.utilities.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @Service
 public class ProfileService {

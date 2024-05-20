@@ -15,7 +15,7 @@ public class SharedPostModelAssembler implements RepresentationModelAssembler<Sh
     @Nonnull
     public EntityModel<SharedPost> toModel(@Nonnull SharedPost entity) {
         return EntityModel.of(entity,
-                linkTo(methodOn(PostController.class).getSharedPost(entity.getContentID(),
+                linkTo(methodOn(PostController.class).getPost(entity.getContentID(),
                         entity.getSharer().getUsername())).withSelfRel(),
                 linkTo(methodOn(PostController.class).getPost(entity.getPost().getContentID(),
                         entity.getPost().getContentAuthor().getUsername())).withRel("originalPost"),

@@ -1,13 +1,14 @@
 package object_orienters.techspot.comment;
 
-import object_orienters.techspot.content.ContentNotFoundException;
-import object_orienters.techspot.post.ContentIsPrivateException;
-import object_orienters.techspot.post.PostService;
+import object_orienters.techspot.exceptions.CommentNotFoundException;
+import object_orienters.techspot.exceptions.ContentIsPrivateException;
+import object_orienters.techspot.exceptions.ContentNotFoundException;
+import object_orienters.techspot.exceptions.PostNotFoundException;
 import object_orienters.techspot.post.PostController;
-import object_orienters.techspot.post.PostNotFoundException;
-
-import object_orienters.techspot.security.PermissionService;
+import object_orienters.techspot.post.PostService;
+import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
@@ -50,16 +51,19 @@ public class CommentController {
 
     @GetMapping("/comments")
     @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
-    public ResponseEntity<?> getComments(@PathVariable long contentID) {
+    public ResponseEntity<?> getComments(@PathVariable long contentID,
+                                         @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
+                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize)
+    {
         try {
             logger.info(">>>>Retrieving Comments... @ " + getTimestamp() + "<<<<");
-            List<Comment> commentList = commentService.getComments(contentID);
+            Page<Comment> commentList = commentService.getComments(contentID, pageNumber, pageSize);
             CollectionModel<EntityModel<Comment>> commentModel = CollectionModel.of(
                     commentList.stream().map(assembler::toModel).collect(Collectors.toList()),
-                    linkTo(methodOn(CommentController.class).getComments(contentID)).withSelfRel(),
+                    linkTo(methodOn(CommentController.class).getComments(contentID, pageNumber, pageSize)).withSelfRel(),
                     linkTo(methodOn(PostController.class).getPost(contentID,
-                            postService.getPost(contentID).getContentAuthor().getUsername()))
-                            .withRel("post"));
+                            postService.getPost(contentID).getMainAuthor().getUsername()))
+                            .withRel("content"));
             logger.info(">>>>Comments Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException e) {

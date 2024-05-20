@@ -1,4 +1,4 @@
-package object_orienters.techspot.comment;
+package object_orienters.techspot.exceptions;
 
 public class CommentNotFoundException extends Exception{
 

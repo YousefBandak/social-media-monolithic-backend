@@ -1,4 +1,4 @@
-package object_orienters.techspot.profile;
+package object_orienters.techspot.exceptions;
 
 public class EmailAlreadyUsedException extends RuntimeException {
     public EmailAlreadyUsedException(String email) {

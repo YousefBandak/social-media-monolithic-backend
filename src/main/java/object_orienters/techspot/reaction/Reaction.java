@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import object_orienters.techspot.content.ReactableContent;
 import object_orienters.techspot.profile.Profile;
 
@@ -13,12 +12,10 @@ import java.sql.Timestamp;
 
 @Entity
 @Data
-@NoArgsConstructor
 @Table(name = "reaction")
 public class Reaction {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reactionID;
+    private String reactionID;
 
     @ManyToOne
     @NotNull(message = "Reactor profile should not be null.")
@@ -38,9 +35,15 @@ public class Reaction {
     private Timestamp timestamp;
 
     public Reaction(Profile reactor, ReactionType reactionType, ReactableContent content) {
+        this.reactionID = reactor.getUsername() + content.getContentID();
         this.reactor = reactor;
         this.type = reactionType;
         this.content = content;
+        this.timestamp = new Timestamp(System.currentTimeMillis());
+    }
+
+    public Reaction() {
+        this.timestamp = new Timestamp(System.currentTimeMillis());
     }
 
     public boolean equals(Object o) {
@@ -52,7 +55,7 @@ public class Reaction {
     }
 
     public enum ReactionType {
-        LIKE, DISLIKE, LOVE, SUPPORT, HAHA;
+        LIKE, DISLIKE, LOVE, SUPPORT, HAHA
     }
 
 }

@@ -24,10 +24,9 @@ public class CommentModelAssembler implements RepresentationModelAssembler<Comme
                         .withRel("Commenter"));
         if (entity.getComments() != null && !entity.getComments().isEmpty())
             commentModel
-                    .add(linkTo(methodOn(CommentController.class).getComments(entity.getCommentedOn().getContentID())).withRel("comments"));
+                    .add(linkTo(methodOn(CommentController.class).getComments(entity.getCommentedOn().getContentID(), 0, 10)).withRel("comments"));
 
         return commentModel;
-
     }
 
 }

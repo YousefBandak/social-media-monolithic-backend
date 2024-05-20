@@ -4,7 +4,6 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class FirestoreChatterRepository {
 
-    private Firestore firestore;
+    private final Firestore firestore;
 
     @Autowired
     public FirestoreChatterRepository(Firestore firestore) {

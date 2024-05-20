@@ -1,11 +1,11 @@
 package object_orienters.techspot.feed;
 
-import object_orienters.techspot.content.ContentNotFoundException;
 import object_orienters.techspot.content.ReactableContentRepository;
-import object_orienters.techspot.post.PostNotFoundException;
+import object_orienters.techspot.exceptions.ContentNotFoundException;
+import object_orienters.techspot.exceptions.PostNotFoundException;
 import object_orienters.techspot.reaction.Reaction;
 import object_orienters.techspot.reaction.ReactionRepository;
-import object_orienters.techspot.security.PermissionService;
+import object_orienters.techspot.utilities.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

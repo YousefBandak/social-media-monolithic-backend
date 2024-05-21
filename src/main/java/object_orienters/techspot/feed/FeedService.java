@@ -8,6 +8,7 @@ import object_orienters.techspot.profile.Profile;
 import object_orienters.techspot.profile.ProfileModelAssembler;
 import object_orienters.techspot.profile.ProfileRepository;
 import object_orienters.techspot.tag.Tag;
+import object_orienters.techspot.tag.TagsAssembler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
@@ -37,6 +38,8 @@ public class FeedService {
     private final PostModelAssembler postModelAssembler;
     private final ProfileModelAssembler profileModelAssembler;
 
+    private final TagsAssembler tagsAssembler;
+
 
     @Autowired
     public FeedService(ProfileRepository profileRepository,
@@ -49,6 +52,7 @@ public class FeedService {
                        GetFollowingofFollowing getFollowingofFollowing,
                        PostModelAssembler postModelAssembler,
                        ProfileModelAssembler profileModelAssembler,
+                          TagsAssembler tagsAssembler,
                        TopTags topTags) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
@@ -61,6 +65,7 @@ public class FeedService {
         this.postModelAssembler = postModelAssembler;
         this.profileModelAssembler = profileModelAssembler;
         this.topTags = topTags;
+        this.tagsAssembler = tagsAssembler;
     }
 
     public PagedModel<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
@@ -86,17 +91,19 @@ public class FeedService {
                 return PagedModel.of(mutualFollowing.stream().map(profileModelAssembler::toModel).toList(), new PagedModel.PageMetadata(mutualFollowing.getSize(), mutualFollowing.getNumber(), mutualFollowing.getTotalElements(), mutualFollowing.getTotalPages()));
             case TAGS:
                  Page<Tag> tagsPage = topTags.operate("", pageNumber, pageSize);
-          //      return PagedModel.of(tagsPage.stream().toList() , new PagedModel.PageMetadata(tagsPage.getSize(), tagsPage.getNumber(), tagsPage.getTotalElements(), tagsPage.getTotalPages()));
-                List<String> tags = tagsPage.stream().map(Tag::getTagName).toList();
-                System.out.println(tags);
-                return PagedModel.of(tags.stream()
-                                .map(e -> EntityModel.of(e).add(
-                                                linkTo(methodOn(FeedController.class)
-                                                                .feed("TOPIC", e.toLowerCase(), 0, 10, clientUsername))
-                                                        .withRel("tagFeed")
-                                        )
-                                )
-                                .toList()
+
+              //  List<EntityModel<String>> tags = tagsPage.stream().map(t -> EntityModel.of(t.getTagName())).toList();
+                System.out.println(tagsPage);
+                return PagedModel.of( tagsPage.stream().map(tagsAssembler::toModel).toList()
+//                        tags.stream()
+//                                .map(e -> EntityModel.of(e)
+//                                        .add(
+//                                                linkTo(methodOn(FeedController.class)
+//                                                                .feed("TOPIC", e.toLowerCase(), 0, 10, clientUsername))
+//                                                        .withRel("tagFeed")
+//                                        )
+//                                )
+//                                .toList()
                         , new PagedModel.PageMetadata(tagsPage.getSize(), tagsPage.getNumber(), tagsPage.getTotalElements(), tagsPage.getTotalPages()));
             default:
                 return PagedModel.empty();

@@ -34,3 +34,5 @@ build/
 
 *.log
 *.log.*
+
+src/main/resources/static/media_uploads/*

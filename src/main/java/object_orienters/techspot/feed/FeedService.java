@@ -11,15 +11,8 @@ import object_orienters.techspot.tag.Tag;
 import object_orienters.techspot.tag.TagsAssembler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 public class FeedService {
@@ -95,15 +88,6 @@ public class FeedService {
               //  List<EntityModel<String>> tags = tagsPage.stream().map(t -> EntityModel.of(t.getTagName())).toList();
                 System.out.println(tagsPage);
                 return PagedModel.of( tagsPage.stream().map(tagsAssembler::toModel).toList()
-//                        tags.stream()
-//                                .map(e -> EntityModel.of(e)
-//                                        .add(
-//                                                linkTo(methodOn(FeedController.class)
-//                                                                .feed("TOPIC", e.toLowerCase(), 0, 10, clientUsername))
-//                                                        .withRel("tagFeed")
-//                                        )
-//                                )
-//                                .toList()
                         , new PagedModel.PageMetadata(tagsPage.getSize(), tagsPage.getNumber(), tagsPage.getTotalElements(), tagsPage.getTotalPages()));
             default:
                 return PagedModel.empty();

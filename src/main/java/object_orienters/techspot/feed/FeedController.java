@@ -23,11 +23,10 @@ public class FeedController {
     }
 
     @GetMapping("/feed")
-    @PreAuthorize("#clientUsername == authentication.principal.username")
+   // @PreAuthorize("#clientUsername == authentication.principal.username")
     public ResponseEntity<?> feed(@RequestParam(defaultValue = "ALL_USERS") String feedType, @RequestParam(defaultValue = "following") String value, @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int limit, @RequestParam String clientUsername) {
         logger.info(">>>>Loading Feed... @ " + getTimestamp() + "<<<<");
         PagedModel<?> feed = feedService.feedContent(FeedService.FeedType.valueOf(feedType), value, offset, limit, clientUsername);
-        System.out.println(feed);
         logger.info(">>>> Feed Loaded Successfully... @ " + getTimestamp() + "<<<<");
         return ResponseEntity.ok(feed);
     }

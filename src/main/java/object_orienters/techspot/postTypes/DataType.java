@@ -3,6 +3,7 @@ package object_orienters.techspot.postTypes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import object_orienters.techspot.content.ReactableContent;
 
 @Entity
@@ -22,4 +23,13 @@ public class DataType {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "content_id")
     private ReactableContent content;
+
+    public String toString() {
+        return "DataType{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", fileUrl='" + fileUrl + '\'' +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

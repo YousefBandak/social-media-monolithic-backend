@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/content/{contentID}")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ReactionController {
     private final ReactionService reactionService;
     private final ReactionModelAssembler assembler;

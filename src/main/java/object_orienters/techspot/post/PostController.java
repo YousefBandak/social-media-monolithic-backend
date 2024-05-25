@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/profiles/{username}")
+@CrossOrigin(origins = "http://localhost:3000")
 public class PostController {
     private static final Logger logger = LoggerFactory.getLogger(PostController.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");

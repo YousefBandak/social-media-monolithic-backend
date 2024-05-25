@@ -29,6 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/content/{contentID}")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CommentController {
     private final CommentModelAssembler assembler;
     private final CommentService commentService;

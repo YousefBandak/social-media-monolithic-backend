@@ -17,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -61,11 +62,12 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())
-                .cors(c -> c.disable()) //TODO
+                 .cors(withDefaults())
+                
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken").permitAll()
+                        .requestMatchers("/login", "/auth/login", "/auth/signup", "/auth/refreshtoken").permitAll()
                         // "auth/usernameExists/**")
                         // .requestMatchers("/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
@@ -76,16 +78,16 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
                         .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true))
-                .formLogin(form -> {
-                    form.permitAll();
-                    form.failureHandler((request, response, exception) -> {
-                        logger.error("Failed to login", exception);
+                // .formLogin(form -> {
+                // form.permitAll();
+                // form.failureHandler((request, response, exception) -> {
+                // logger.error("Failed to login", exception);
 
-                        exception.printStackTrace();
-                        response.sendRedirect("/auth/signup");
-                    });
-                    form.successForwardUrl("/auth/home");
-                })
+                // exception.printStackTrace();
+                // response.sendRedirect("/auth/signup");
+                // });
+                // form.successForwardUrl("/auth/home");
+                // })
                 .authenticationProvider(authenticationProvider())
                 .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -94,15 +96,14 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         return http.build();
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        // Setting up CORS for /profiles/ endpoint
-        registry.addMapping("/feed/**") // Applies CORS to all subpaths under /profiles/
-                .allowedOrigins("http://localhost:3000") // Only allow requests from localhost:3000
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allowed HTTP methods from the origin
-                .allowedHeaders("*") // Allow all headers
-                .allowCredentials(true); // Allow credentials like cookies, authorization headers, etc.
-    }
+    // @Override
+    // public void addCorsMappings(CorsRegistry registry) {
+    // registry.addMapping("/**")
+    // .allowedOrigins("")
+    // .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+    // .allowedHeaders("*")
+    // .allowCredentials(true);
+    // }
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(WebSecurityConfig.class);
 }

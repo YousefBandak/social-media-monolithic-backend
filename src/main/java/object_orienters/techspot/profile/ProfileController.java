@@ -27,6 +27,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/profiles")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProfileController {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final ProfileModelAssembler assembler;

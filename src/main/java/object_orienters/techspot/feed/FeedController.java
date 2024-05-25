@@ -6,6 +6,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Controller
+@CrossOrigin(origins = "http://localhost:3000")
 public class FeedController {
     private final FeedService feedService;
     private static final Logger logger = LoggerFactory.getLogger(FeedController.class);

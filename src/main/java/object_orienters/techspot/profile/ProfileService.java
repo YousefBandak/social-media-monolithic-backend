@@ -42,7 +42,6 @@ public class ProfileService {
     @Autowired
     PasswordEncoder encoder;
 
-
     public ProfileService(ProfileRepository repo) {
         this.repo = repo;
     }
@@ -60,7 +59,7 @@ public class ProfileService {
             }
             String fileName = fileStorageService.storeFile(file);
             String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
+                    .path("/media_uploads/")
                     .path(fileName)
                     .toUriString();
             profilePic.setType(file.getContentType());
@@ -151,9 +150,12 @@ public class ProfileService {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         DataType profilePic = new DataType();
         if (file != null && !file.isEmpty()) {
+            // if (!file.getContentType().equals("image/jpeg") || !file.getContentType().equals("image/png")) {
+            //     throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
+            // }
             String fileName = fileStorageService.storeFile(file);
             String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/download/")
+                    .path("/media_uploads/")
                     .path(fileName)
                     .toUriString();
             profilePic.setType(file.getContentType());

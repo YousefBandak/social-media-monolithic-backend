@@ -61,18 +61,18 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())
-                .cors(c -> c.disable()) //TODO
+                .cors(c -> c.disable()) // TODO
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                                // .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
-                                // "auth/usernameExists/**")
-                                .requestMatchers("/**").permitAll()
-                                .requestMatchers("/swagger-ui.html").permitAll()
-                                .requestMatchers("/swagger-ui/**").permitAll()
-                                .requestMatchers("/api-docs/**").permitAll()
+                        // .requestMatchers("/login", "/auth/login", "auth/signup", "auth/refreshtoken",
+                        // "auth/usernameExists/**")
+                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/api-docs/**").permitAll()
 
-                        // .anyRequest().authenticated()
+                // .anyRequest().authenticated()
                 )
                 .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
                         .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID")

@@ -12,6 +12,7 @@ import object_orienters.techspot.tag.TagsAssembler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,7 +46,7 @@ public class FeedService {
                        GetFollowingofFollowing getFollowingofFollowing,
                        PostModelAssembler postModelAssembler,
                        ProfileModelAssembler profileModelAssembler,
-                          TagsAssembler tagsAssembler,
+                       TagsAssembler tagsAssembler,
                        TopTags topTags) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
@@ -61,10 +62,11 @@ public class FeedService {
         this.tagsAssembler = tagsAssembler;
     }
 
-    public PagedModel<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize, String clientUsername) {
+    public PagedModel<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize) {
         switch (feedType) {
 
             case ALL_USERS:
+                String clientUsername = SecurityContextHolder.getContext().getAuthentication().getName();
                 Page<Content> feed = feedByFollowingStrategy.operate(profileRepository.findByUsername(clientUsername).orElseThrow(() -> new ProfileNotFoundException(clientUsername)), pageNumber, pageSize);
                 return PagedModel.of(feed.stream().map(postModelAssembler::toModel).toList(), new PagedModel.PageMetadata(feed.getSize(), feed.getNumber(), feed.getTotalElements(), feed.getTotalPages()));
 //            case ONE_USER:
@@ -82,18 +84,17 @@ public class FeedService {
             case MUTUAL_FOLLOWING:
                 Page<Profile> mutualFollowing = getFollowingofFollowing.operate(value, pageNumber, pageSize);
                 return PagedModel.of(mutualFollowing.stream().map(profileModelAssembler::toModel).toList(), new PagedModel.PageMetadata(mutualFollowing.getSize(), mutualFollowing.getNumber(), mutualFollowing.getTotalElements(), mutualFollowing.getTotalPages()));
-            case TAGS:
-                 Page<Tag> tagsPage = topTags.operate("", pageNumber, pageSize);
-
-              //  List<EntityModel<String>> tags = tagsPage.stream().map(t -> EntityModel.of(t.getTagName())).toList();
-                System.out.println(tagsPage);
-                return PagedModel.of( tagsPage.stream().map(tagsAssembler::toModel).toList()
-                        , new PagedModel.PageMetadata(tagsPage.getSize(), tagsPage.getNumber(), tagsPage.getTotalElements(), tagsPage.getTotalPages()));
             default:
                 return PagedModel.empty();
         }
 
 
+    }
+
+    public PagedModel<?> getTags(int pageNumber, int pageSize) {
+        Page<Tag> tagsPage = topTags.operate("", pageNumber, pageSize);
+        return PagedModel.of(tagsPage.stream().map(tagsAssembler::toModel).toList()
+                , new PagedModel.PageMetadata(tagsPage.getSize(), tagsPage.getNumber(), tagsPage.getTotalElements(), tagsPage.getTotalPages()));
     }
 
     enum FeedType {
@@ -104,6 +105,5 @@ public class FeedService {
         // REACTIONS,
         PROFILES,
         MUTUAL_FOLLOWING,
-        TAGS
     }
 }

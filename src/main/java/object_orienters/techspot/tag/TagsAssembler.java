@@ -18,7 +18,7 @@ public class TagsAssembler implements RepresentationModelAssembler<Tag, EntityMo
         return EntityModel.of(entity)
                 .add(
                         linkTo(methodOn(FeedController.class)
-                                .feed("TOPIC", entity.getTagName().toLowerCase(), 0, 10, clientUsername))
+                                .feed("TOPIC", entity.getTagName().toLowerCase(), 0, 10))
                                 .withRel("tagFeed")
                 );
     }

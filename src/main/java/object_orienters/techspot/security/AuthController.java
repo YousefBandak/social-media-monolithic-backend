@@ -192,7 +192,7 @@ public class AuthController {
 
                 // userCredentialsServices.setRole(signUpRequest);
                 userRepository.save(user);
-                profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName(), null);
+                profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
                 logger.info(">>>>User " + user + " Registered Successfully. @ " + getTimestamp() + "<<<<");
                 return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
         }

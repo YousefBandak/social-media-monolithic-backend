@@ -220,5 +220,27 @@ public class ProfileController {
         }
     }
 
+    @PostMapping("/{username}/backgroundImg")
+    @PreAuthorize("#username == authentication.principal.username")
+    public ResponseEntity<?> addBackgroundImg(@PathVariable String username,
+            @RequestParam(value = "file") MultipartFile file,
+            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+        try {
+            logger.info(">>>>Adding Background Image... " + getTimestamp() + "<<<<");
+            Profile profile = profileService.addBackgroundImg(username, file, text);
+            logger.info(">>>>Background Image Added. " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(assembler.toModel(profile));
+        } catch (UserNotFoundException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+        } catch (IOException exception) {
+            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+
+        }
+    }
+
 
 }

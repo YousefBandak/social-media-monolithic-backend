@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -39,8 +39,12 @@ public class Profile extends UserBase {
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "datatype_id", referencedColumnName = "datatype_id", nullable = false)
+    @JoinColumn(name = "profile_pic_datatype_id", referencedColumnName = "datatype_id", nullable = true)
     private DataType profilePic;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "background_img_datatype_id", referencedColumnName = "datatype_id", nullable = true)
+    private DataType backgroundImg;
 
     private String profession;
 

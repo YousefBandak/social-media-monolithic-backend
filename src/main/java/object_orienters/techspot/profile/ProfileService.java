@@ -50,25 +50,8 @@ public class ProfileService {
         return repo.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username));
     }
 
-    public Profile createNewProfile(String username, String email, String name, MultipartFile file) throws IOException {
+    public Profile createNewProfile(String username, String email, String name) throws IOException {
         Profile newProfile = new Profile();
-        DataType profilePic = new DataType();
-        if (file != null && !file.isEmpty()) {
-            if (!file.getContentType().equals("image/jpeg") || !file.getContentType().equals("image/png")) {
-                throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
-            }
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/media_uploads/")
-                    .path(fileName)
-                    .toUriString();
-            profilePic.setType(file.getContentType());
-            profilePic.setFileName(fileName);
-            profilePic.setFileUrl(fileDownloadUri);
-        }
-        newProfile.setProfilePic(profilePic);
-        dataTypeRepository.save(profilePic);
-        newProfile.setProfilePic(profilePic);
         newProfile.setUsername(username);
         newProfile.setOwner(
                 userRepository.findByUsername(username).orElseThrow(() -> new ProfileNotFoundException(username)));
@@ -150,8 +133,10 @@ public class ProfileService {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
         DataType profilePic = new DataType();
         if (file != null && !file.isEmpty()) {
-            // if (!file.getContentType().equals("image/jpeg") || !file.getContentType().equals("image/png")) {
-            //     throw new IllegalArgumentException("Unsupported file type. Please upload a JPEG or PNG image.");
+            // if (!file.getContentType().equals("image/jpeg") ||
+            // !file.getContentType().equals("image/png")) {
+            // throw new IllegalArgumentException("Unsupported file type. Please upload a
+            // JPEG or PNG image.");
             // }
             String fileName = fileStorageService.storeFile(file);
             String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -164,6 +149,31 @@ public class ProfileService {
         }
         user.setProfilePic(profilePic);
         dataTypeRepository.save(profilePic);
+        return repo.save(user);
+    }
+
+    @Transactional
+    public Profile addBackgroundImg(String username, MultipartFile file, String text)
+            throws UserNotFoundException, IOException {
+        Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
+        DataType backgroundImg = new DataType();
+        if (file != null && !file.isEmpty()) {
+            // if (!file.getContentType().equals("image/jpeg") ||
+            // !file.getContentType().equals("image/png")) {
+            // throw new IllegalArgumentException("Unsupported file type. Please upload a
+            // JPEG or PNG image.");
+            // }
+            String fileName = fileStorageService.storeFile(file);
+            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/media_uploads/")
+                    .path(fileName)
+                    .toUriString();
+            backgroundImg.setType(file.getContentType());
+            backgroundImg.setFileName(fileName);
+            backgroundImg.setFileUrl(fileDownloadUri);
+        }
+        user.setBackgroundImg(backgroundImg);
+        dataTypeRepository.save(backgroundImg);
         return repo.save(user);
     }
 

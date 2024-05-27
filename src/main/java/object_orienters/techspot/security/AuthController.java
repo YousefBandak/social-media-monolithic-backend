@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -148,6 +149,52 @@ public class AuthController {
         System.out.println(responseBody);
         return responseBody;
     }
+
+    @GetMapping("/login/oauth2/code/github")
+public String handleGitHubOAuth2Callback(@RequestParam("code") String authorizationCode) {
+    System.out.println("Entered GitHub callback method");
+    RestTemplate restTemplate = new RestTemplate();
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
+    headers.setContentType(MediaType.APPLICATION_JSON);  // GitHub requires JSON content type for POST requests
+
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    map.add("grant_type", "authorization_code");
+    map.add("code", authorizationCode);
+    map.add("redirect_uri", "http://localhost:8080/login/oauth2/code/github");
+
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+    ResponseEntity<String> response = restTemplate.exchange("https://github.com/login/oauth/access_token", HttpMethod.POST, request, String.class);
+
+    String accessToken = response.getBody();
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+        JsonNode root = objectMapper.readTree(accessToken);
+        accessToken = root.path("access_token").asText();
+    } catch (JsonProcessingException e) {
+        e.printStackTrace();
+    }
+
+    System.out.println("GitHub Access Token: " + accessToken);
+
+    // Store the access token in a secure manner (not shown)
+
+    // Make an authenticated request to get user info
+    HttpHeaders requestHeaders = new HttpHeaders();
+    requestHeaders.setBearerAuth(accessToken);
+    HttpEntity<String> entity = new HttpEntity<>(requestHeaders);
+
+    ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.github.com/user", HttpMethod.GET, entity, String.class);
+
+    String responseBody = responseEntity.getBody();
+
+    System.out.println(responseBody);
+    return responseBody;
+}
+
 
 
     @GetMapping("/auth/usernameExists/{username}")

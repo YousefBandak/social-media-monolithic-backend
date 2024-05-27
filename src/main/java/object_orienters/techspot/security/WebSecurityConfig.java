@@ -73,6 +73,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/api-docs/**").permitAll()
                         .requestMatchers("/oauth2/callback/google").permitAll()
+                        .requestMatchers("/login/oauth2/code/github").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .oauth2Login(withDefaults())
@@ -91,7 +92,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                 .baseUri("/oauth2/authorize")
                         )
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("http://localhost:8080/oauth2/callback/google")
+                                .baseUri("http://localhost:8080/login/oauth2/code/github")
                         )
 
                        // withDefaults()

@@ -17,9 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -59,25 +57,46 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable())
-                 .cors(withDefaults())
-                
+                .cors(withDefaults())
+
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/auth/login", "/auth/signup", "/auth/refreshtoken","/media_uploads/**").permitAll()
+                        .requestMatchers( "/auth/login", "/auth/signup", "/auth/home", "/auth/refreshtoken", "/media_uploads/**").permitAll()
                         // "auth/usernameExists/**")
                         // .requestMatchers("/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/api-docs/**").permitAll()
+                        .requestMatchers("/oauth2/callback/google").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2Login(withDefaults()).logout(l -> l.logoutUrl("auth/logout")
-                        .logoutSuccessUrl("auth/login").permitAll().deleteCookies("JSESSIONID")
+//                .oauth2Login(withDefaults())
+                .logout(l -> l.logoutUrl("/auth/logout")
+                        // .logoutSuccessUrl("/auth/login")
+                        .permitAll()
+                        .deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true))
+
+                .oauth2Login(
+                        oauth2 -> oauth2
+                       .loginPage("http://localhost:3000/login")
+                        .defaultSuccessUrl("/auth/home", true)
+                        //.failureUrl("/auth/login?error")
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorize")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("http://localhost:8080/oauth2/callback/google")
+                        )
+
+                       // withDefaults()
+                )
+
                 // .formLogin(form -> {
                 // form.permitAll();
                 // form.failureHandler((request, response, exception) -> {
@@ -89,9 +108,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 // form.successForwardUrl("/auth/home");
                 // })
                 .authenticationProvider(authenticationProvider())
-                .logout(logout -> logout.logoutSuccessUrl("/auth/login"))
-                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                //.logout(logout -> logout.logoutSuccessUrl("/auth/login"))
+                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

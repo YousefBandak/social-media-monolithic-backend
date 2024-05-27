@@ -1,5 +1,8 @@
 package object_orienters.techspot.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import object_orienters.techspot.comment.CommentRepository;
@@ -27,13 +30,19 @@ import object_orienters.techspot.security.service.RefreshTokenService;
 import object_orienters.techspot.utilities.FileStorageService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -42,254 +51,306 @@ import java.time.format.DateTimeFormatter;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/auth")
 public class AuthController {
-        @Autowired
-        AuthenticationManager authenticationManager;
+    @Autowired
+    AuthenticationManager authenticationManager;
 
-        @Autowired
-        UserRepository userRepository;
+    @Autowired
+    UserRepository userRepository;
 
-        @Autowired
-        PasswordEncoder encoder;
+    @Autowired
+    PasswordEncoder encoder;
 
-        @Autowired
-        JwtUtils jwtUtils;
+    @Autowired
+    JwtUtils jwtUtils;
 
-        @Autowired
-        UserCredentialsServices userCredentialsServices;
+    @Autowired
+    UserCredentialsServices userCredentialsServices;
 
-        @Autowired
-        ProfileService profileService;
+    @Autowired
+    ProfileService profileService;
 
-        @Autowired
-        ProfileRepository profileRepository;
+    @Autowired
+    ProfileRepository profileRepository;
 
-        @Autowired
-        RefreshTokenService refreshTokenService;
+    @Autowired
+    RefreshTokenService refreshTokenService;
 
-        @Autowired
-        ImpleTokenBlackListService blackListService;
+    @Autowired
+    ImpleTokenBlackListService blackListService;
 
-        @Autowired
-        PostRepository postRepository;
+    @Autowired
+    PostRepository postRepository;
 
-        @Autowired
-        CommentRepository commentRepository;
+    @Autowired
+    CommentRepository commentRepository;
 
-        @Autowired
-        RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    RefreshTokenRepository refreshTokenRepository;
 
-        @Autowired
-        FileStorageService fileStorageService;
-        private final Logger logger = org.slf4j.LoggerFactory.getLogger(AuthController.class);
-        private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    @Autowired
+    FileStorageService fileStorageService;
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger(AuthController.class);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
-        @GetMapping("/home")
-        public String home() {
-                return "Hello, Home!";
+
+    private static final String CLIENT_ID = "53578245310-c2pi6chirmmqep6cn9q68jp21kao0vr6.apps.googleusercontent.com";
+    private static final String CLIENT_SECRET = "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";
+    private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
+
+    @GetMapping("/auth/home")
+    public String home() {
+        System.out.println("I entered the home method");
+        return "Hello, Home!";
+    }
+
+
+    @GetMapping("/oauth2/callback/google")
+    public String handleOAuth2Callback(@RequestParam("code") String authorizationCode) {
+        System.out.println("I entered the callback method");
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "authorization_code");
+        map.add("code", authorizationCode);
+        map.add("redirect_uri", "http://localhost:8080/oauth2/callback/google");
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(TOKEN_URL, HttpMethod.POST, request, String.class);
+
+        String accessToken = response.getBody();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode root = objectMapper.readTree(accessToken);
+            accessToken = root.path("access_token").asText();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
 
-        @GetMapping("/usernameExists/{username}")
-        public ResponseEntity<?> usernameExists(@PathVariable String username) {
-                logger.info(">>>>Checking if Username Already Exists... @ " + getTimestamp() + "<<<<");
-                if (userRepository.existsByUsername(username)) {
-                        logger.info(">>>>Username Already Exists. @ " + getTimestamp() + "<<<<");
-                        return ResponseEntity
-                                        .ok()
-                                        .body(new MessageResponse("Username is already taken!"));
-                } else {
-                        logger.info(">>>>Username Available. @ " + getTimestamp() + "<<<<");
-                        return ResponseEntity
-                                        .ok()
-                                        .body(new MessageResponse("Username is available!"));
-                }
+        System.out.println("Access Token: " + accessToken);
+
+        // Store the access token in a secure manner (not shown)//FIXME
+
+        // Make an authenticated request
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(requestHeaders);
+
+        ResponseEntity<String> responseEntity = restTemplate.exchange("https://www.googleapis.com/oauth2/v2/userinfo", HttpMethod.GET, entity, String.class);
+
+        String responseBody = responseEntity.getBody();
+
+        System.out.println(responseBody);
+        return responseBody;
+    }
+
+
+    @GetMapping("/auth/usernameExists/{username}")
+    public ResponseEntity<?> usernameExists(@PathVariable String username) {
+        logger.info(">>>>Checking if Username Already Exists... @ " + getTimestamp() + "<<<<");
+        if (userRepository.existsByUsername(username)) {
+            logger.info(">>>>Username Already Exists. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity
+                    .ok()
+                    .body(new MessageResponse("Username is already taken!"));
+        } else {
+            logger.info(">>>>Username Available. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity
+                    .ok()
+                    .body(new MessageResponse("Username is available!"));
+        }
+    }
+
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println("I entered the login method");
+        logger.info(">>>>Authenticating User... @ " + getTimestamp() + "<<<<");
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                        loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        ImpleUserDetails userDetails = (ImpleUserDetails) authentication.getPrincipal();
+
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        // List<String> roles = userDetails.getAuthorities().stream()
+        // .map(item -> item.getAuthority())
+        // .collect(Collectors.toList());
+
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
+
+        // Set the lastLogin field to the current timestamp
+        user.setLastLogin(new Timestamp(System.currentTimeMillis()));
+
+        // Save the updated User object back to the database
+        userRepository.save(user);
+
+        logger.info(">>>>User " + user + " Authenticated Successfully. @ " + getTimestamp()
+                + "<<<<");
+        return ResponseEntity.ok(new JwtResponse(
+                jwt,
+                refreshToken.getToken(),
+                userDetails.getUsername(),
+                userDetails.getEmail()));
+    }
+
+    @PostMapping("/auth/refreshtoken")
+    public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+                    return ResponseEntity.ok(new TokenRefreshResponse(token, refreshTokenService
+                            .createRefreshToken(user.getUsername()).getToken()));
+                })
+                .orElseThrow(() -> {
+                    logger.info(">>>>Error Occurred: Refresh token is not in database! @ "
+                            + getTimestamp() + "<<<<");
+                    // log out
+                    SecurityContextHolder.clearContext();
+                    // delete refresh token form db for user
+                    return new TokenRefreshException(requestRefreshToken,
+                            "Refresh token is not in database!, Please login again");
+                });
+    }
+
+    @PostMapping("/auth/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) throws IOException {
+        logger.info(">>>>Regsitering User... @ " + getTimestamp() + "<<<<");
+        if (userCredentialsServices.usernameExists(signUpRequest)) {
+            logger.info(
+                    ">>>>Username " + signUpRequest.getUsername() + " Already Exists. @ "
+                            + getTimestamp() + "<<<<");
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Username is already taken!"));
         }
 
-        @PostMapping("/login")
-        public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-                logger.info(">>>>Authenticating User... @ " + getTimestamp() + "<<<<");
-                Authentication authentication = authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-                                                loginRequest.getPassword()));
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            logger.info(">>>>Email " + signUpRequest.getEmail() + " Already Exists. @ " + getTimestamp()
+                    + "<<<<");
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                ImpleUserDetails userDetails = (ImpleUserDetails) authentication.getPrincipal();
+        // Create new user's account
+        User user = new User(signUpRequest.getUsername(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()));
 
-                String jwt = jwtUtils.generateJwtToken(authentication);
+        // userCredentialsServices.setRole(signUpRequest);
+        userRepository.save(user);
+        profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
+        logger.info(">>>>User " + user + " Registered Successfully. @ " + getTimestamp() + "<<<<");
+        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
 
-                // List<String> roles = userDetails.getAuthorities().stream()
-                // .map(item -> item.getAuthority())
-                // .collect(Collectors.toList());
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization") String tokenHeader) {
+        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            String token = tokenHeader.substring(7);
+            blackListService.blacklistToken(token);
+            SecurityContextHolder.clearContext();
+            logger.info(">>>>User Logged Out Successfully. @ " + LocalDateTime.now() + "<<<<");
+            return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
+        }
+        return ResponseEntity.badRequest().body(new MessageResponse("Invalid token."));
+    }
 
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+    @PutMapping("/auth/update")
+    public ResponseEntity<?> updateUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        logger.info(">>>>Updating User... @ " + getTimestamp() + "<<<<");
+        if (principal instanceof ImpleUserDetails userDetails) {
+            String clientUsername = userDetails.getUsername();
 
-                User user = userRepository.findByUsername(userDetails.getUsername())
-                                .orElseThrow(() -> new UserNotFoundException(userDetails.getUsername()));
-
-                // Set the lastLogin field to the current timestamp
-                user.setLastLogin(new Timestamp(System.currentTimeMillis()));
-
-                // Save the updated User object back to the database
-                userRepository.save(user);
-
-                logger.info(">>>>User " + user + " Authenticated Successfully. @ " + getTimestamp()
+            if (!signUpRequest.getUsername().equals(clientUsername)
+                    && userCredentialsServices.usernameExists(signUpRequest)) {
+                logger.info(
+                        ">>>>Username " + signUpRequest.getUsername() + " Already Exists. @ "
+                                + getTimestamp()
                                 + "<<<<");
-                return ResponseEntity.ok(new JwtResponse(
-                                jwt,
-                                refreshToken.getToken(),
-                                userDetails.getUsername(),
-                                userDetails.getEmail()));
-        }
-
-        @PostMapping("/refreshtoken")
-        public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
-                String requestRefreshToken = request.getRefreshToken();
-
-                return refreshTokenService.findByToken(requestRefreshToken)
-                                .map(refreshTokenService::verifyExpiration)
-                                .map(RefreshToken::getUser)
-                                .map(user -> {
-                                        String token = jwtUtils.generateTokenFromUsername(user.getUsername());
-                                        return ResponseEntity.ok(new TokenRefreshResponse(token, refreshTokenService
-                                                        .createRefreshToken(user.getUsername()).getToken()));
-                                })
-                                .orElseThrow(() -> {
-                                        logger.info(">>>>Error Occurred: Refresh token is not in database! @ "
-                                                        + getTimestamp() + "<<<<");
-                                        // log out
-                                        SecurityContextHolder.clearContext();
-                                        // delete refresh token form db for user
-                                        return new TokenRefreshException(requestRefreshToken,
-                                                        "Refresh token is not in database!, Please login again");
-                                });
-        }
-
-        @PostMapping("/signup")
-        public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) throws IOException {
-                logger.info(">>>>Regsitering User... @ " + getTimestamp() + "<<<<");
-                if (userCredentialsServices.usernameExists(signUpRequest)) {
-                        logger.info(
-                                        ">>>>Username " + signUpRequest.getUsername() + " Already Exists. @ "
-                                                        + getTimestamp() + "<<<<");
-                        return ResponseEntity
-                                        .badRequest()
-                                        .body(new MessageResponse("Error: Username is already taken!"));
-                }
-
-                if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-                        logger.info(">>>>Email " + signUpRequest.getEmail() + " Already Exists. @ " + getTimestamp()
-                                        + "<<<<");
-                        return ResponseEntity
-                                        .badRequest()
-                                        .body(new MessageResponse("Error: Email is already in use!"));
-                }
-
-                // Create new user's account
-                User user = new User(signUpRequest.getUsername(),
-                                signUpRequest.getEmail(),
-                                encoder.encode(signUpRequest.getPassword()));
-
-                // userCredentialsServices.setRole(signUpRequest);
-                userRepository.save(user);
-                profileService.createNewProfile(user.getUsername(), user.getEmail(), signUpRequest.getName());
-                logger.info(">>>>User " + user + " Registered Successfully. @ " + getTimestamp() + "<<<<");
-                return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
-        }
-
-        @PostMapping("/logout")
-        public ResponseEntity<?> logout(@RequestHeader(value = "Authorization") String tokenHeader) {
-                if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-                        String token = tokenHeader.substring(7);
-                        blackListService.blacklistToken(token);
-                        SecurityContextHolder.clearContext();
-                        logger.info(">>>>User Logged Out Successfully. @ " + LocalDateTime.now() + "<<<<");
-                        return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
-                }
-                return ResponseEntity.badRequest().body(new MessageResponse("Invalid token."));
-        }
-
-        @PutMapping("/update")
-        public ResponseEntity<?> updateUser(@Valid @RequestBody SignupRequest signUpRequest) {
-                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                logger.info(">>>>Updating User... @ " + getTimestamp() + "<<<<");
-                if (principal instanceof ImpleUserDetails userDetails) {
-                        String clientUsername = userDetails.getUsername();
-
-                        if (!signUpRequest.getUsername().equals(clientUsername)
-                                        && userCredentialsServices.usernameExists(signUpRequest)) {
-                                logger.info(
-                                                ">>>>Username " + signUpRequest.getUsername() + " Already Exists. @ "
-                                                                + getTimestamp()
-                                                                + "<<<<");
-                                return ResponseEntity
-                                                .badRequest()
-                                                .body(new MessageResponse("Error: Username is already taken!"));
-                        }
-
-                        if (!signUpRequest.getEmail()
-                                        .equals(userRepository.findByUsername(clientUsername)
-                                                        .orElseThrow(() -> new UserNotFoundException(clientUsername))
-                                                        .getEmail())
-                                        && userRepository.existsByEmail(signUpRequest.getEmail())) {
-                                logger.info(">>>>Email " + signUpRequest.getEmail() + " Already Exists. @ "
-                                                + getTimestamp() + "<<<<");
-                                return ResponseEntity
-                                                .badRequest()
-                                                .body(new MessageResponse("Error: Email is already in use!"));
-                        }
-
-                        User user = userRepository.findByUsername(clientUsername)
-                                        .orElseThrow(() -> new UserNotFoundException(clientUsername));
-                        user.setEmail(signUpRequest.getEmail());
-                        user.setPassword(encoder.encode(signUpRequest.getPassword()));
-                        user.setUsername(signUpRequest.getUsername());
-                        userRepository.save(user);
-                        logger.info(">>>>User " + user + " Updated Successfully. @ " + getTimestamp()
-                                        + "<<<<");
-                        return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
-                }
-                logger.info(">>>>Error Occurred: Unable to Identify Client User. @ " + getTimestamp() + "<<<<");
                 return ResponseEntity
-                                .badRequest()
-                                .body(new MessageResponse("Error: Unable to identify client user!"));
+                        .badRequest()
+                        .body(new MessageResponse("Error: Username is already taken!"));
+            }
 
-        }
-
-
-        @DeleteMapping("/delete")
-        @Transactional
-        public ResponseEntity<?> deleteUser() {
-                Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                logger.info(">>>>Deleting User... @ " + getTimestamp() + "<<<<");
-                if (principal instanceof ImpleUserDetails userDetails) {
-                        String username = userDetails.getUsername();
-                        User user = userRepository.findByUsername(username)
-                                        .orElseThrow(() -> new UserNotFoundException(username));
-                        Profile profile = profileRepository.findByUsername(username)
-                                        .orElseThrow(() -> new ProfileNotFoundException(username));
-                        // commentRepository.deleteAllByCommentAuthorUsername(username);
-                        
-                        profile.getPublishedPosts().stream().forEach(post -> {
-                                post.getMediaData().stream().forEach(media -> {
-                                        fileStorageService.deleteFile(media.getFileName());
-                                });
-                                postRepository.delete(post);
-                        });
-                        refreshTokenRepository.deleteByUser(user);
-                        userRepository.delete(user);
-                        profileRepository.delete(profile);
-                        logger.info(">>>>User Deleted Successfully. @ " + getTimestamp() + "<<<<");
-                        return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
-                }
-                logger.info(">>>>Error Occurred: Unable to Identify Client User. @ " + getTimestamp() + "<<<<");
+            if (!signUpRequest.getEmail()
+                    .equals(userRepository.findByUsername(clientUsername)
+                            .orElseThrow(() -> new UserNotFoundException(clientUsername))
+                            .getEmail())
+                    && userRepository.existsByEmail(signUpRequest.getEmail())) {
+                logger.info(">>>>Email " + signUpRequest.getEmail() + " Already Exists. @ "
+                        + getTimestamp() + "<<<<");
                 return ResponseEntity
-                                .badRequest()
-                                .body(new MessageResponse("Error: Unable to identify client user!"));
-        }
+                        .badRequest()
+                        .body(new MessageResponse("Error: Email is already in use!"));
+            }
 
-        private static String getTimestamp() {
-                return LocalDateTime.now().format(formatter) + " ";
+            User user = userRepository.findByUsername(clientUsername)
+                    .orElseThrow(() -> new UserNotFoundException(clientUsername));
+            user.setEmail(signUpRequest.getEmail());
+            user.setPassword(encoder.encode(signUpRequest.getPassword()));
+            user.setUsername(signUpRequest.getUsername());
+            userRepository.save(user);
+            logger.info(">>>>User " + user + " Updated Successfully. @ " + getTimestamp()
+                    + "<<<<");
+            return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
         }
+        logger.info(">>>>Error Occurred: Unable to Identify Client User. @ " + getTimestamp() + "<<<<");
+        return ResponseEntity
+                .badRequest()
+                .body(new MessageResponse("Error: Unable to identify client user!"));
+
+    }
+
+
+    @DeleteMapping("/auth/delete")
+    @Transactional
+    public ResponseEntity<?> deleteUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        logger.info(">>>>Deleting User... @ " + getTimestamp() + "<<<<");
+        if (principal instanceof ImpleUserDetails userDetails) {
+            String username = userDetails.getUsername();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UserNotFoundException(username));
+            Profile profile = profileRepository.findByUsername(username)
+                    .orElseThrow(() -> new ProfileNotFoundException(username));
+            // commentRepository.deleteAllByCommentAuthorUsername(username);
+
+            profile.getPublishedPosts().stream().forEach(post -> {
+                post.getMediaData().stream().forEach(media -> {
+                    fileStorageService.deleteFile(media.getFileName());
+                });
+                postRepository.delete(post);
+            });
+            refreshTokenRepository.deleteByUser(user);
+            userRepository.delete(user);
+            profileRepository.delete(profile);
+            logger.info(">>>>User Deleted Successfully. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
+        }
+        logger.info(">>>>Error Occurred: Unable to Identify Client User. @ " + getTimestamp() + "<<<<");
+        return ResponseEntity
+                .badRequest()
+                .body(new MessageResponse("Error: Unable to identify client user!"));
+    }
+
+    private static String getTimestamp() {
+        return LocalDateTime.now().format(formatter) + " ";
+    }
 
 }

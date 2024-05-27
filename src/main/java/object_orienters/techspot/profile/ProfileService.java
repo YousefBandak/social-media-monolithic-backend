@@ -10,6 +10,8 @@ import object_orienters.techspot.postTypes.DataType;
 import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.utilities.FileStorageService;
+import object_orienters.techspot.utilities.MediaDataUtilities;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +43,9 @@ public class ProfileService {
 
     @Autowired
     PasswordEncoder encoder;
+
+    @Autowired
+    MediaDataUtilities mediaDataUtilities;
 
     public ProfileService(ProfileRepository repo) {
         this.repo = repo;
@@ -131,21 +136,9 @@ public class ProfileService {
     public Profile addProfilePic(String username, MultipartFile file, String text)
             throws UserNotFoundException, IOException {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
-        DataType profilePic = new DataType();
+        DataType profilePic = null;
         if (file != null && !file.isEmpty()) {
-            // if (!file.getContentType().equals("image/jpeg") ||
-            // !file.getContentType().equals("image/png")) {
-            // throw new IllegalArgumentException("Unsupported file type. Please upload a
-            // JPEG or PNG image.");
-            // }
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/media_uploads/")
-                    .path(fileName)
-                    .toUriString();
-            profilePic.setType(file.getContentType());
-            profilePic.setFileName(fileName);
-            profilePic.setFileUrl(fileDownloadUri);
+            profilePic = mediaDataUtilities.handleAddFile(file);
         }
         user.setProfilePic(profilePic);
         dataTypeRepository.save(profilePic);
@@ -156,21 +149,9 @@ public class ProfileService {
     public Profile addBackgroundImg(String username, MultipartFile file, String text)
             throws UserNotFoundException, IOException {
         Profile user = repo.findById(username).orElseThrow(() -> new UserNotFoundException(username));
-        DataType backgroundImg = new DataType();
+        DataType backgroundImg = null;
         if (file != null && !file.isEmpty()) {
-            // if (!file.getContentType().equals("image/jpeg") ||
-            // !file.getContentType().equals("image/png")) {
-            // throw new IllegalArgumentException("Unsupported file type. Please upload a
-            // JPEG or PNG image.");
-            // }
-            String fileName = fileStorageService.storeFile(file);
-            String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/media_uploads/")
-                    .path(fileName)
-                    .toUriString();
-            backgroundImg.setType(file.getContentType());
-            backgroundImg.setFileName(fileName);
-            backgroundImg.setFileUrl(fileDownloadUri);
+            backgroundImg = mediaDataUtilities.handleAddFile(file);
         }
         user.setBackgroundImg(backgroundImg);
         dataTypeRepository.save(backgroundImg);

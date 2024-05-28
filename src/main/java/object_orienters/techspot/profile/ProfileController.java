@@ -6,9 +6,11 @@ import object_orienters.techspot.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.exceptions.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,12 +83,14 @@ public class ProfileController {
             @RequestParam(defaultValue = "10") int size){
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
-            List<EntityModel<Profile>> followers = profileService.getUserFollowersByUsername(username, page, size).stream()
+            Page<Profile> followersPage = profileService.getUserFollowersByUsername(username, page, size);
+            List<EntityModel<Profile>> followers = followersPage.stream()
                     .map(assembler::toModel)
                     .collect(Collectors.toList());
             logger.info(">>>>Followers List Retrieved. " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(CollectionModel.of(followers,
-                    linkTo(methodOn(ProfileController.class).one(username)).withSelfRel()));
+            return ResponseEntity.ok(PagedModel.of(followers, new PagedModel.PageMetadata(followersPage.getSize(), followersPage.getNumber(), followersPage.getTotalElements(), followersPage.getTotalPages()))
+                    .add(linkTo(methodOn(ProfileController.class).one(username)).withRel("profile"))
+                    .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -116,12 +120,14 @@ public class ProfileController {
             @RequestParam(defaultValue = "10") int size) {
         try {
             logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
-            List<EntityModel<Profile>> following = profileService.getUserFollowingByUsername(username, page, size).stream()
+            Page<Profile> followingPage = profileService.getUserFollowingByUsername(username, page, size);
+            List<EntityModel<Profile>> following = followingPage.stream()
                     .map(userModel -> assembler.toModel(userModel))
                     .collect(Collectors.toList());
             logger.info(">>>>Following List Retrieved. " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(CollectionModel.of(following,
-                    linkTo(methodOn(ProfileController.class).one(username)).withSelfRel()));
+            return ResponseEntity.ok(PagedModel.of(following, new PagedModel.PageMetadata(followingPage.getSize(), followingPage.getNumber(), followingPage.getTotalElements(), followingPage.getTotalPages()))
+                    .add(linkTo(methodOn(ProfileController.class).one(username)).withRel("profile"))
+                    .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

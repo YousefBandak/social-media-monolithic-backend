@@ -30,10 +30,7 @@ import object_orienters.techspot.security.service.RefreshTokenService;
 import object_orienters.techspot.utilities.FileStorageService;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -98,6 +95,11 @@ public class AuthController {
     private static final String CLIENT_SECRET = "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";
     private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+
+    private static final String CLIENT_ID_GIT = "Ov23liq6SrGiWeOzrddu";
+    private static final String CLIENT_SECRET_GIT = "c6a8f8139914237aa7f7119355565a5a75c7fba8";
+
+
     @GetMapping("/auth/home")
     public String home() {
         System.out.println("I entered the home method");
@@ -148,6 +150,74 @@ public class AuthController {
         System.out.println(responseBody);
         return responseBody;
     }
+
+    @GetMapping("/login/oauth2/code/github")
+    public String handleGitHubOAuth2Callback(@RequestParam String code) {
+        System.out.println("Entered GitHub callback method");
+        System.out.println("Code: " + code);
+        RestTemplate restTemplate = new RestTemplate();
+        String authorizationCode = code;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("code", authorizationCode);
+        map.add("redirect_uri", "http://localhost:8080/login/oauth2/code/github");
+        map.add("client_id", CLIENT_ID_GIT);
+        map.add("client_secret", CLIENT_SECRET_GIT);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        System.out.println("before exchange");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "https://github.com/login/oauth/access_token",
+                HttpMethod.POST,
+                request,
+                String.class
+        );
+
+        System.out.println("after exchange ");
+
+        String responseBody = response.getBody();
+        System.out.println("Response Body: " + responseBody);
+
+        String accessToken = null;
+        try {
+            for (String param : responseBody.split("&")) {
+                String[] keyValue = param.split("=");
+                if ("access_token".equals(keyValue[0])) {
+                    accessToken = keyValue[1];
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error parsing access token: " + e.getMessage();
+        }
+
+        System.out.println("GitHub Access Token: " + accessToken);
+
+        // Store the access token in a secure manner (not shown)
+
+        // Make an authenticated request to get user info
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(requestHeaders);
+
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
+                "https://api.github.com/user",
+                HttpMethod.GET,
+                entity,
+                String.class
+        );
+
+        String userResponse = responseEntity.getBody();
+
+        System.out.println(userResponse);
+        return userResponse;
+    }
+
 
 
     @GetMapping("/auth/usernameExists/{username}")

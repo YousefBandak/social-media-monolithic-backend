@@ -66,9 +66,10 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers( "/auth/login", "/auth/signup", "/auth/home", "/auth/refreshtoken", "/media_uploads/**").permitAll()
+                        .requestMatchers( "/auth/login", "/auth/signup", "/auth/home", "/auth/refreshtoken", "/auth/oauth/signup").permitAll()
                         // "auth/usernameExists/**")
                         // .requestMatchers("/**").permitAll()
+                        .requestMatchers("/media_uploads/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/api-docs/**").permitAll()
@@ -86,30 +87,18 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .oauth2Login(
                         oauth2 -> oauth2
                        .loginPage("http://localhost:3000/login")
-                        .defaultSuccessUrl("/auth/home", true)
-                        //.failureUrl("/auth/login?error")
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorize")
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("http://localhost:8080/oauth2/callback/google")
                         )
                         .redirectionEndpoint(redirection -> redirection
                                 .baseUri("http://localhost:8080/login/oauth2/code/github")
                         )
 
-                       // withDefaults()
                 )
-
-                // .formLogin(form -> {
-                // form.permitAll();
-                // form.failureHandler((request, response, exception) -> {
-                // logger.error("Failed to login", exception);
-
-                // exception.printStackTrace();
-                // response.sendRedirect("/auth/signup");
-                // });
-                // form.successForwardUrl("/auth/home");
-                // })
                 .authenticationProvider(authenticationProvider())
-                //.logout(logout -> logout.logoutSuccessUrl("/auth/login"))
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

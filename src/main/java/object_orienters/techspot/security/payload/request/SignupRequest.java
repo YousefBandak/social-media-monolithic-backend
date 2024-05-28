@@ -53,4 +53,8 @@ public class SignupRequest {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String toString() {
+        return "SignupRequest(username=" + this.getUsername() + ", email=" + this.getEmail() + ", password=" + this.getPassword() + ", name=" + this.getName() + ")";
+    }
 }

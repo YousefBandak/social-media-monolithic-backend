@@ -47,8 +47,4 @@ public class RefreshTokenService {
         }
         return token;
     }
-
-    public void deleteByUsername(String uasename) {
-        refreshTokenRepository.deleteByUser(userRepository.findById(uasename).get());
-    }
 }

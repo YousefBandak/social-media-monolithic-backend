@@ -22,6 +22,6 @@ public class ProfileModelAssembler implements RepresentationModelAssembler<Profi
                 linkTo(methodOn(ProfileController.class).one(user.getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).Followers(user.getUsername(), 0, 10)).withRel("followers"),
                 linkTo(methodOn(ProfileController.class).Following(user.getUsername(), 0, 10)).withRel("following"),
-                linkTo(methodOn(PostController.class).getTimelinePosts(user.getUsername(), 1, 10)).withRel("Posts"));
+                linkTo(methodOn(PostController.class).getTimelinePosts(user.getUsername(), 0, 10)).withRel("Posts"));
     }
 }

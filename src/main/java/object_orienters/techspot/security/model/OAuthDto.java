@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OAuthDto {
+
+    private Provider provider;
     private String id;
     private String username;
 
     public String toString() {
-        return "OAuthDto(id=" + this.getId() + ", username=" + this.getUsername() + ")";
+        return "OAuthDto(id=" + this.getId() + ", username=" + this.getUsername() + ", provider=" + this.getProvider() +")";
     }
 }

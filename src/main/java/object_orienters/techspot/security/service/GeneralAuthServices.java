@@ -12,6 +12,7 @@ import object_orienters.techspot.security.blacklist.ImpleTokenBlackListService;
 import object_orienters.techspot.security.jwt.JwtUtils;
 import object_orienters.techspot.security.model.RefreshToken;
 import object_orienters.techspot.security.model.User;
+import object_orienters.techspot.security.model.UserOAuthTemp;
 import object_orienters.techspot.security.payload.request.LoginRequest;
 import object_orienters.techspot.security.payload.request.SignupRequest;
 import object_orienters.techspot.security.payload.response.JwtResponse;
@@ -119,6 +120,8 @@ public class GeneralAuthServices {
         return user;
     }
 
+
+
     @Transactional
     public User updateUser(String clientUsername, SignupRequest signUpRequest) {
         if (!signUpRequest.getUsername().equals(clientUsername)
@@ -163,5 +166,7 @@ public class GeneralAuthServices {
         userRepository.delete(user);
         profileRepository.delete(profile);
     }
+
+
 
 }

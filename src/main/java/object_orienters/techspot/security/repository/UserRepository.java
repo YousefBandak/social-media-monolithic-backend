@@ -1,5 +1,6 @@
 package object_orienters.techspot.security.repository;
 
+import object_orienters.techspot.security.model.Provider;
 import object_orienters.techspot.security.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, String> {
   Boolean existsByUsername(String username);
 
   Boolean existsByEmail(String email);
+
+  Optional<User> findByProviderAndProviderId(Provider provider, String id);
 }

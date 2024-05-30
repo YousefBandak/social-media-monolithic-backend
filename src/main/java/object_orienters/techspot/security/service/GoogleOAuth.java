@@ -76,7 +76,7 @@ public class GoogleOAuth {
     }
 
     @Transactional
-    public UserOAuthTemp getUserInfoGoogle(String accessToken){
+    public UserOAuthTemp getUserInfoGoogle(String accessToken) {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(requestHeaders);

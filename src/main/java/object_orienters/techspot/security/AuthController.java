@@ -6,10 +6,7 @@ import object_orienters.techspot.exceptions.TokenRefreshException;
 import object_orienters.techspot.exceptions.UserNotFoundException;
 import object_orienters.techspot.exceptions.UsernameAlreadyExistsException;
 import object_orienters.techspot.security.jwt.JwtUtils;
-import object_orienters.techspot.security.model.OAuthDto;
-import object_orienters.techspot.security.model.RefreshToken;
-import object_orienters.techspot.security.model.User;
-import object_orienters.techspot.security.model.UserOAuthTemp;
+import object_orienters.techspot.security.model.*;
 import object_orienters.techspot.security.payload.request.LoginRequest;
 import object_orienters.techspot.security.payload.request.SignupRequest;
 import object_orienters.techspot.security.payload.request.TokenRefreshRequest;
@@ -24,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.io.Console;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -56,9 +54,9 @@ public class AuthController {
     public ResponseEntity<?> registerUserOAuth(@RequestBody OAuthDto oAuthDto) throws IOException {
         logger.info(">>>>Regsitering OAuth User... @ " + getTimestamp() + "<<<<");
         try {
-            User user = oAuth2Services.registerOuthUser(oAuthDto);
-            System.out.println("AuthController.registerUserOAuth: user = " + user);
-            return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+            JwtResponse jwtResponse = oAuth2Services.registerOuthUser(oAuthDto);
+            System.out.println("AuthController.registerUserOAuth: jwtResponse = " + jwtResponse);
+            return ResponseEntity.ok(jwtResponse);
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
             return ResponseEntity
@@ -68,25 +66,40 @@ public class AuthController {
     }
 
     @GetMapping("/oauth2/callback/google")
-    public RedirectView handleOAuth2Callback(@RequestParam("code") String authorizationCode) {
+    public Object handleOAuth2Callback(@RequestParam("code") String authorizationCode) {
         String accessToken = googleOAuth.exchangeCodeForAccessTokenGoogle(authorizationCode);
 
         UserOAuthTemp userOAuthTemp = googleOAuth.getUserInfoGoogle(accessToken);
 
-        String redirectUrl = oAuth2Services.saveUserOAuthTempAndRedirectURL(userOAuthTemp);
+        if (oAuth2Services.isLogin(userOAuthTemp, Provider.GOOGLE)) {
 
-        return new RedirectView(redirectUrl);
+            JwtResponse jwtResponse = oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GOOGLE);
+            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() +"&username=" + jwtResponse.getUsername();
+            return new RedirectView(redirectUrl);
+        } else {
+
+            String redirectUrl = oAuth2Services.saveUserOAuthTempAndRedirectURL(userOAuthTemp);
+            return new RedirectView(redirectUrl);
+        }
+
+
     }
 
     @GetMapping("/login/oauth2/code/github")
-    public RedirectView handleGitHubOAuth2Callback(@RequestParam String code) {
+    public Object handleGitHubOAuth2Callback(@RequestParam String code) {
         String accessToken = githubOAuth.exchangeCodeForAccessTokenGithub(code);
 
         UserOAuthTemp userOAuthTemp = githubOAuth.getUserInfoGithub(accessToken);
+        if (oAuth2Services.isLogin(userOAuthTemp, Provider.GITHUB)) {
+            JwtResponse jwtResponse =  oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GITHUB);
+            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() +"&username=" + jwtResponse.getUsername();
+            return new RedirectView(redirectUrl);
 
-        String redirectUrl = oAuth2Services.saveUserOAuthTempAndRedirectURL(userOAuthTemp);
+        } else {
 
-        return new RedirectView(redirectUrl);
+            String redirectUrl = oAuth2Services.saveUserOAuthTempAndRedirectURL(userOAuthTemp);
+            return new RedirectView(redirectUrl);
+        }
     }
 
 
@@ -96,7 +109,7 @@ public class AuthController {
         if (generalAuthServices.usernameExists(username)) {
             logger.info(">>>>Username Already Exists. @ " + getTimestamp() + "<<<<");
             return ResponseEntity
-                    .ok()
+                    .badRequest()
                     .body(new MessageResponse("Username is already taken!"));
         } else {
             logger.info(">>>>Username Available. @ " + getTimestamp() + "<<<<");

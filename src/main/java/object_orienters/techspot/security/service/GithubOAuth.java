@@ -102,7 +102,7 @@ public class GithubOAuth {
         try {
             JsonNode root = obtMapper.readTree(rspBody);
             email = root.path("email").asText(); //fixme
-            name = root.path("name") == null ? root.path("login").asText() : root.path("name").asText();
+            name = root.path("name").asText().equals("null") ? root.path("login").asText() : root.path("name").asText();
             picture_url = root.path("avatar_url").asText();
             id = root.path("id").asText();
 

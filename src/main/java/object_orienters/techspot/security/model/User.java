@@ -1,8 +1,6 @@
 package object_orienters.techspot.security.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,17 +19,30 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class User extends UserBase {
 
-    @NotBlank
     @Size(max = 120)
     private String password;
 
     private Timestamp lastLogin;
+
+    @Enumerated(EnumType.STRING)
+    private Provider provider;
+
+    private String providerId;
 
     public User(@NotBlank @Size(max = 20) String username, @NotBlank @Size(max = 50) @Email String email,
             @NotBlank @Size(max = 120) String password) {
         this.setUsername(username);
         this.setEmail(email);
         this.password = password;
+        provider = Provider.LOCAL;
+    }
+
+    public User(@NotBlank @Size(max = 20) String username, @NotBlank @Size(max = 50) @Email String email,
+           Provider provider, String providerId) {
+        this.setUsername(username);
+        this.setEmail(email);
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public String toString() {

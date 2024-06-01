@@ -33,9 +33,11 @@ public class ChatterService {
         firestoreRepository.saveChatter(chatter);
     }
 
-    public List<Chatter> getConnectedChatters() {
+    public List<Chatter> getConnectedChatters(String username) {
         try {
-            return firestoreRepository.getChattersByStatus(Status.ONLINE);
+            System.out.println("ChatterService.getConnectedChatters username = " + username);
+            return firestoreRepository.getChattersByFollowship(username);
+            //return firestoreRepository.getChattersByStatus(Status.ONLINE);
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
         }

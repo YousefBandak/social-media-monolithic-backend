@@ -72,7 +72,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                                 "/auth/refreshtoken",
                                 "/auth/oauth/signup",
                                 "auth/usernameExists/**").permitAll()
-                        //.requestMatchers("/**").permitAll()
+                        .requestMatchers("/**").permitAll()
                         .requestMatchers("/media_uploads/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()

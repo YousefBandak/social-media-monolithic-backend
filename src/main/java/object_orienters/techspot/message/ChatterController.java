@@ -9,6 +9,8 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -35,7 +37,8 @@ public class ChatterController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<Chatter>> getConnectedChatters() {
-        return ResponseEntity.ok(chatterService.getConnectedChatters());
+    public ResponseEntity<List<Chatter>> getConnectedChatters(@RequestParam String username) {
+        System.out.println("ChatterController.getConnectedChatters username = " + username);
+        return ResponseEntity.ok(chatterService.getConnectedChatters(username));
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -91,16 +92,17 @@ public class ReactionService {
 
     }
 
-    public boolean isReactor(String username, String reactionID) {
+    public Map<String, ?> isReactor(String username, String reactionID) {
         Optional<Reaction> reactionOptional = reactionRepository.findByReactionID(reactionID);
         if (reactionOptional.isPresent()) {
             Reaction reaction = reactionOptional.get();
             logger.info(">>>>Checking if the user is the reactor... @ "
                     + getReaction(reactionID).getReactor().getUsername() + "<<<<");
             boolean x = reaction.getReactor().getUsername().equals(username);
-            return x;
+            Map<String, ?> map = Map.of("isReactor", x, "reactionType", reaction.getType());
+            return map;
         }
-        return false;
+        return Map.of("isReactor", false);
     }
 
 }

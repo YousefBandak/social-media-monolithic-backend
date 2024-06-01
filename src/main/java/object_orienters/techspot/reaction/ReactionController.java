@@ -92,7 +92,6 @@ public class ReactionController {
         try {
             logger.info(">>>>Checking if user is reactor... @ " + getTimestamp() + "<<<<");
             var isReactor = reactionService.isReactor(username, username + contentID);
-            System.out.println(isReactor);
             logger.info(">>>>User is reactor. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(isReactor);
         } catch (ContentNotFoundException e) {

@@ -59,8 +59,6 @@ public class GithubOAuth {
 
         String responseBody = response.getBody();
 
-        System.out.println("GithubOAuth.exchangeCodeForAccessTokenGithub: responseBody = " + responseBody);
-
         String accessToken = null;
         try {
             for (String param : responseBody.split("&")) {
@@ -94,8 +92,6 @@ public class GithubOAuth {
 
         String rspBody = responseEntity.getBody();
 
-        System.out.println("GithubOAuth.getUserInfoGithub: rspBody = " + rspBody);
-
         ObjectMapper obtMapper = new ObjectMapper();
         String email, name, picture_url, id;
 
@@ -118,8 +114,6 @@ public class GithubOAuth {
         userOAuthTemp.setId(id);
         userOAuthTemp.setProvider(Provider.GITHUB);
         userOAuthTemp.setAccessToken(accessToken);
-
-        System.out.println("GithubOAuth.getUserInfoGithub: userOAuthTemp = " + userOAuthTemp);
 
         return userOAuthTemp;
     }

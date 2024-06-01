@@ -25,6 +25,7 @@ public class FeedService {
     // private FeedByAuthor feedByAuthor;
     //private ReactionsByContent reactionsByContent;
     // private CommentsByContent commentsByContent;
+    private final SearchByCode searchByCode;
 
     private final TopTags topTags;
     private final SearchByName searchByName;
@@ -47,7 +48,8 @@ public class FeedService {
                        PostModelAssembler postModelAssembler,
                        ProfileModelAssembler profileModelAssembler,
                        TagsAssembler tagsAssembler,
-                       TopTags topTags) {
+                       TopTags topTags,
+                       SearchByCode searchByCode) {
         this.feedByFollowingStrategy = feedByFollowingStrategy;
         this.profileRepository = profileRepository;
         this.feedByTag = feedByTag;
@@ -60,6 +62,7 @@ public class FeedService {
         this.profileModelAssembler = profileModelAssembler;
         this.topTags = topTags;
         this.tagsAssembler = tagsAssembler;
+        this.searchByCode = searchByCode;
     }
 
     public PagedModel<?> feedContent(FeedType feedType, String value, int pageNumber, int pageSize) {
@@ -78,6 +81,9 @@ public class FeedService {
 //                return commentsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
 //            case REACTIONS:
 //                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
+            case CODE:
+                Page<Post> code = searchByCode.operate(value.equals("following")? "" : value, pageNumber, pageSize);
+                return PagedModel.of(code.stream().map(postModelAssembler::toModel).toList(), new PagedModel.PageMetadata(code.getSize(), code.getNumber(), code.getTotalElements(), code.getTotalPages()));
             case PROFILES:
                 Page<Profile> profiles = searchByName.operate(value, pageNumber, pageSize);
                 return PagedModel.of(profiles.stream().map(profileModelAssembler::toModel).toList(), new PagedModel.PageMetadata(profiles.getSize(), profiles.getNumber(), profiles.getTotalElements(), profiles.getTotalPages()));
@@ -105,5 +111,6 @@ public class FeedService {
         // REACTIONS,
         PROFILES,
         MUTUAL_FOLLOWING,
+        CODE
     }
 }

@@ -11,7 +11,6 @@ import object_orienters.techspot.postTypes.DataTypeRepository;
 import object_orienters.techspot.security.repository.UserRepository;
 import object_orienters.techspot.utilities.FileStorageService;
 import object_orienters.techspot.utilities.MediaDataUtilities;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -108,13 +106,8 @@ public class ProfileService {
         }
         Profile newFollower = getUserByUsername(followerUserName);
         Optional<Profile> user = repo.findByUsername(username);
-        System.out.println("user.get().getFollowers() = " + user.get().getFollowers());
         user.get().getFollowers().add(newFollower);
-        System.out.println("user.get().getFollowers() = " + user.get().getFollowers());
-        System.out.println("/////////////////////");
-        System.out.println("newFollower.getFollowing() = " + newFollower.getFollowing());
         newFollower.getFollowing().add(user.get());
-        System.out.println("newFollower.getFollowing() = " + newFollower.getFollowing());
         Profile savedUser = repo.save(user.get());
         repo.save(newFollower);
         return savedUser;

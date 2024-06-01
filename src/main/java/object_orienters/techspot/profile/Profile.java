@@ -48,6 +48,8 @@ public class Profile extends UserBase {
 
     private String profession;
 
+    private String about;
+
     private Gender gender;
 
     @Past(message = "Date of Birth should be in the past.")

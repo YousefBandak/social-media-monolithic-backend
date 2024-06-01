@@ -69,17 +69,19 @@ public class ProfileService {
 
     @Transactional
     public Profile updateUserProfile(UpdateProfile newUser, String username) throws UserNotFoundException {
-        Profile updatedUser = repo.findByUsername(username).map(user -> {
-            user.setDob(newUser.getDob());
-            user.setEmail(newUser.getEmail());
-            user.getOwner().setEmail(newUser.getEmail());
-            user.setName(newUser.getName());
-            user.setProfession(newUser.getProfession());
-            user.setGender(newUser.getGender());
-            user.getOwner().setPassword(encoder.encode(newUser.getPassword()));
+        return repo.findByUsername(username).map(user -> {
+            Optional.ofNullable(newUser.getDob()).ifPresent(user::setDob);
+            Optional.ofNullable(newUser.getName()).ifPresent(user::setName);
+            Optional.ofNullable(newUser.getAbout()).ifPresent(user::setAbout);
+            Optional.ofNullable(newUser.getProfession()).ifPresent(user::setProfession);
+            Optional.ofNullable(newUser.getGender()).ifPresent(user::setGender);
+            Optional.ofNullable(newUser.getPassword()).ifPresent(password -> {
+                user.getOwner().setPassword(encoder.encode(password));
+                userRepository.save(user.getOwner());
+            });
+
             return repo.save(user);
         }).orElseThrow(() -> new UserNotFoundException(username));
-        return updatedUser;
     }
 
     public Optional<Profile> getFollowingByUsername(String username, String followingUsername)

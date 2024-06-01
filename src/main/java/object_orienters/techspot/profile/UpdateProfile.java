@@ -7,8 +7,8 @@ import java.time.LocalDate;
 @Data
 public class UpdateProfile {
     private LocalDate dob;
-    private String email;
     private String name;
+    private String about;
     private String profession;
     private Profile.Gender gender;
     private String password;

@@ -17,7 +17,7 @@ public interface ProfileRepository extends PagingAndSortingRepository<Profile, S
     Page<Profile> findFollowersByUserId(String userName, Pageable pageable);
 
     @Query("SELECT f FROM Profile u JOIN u.followers f WHERE f.owner.username = :username AND u.owner.username = :accountUsername")
-    Optional<Profile> findFollowerByUsername(String accountUsername, String username);
+    Optional<Profile> findFollowerByUsername(String accountUsername, String username); //fixme
 
     @Query("SELECT f FROM Profile u JOIN u.following f WHERE u.owner.username = :userName")
     Page<Profile> findFollowingByUserId(String userName, Pageable pageable);
@@ -43,7 +43,16 @@ public interface ProfileRepository extends PagingAndSortingRepository<Profile, S
             "OR lower(p.username) LIKE lower(concat('%', :searchTerm, '%')) " +
             "OR lower(p.email) LIKE lower(concat('%', :searchTerm, '%'))")
     Page<Profile> findBySearchCriteria(@Param("searchTerm") String searchTerm, Pageable pageable);
+
     @Query("SELECT f FROM Profile u JOIN u.following v JOIN v.following f WHERE u.owner.username = :username")
     Page<Profile> findFollowingOfFollowing(String username, Pageable pageable);
+
+
+    @Query("SELECT f FROM Profile u JOIN u.followers f WHERE u.owner.username = :username")
+    List<Profile> findFollowersByUserId(String username);
+
+    @Query("SELECT f FROM Profile u JOIN u.following f WHERE u.owner.username = :userName")
+    List<Profile> findFollowingByUserId(String userName);
+
 
 }

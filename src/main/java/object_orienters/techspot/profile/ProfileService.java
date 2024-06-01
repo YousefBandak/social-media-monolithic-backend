@@ -108,8 +108,13 @@ public class ProfileService {
         }
         Profile newFollower = getUserByUsername(followerUserName);
         Optional<Profile> user = repo.findByUsername(username);
+        System.out.println("user.get().getFollowers() = " + user.get().getFollowers());
         user.get().getFollowers().add(newFollower);
+        System.out.println("user.get().getFollowers() = " + user.get().getFollowers());
+        System.out.println("/////////////////////");
+        System.out.println("newFollower.getFollowing() = " + newFollower.getFollowing());
         newFollower.getFollowing().add(user.get());
+        System.out.println("newFollower.getFollowing() = " + newFollower.getFollowing());
         Profile savedUser = repo.save(user.get());
         repo.save(newFollower);
         return savedUser;

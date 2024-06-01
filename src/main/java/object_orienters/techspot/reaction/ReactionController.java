@@ -87,6 +87,21 @@ public class ReactionController {
         }
     }
 
+    @GetMapping("/reactions/{username}")
+    public ResponseEntity<?> isReactor(@PathVariable Long contentID, @PathVariable String username) {
+        try {
+            logger.info(">>>>Checking if user is reactor... @ " + getTimestamp() + "<<<<");
+            var isReactor = reactionService.isReactor(username, username + contentID);
+            System.out.println(isReactor);
+            logger.info(">>>>User is reactor. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(isReactor);
+        } catch (ContentNotFoundException e) {
+            logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+        }
+    }
+
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";
     }

@@ -22,7 +22,10 @@ public class PostModelAssembler implements RepresentationModelAssembler<Content,
                         entity.getMainAuthor().getUsername())).withSelfRel(),
                 linkTo(methodOn(ProfileController.class).one(entity.getMainAuthor().getUsername())).withRel("author"),
                 linkTo(methodOn(ReactionController.class).getReactions(entity.getContentID(), 0, 10)).withRel("reactions"),
-                linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),0, 10 )).withRel("comments"));
+                linkTo(methodOn(CommentController.class).getComments(entity.getContentID(),0, 10 )).withRel("comments"),
+                linkTo(methodOn(PostController.class).deleteTimelinePost(entity.getMainAuthor().getUsername(), entity.getContentID())).withRel("delete"),
+                linkTo(methodOn(ReactionController.class).deleteReaction(entity.getContentID())).withRel("deleteReaction")
+        );
 
     }
 }

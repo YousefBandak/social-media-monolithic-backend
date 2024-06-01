@@ -21,6 +21,7 @@ public class ChatRoomService {
                 return Optional.of(chatRoom.get().getId());
             } else {
                 if (createIfNotExist) {
+                    System.out.println("ChatRoomService.getChatRoomId: senderId = " + senderId + ", recipientId = " + recipientId);
                     String chatId = createChatRoom(senderId, recipientId);
                     return Optional.of(chatId);
                 } else {

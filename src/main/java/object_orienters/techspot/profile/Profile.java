@@ -16,9 +16,7 @@ import object_orienters.techspot.security.model.User;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Entity
@@ -58,15 +56,16 @@ public class Profile extends UserBase {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "followship", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
     @JsonIgnore
-    private List<Profile> following;
+    private Set<Profile> following;
+
+    @ManyToMany(mappedBy = "following", fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<Profile> followers;
 
     @JsonIgnore
     @OneToMany(mappedBy = "contentAuthor", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> publishedPosts;
 
-    @ManyToMany(mappedBy = "following", fetch = FetchType.EAGER)
-    @JsonIgnore
-    private List<Profile> followers;
 
     public Profile(User user, String name, String profession, String email, DataType profilePic, Gender gender,
             String dob) {
@@ -76,8 +75,8 @@ public class Profile extends UserBase {
         this.setEmail(email);
         this.profilePic = profilePic;
         this.gender = gender;
-        this.followers = new ArrayList<>();
-        this.following = new ArrayList<>();
+        this.followers = new HashSet<>();
+        this.following = new HashSet<>();
         this.dob = LocalDate.parse(dob);
         this.setUsername(user.getUsername());
     }
@@ -87,9 +86,9 @@ public class Profile extends UserBase {
                 + getEmail();
     }
 
-    public List<Profile> getFollowing() {
+    public Set<Profile> getFollowing() {
         if (this.following == null) {
-            this.following = new ArrayList<>();
+            this.following = new HashSet<>();
         }
         return following;
     }

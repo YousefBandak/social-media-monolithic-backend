@@ -27,4 +27,7 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.contentAuthor IN :authors AND p.privacy IN :privacies")
     Page<Post> findPostsByContentAuthorsAndPrivacy(@Param("authors") List<Profile> authors, @Param("privacies") List<Privacy> privacies, Pageable pageable);
 
+    @Query("SELECT p FROM Post p WHERE p.textData LIKE CONCAT('%```_', :value, '%```%') AND p.privacy = :privacy")
+    Page<Post> findAllByCodeAndPrivacy(@Param("value") String value, @Param("privacy") Privacy privacy, Pageable pageable);
+
 }

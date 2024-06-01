@@ -21,6 +21,8 @@ public abstract class ReactableContent extends Content {
 
     @OneToMany(mappedBy = "content", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<DataType> mediaData;
+
+    @Column(length = 2000)
     private String textData;
 
     @JsonIgnore

@@ -21,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.io.Console;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +54,6 @@ public class AuthController {
         logger.info(">>>>Regsitering OAuth User... @ " + getTimestamp() + "<<<<");
         try {
             JwtResponse jwtResponse = oAuth2Services.registerOuthUser(oAuthDto);
-            System.out.println("AuthController.registerUserOAuth: jwtResponse = " + jwtResponse);
             return ResponseEntity.ok(jwtResponse);
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");

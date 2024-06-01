@@ -47,20 +47,17 @@ public class OAuth2Services {
 
     @Transactional
     public String saveUserOAuthTempAndRedirectURL(UserOAuthTemp userOAuthTemp) {
-        System.out.println(userOAuthTempRepository.save(userOAuthTemp));
         String redirectUrl = UriComponentsBuilder.fromHttpUrl(FINAL_FRONTEND_URL)
                 .queryParam("id", userOAuthTemp.getId())
                 .queryParam("provider", userOAuthTemp.getProvider())
                 .toUriString();
 
-        System.out.println("OAuth2Services.saveUserOAuthTempAndRedirectURL: redirectUrl = " + redirectUrl);
 
         return redirectUrl;
     }
 
     @Transactional
     public JwtResponse registerOuthUser(OAuthDto oAuthDto) throws IOException {
-        System.out.println("OAuth2Services.registerOuthUser: oAuthDto = " + oAuthDto);
         if (userRepository.existsByUsername(oAuthDto.getUsername()))
             throw new UsernameAlreadyExistsException(oAuthDto.getUsername());
 

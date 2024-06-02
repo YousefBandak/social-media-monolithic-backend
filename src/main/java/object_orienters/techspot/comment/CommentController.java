@@ -1,9 +1,6 @@
 package object_orienters.techspot.comment;
 
-import object_orienters.techspot.exceptions.CommentNotFoundException;
-import object_orienters.techspot.exceptions.ContentIsPrivateException;
-import object_orienters.techspot.exceptions.ContentNotFoundException;
-import object_orienters.techspot.exceptions.PostNotFoundException;
+import object_orienters.techspot.exceptions.*;
 import object_orienters.techspot.post.PostController;
 import object_orienters.techspot.post.PostService;
 import object_orienters.techspot.utilities.PermissionService;
@@ -11,7 +8,6 @@ import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +37,7 @@ public class CommentController {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(CommentController.class);
 
     CommentController(CommentModelAssembler commentModelAssembler,
-    CommentService commentService,
+                      CommentService commentService,
                       PostService postService,
                       PermissionService permissionService) {
         this.assembler = commentModelAssembler;
@@ -54,8 +50,7 @@ public class CommentController {
     @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
     public ResponseEntity<?> getComments(@PathVariable long contentID,
                                          @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
-                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize)
-    {
+                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
         try {
             logger.info(">>>>Retrieving Comments... @ " + getTimestamp() + "<<<<");
             Page<Comment> commentList = commentService.getComments(contentID, pageNumber, pageSize);
@@ -67,18 +62,13 @@ public class CommentController {
                             .withRel("content"));
             logger.info(">>>>Comments Retrieved. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(commentModel);
-        } catch (ContentNotFoundException e) {
+        } catch (ContentNotFoundException | PostNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Content Not Found").withDetail(e.getMessage()));
-        } catch (PostNotFoundException e) {
-            logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (ContentIsPrivateException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Problem.create().withTitle("Unauthorized").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.UNAUTHORIZED);
+
         }
     }
 
@@ -93,16 +83,16 @@ public class CommentController {
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
     @PutMapping("/comments/{commentID}")
     @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
     public ResponseEntity<?> updateComment(@PathVariable long contentID, @PathVariable Long commentID,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files,
-            @RequestParam(value = "text", required = false) String text) throws IOException {
+                                           @RequestParam(value = "files", required = false) List<MultipartFile> files,
+                                           @RequestParam(value = "text", required = false) String text) throws IOException {
         try {
             logger.info(">>>>Updating Comment... @ " + getTimestamp() + "<<<<");
             Comment updatedComment = commentService.updateComment(contentID, commentID, files, text);
@@ -111,8 +101,8 @@ public class CommentController {
             return ResponseEntity.ok(commentModel);
         } catch (ContentNotFoundException | CommentNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -133,8 +123,8 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.CREATED).body(commentModel);
         } catch (IllegalArgumentException | ContentNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -148,8 +138,8 @@ public class CommentController {
             return ResponseEntity.noContent().build();
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 

@@ -2,6 +2,7 @@ package object_orienters.techspot.reaction;
 
 import jakarta.validation.Valid;
 import object_orienters.techspot.exceptions.ContentNotFoundException;
+import object_orienters.techspot.exceptions.ExceptionsResponse;
 import object_orienters.techspot.exceptions.ReactionNotFoundException;
 import object_orienters.techspot.utilities.PermissionService;
 import org.slf4j.Logger;
@@ -50,8 +51,8 @@ public class ReactionController {
             return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -68,8 +69,8 @@ public class ReactionController {
             return ResponseEntity.status(HttpStatus.CREATED).body(reactionModel);
         } catch (IllegalArgumentException | ContentNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
 
     }
@@ -82,8 +83,8 @@ public class ReactionController {
             return ResponseEntity.noContent().build();
         } catch (ReactionNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -96,8 +97,8 @@ public class ReactionController {
             return ResponseEntity.ok(isReactor);
         } catch (ContentNotFoundException e) {
             logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 

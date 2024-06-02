@@ -1,10 +1,7 @@
 package object_orienters.techspot.post;
 
 import object_orienters.techspot.content.Content;
-import object_orienters.techspot.exceptions.ContentIsPrivateException;
-import object_orienters.techspot.exceptions.PostNotFoundException;
-import object_orienters.techspot.exceptions.PostUnrelatedToUserException;
-import object_orienters.techspot.exceptions.UserNotFoundException;
+import object_orienters.techspot.exceptions.*;
 import object_orienters.techspot.model.Privacy;
 import object_orienters.techspot.profile.ProfileService;
 import org.slf4j.Logger;
@@ -66,8 +63,8 @@ public class PostController {
             return ResponseEntity.ok(pagedModel);
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -77,21 +74,16 @@ public class PostController {
                                               @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                               @RequestParam(value = "text", required = false) String text,
                                               @RequestParam(value = "privacy") Privacy privacy)
-            throws IOException {
+             {
         try {
             logger.info(">>>>Adding Post to Timeline... @ " + getTimestamp() + "<<<<");
             Post profilePost = postService.addTimelinePosts(username, files, text, privacy);
             logger.info(">>>>Post Added to Timeline. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(assembler.toModel(profilePost));
-        } catch (UserNotFoundException exception) {
+        } catch (UserNotFoundException | IOException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
-        } catch (IOException exception) {
-            logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
 
         }
     }
@@ -107,10 +99,13 @@ public class PostController {
             Content editedPost = postService.editTimelinePost(username, postId, files, text, privacy);
             logger.info(">>>>Post Edited. @ " + getTimestamp() + "<<<<");
             return ResponseEntity.ok(assembler.toModel(editedPost));
-        } catch (UserNotFoundException | PostNotFoundException | PostUnrelatedToUserException exception) {
+        } catch (UserNotFoundException | PostNotFoundException  exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
+        }catch (PostUnrelatedToUserException e) {
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.FORBIDDEN);
+
         }
 
     }
@@ -125,11 +120,11 @@ public class PostController {
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException | PostNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         } catch (PostUnrelatedToUserException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.FORBIDDEN);
+
         }
 
     }
@@ -152,16 +147,15 @@ public class PostController {
             return ResponseEntity.ok(post);
         } catch (PostNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         } catch (ContentIsPrivateException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Problem.create().withTitle("Action Not Allowed").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.UNAUTHORIZED);
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
 
     }
@@ -179,14 +173,14 @@ public class PostController {
         } catch (PostNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " @ " + getTimestamp() + "<<<<");
             exception = new PostNotFoundException(postId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("Post Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred: " + exception.getMessage() + " @ " +
                     getTimestamp() + "<<<<");
             exception = new UserNotFoundException(username);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
 
     }

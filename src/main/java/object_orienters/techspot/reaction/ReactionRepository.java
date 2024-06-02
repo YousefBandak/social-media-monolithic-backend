@@ -13,6 +13,8 @@ public interface ReactionRepository extends PagingAndSortingRepository<Reaction,
 
     Page<Reaction> findByContent(ReactableContent content, Pageable pageable);
 
+    Page<Reaction> findByContentAndType(ReactableContent content, Reaction.ReactionType type, Pageable pageable);
+
     void deleteByReactionID(String reactionID);
 
     Optional<Reaction> findByReactionID(String reactionID);

@@ -38,6 +38,25 @@ public class ReactionController {
         this.permissionService = permissionService;
     }
 
+    @GetMapping("/reactions/{reactionType}/users")
+    @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")
+    public ResponseEntity<?> getReactionsByType(@PathVariable Long contentID,
+                                                @PathVariable String reactionType,
+                                                @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
+                                                @RequestParam(value = "pageSize", defaultValue = "10") int pageSize) {
+        try {
+            logger.info(">>>>Retrieving Reactions... @ " + getTimestamp() + "<<<<");
+
+            Page<Reaction> reactionList = reactionService.getReactionsByType(contentID, reactionType.toUpperCase(), pageNumber, pageSize);
+            logger.info(">>>>Reactions Retrieved. @ " + getTimestamp() + "<<<<");
+            return ResponseEntity.ok(reactionList.stream().map(assembler::toModel).collect(Collectors.toList()));
+        } catch (ContentNotFoundException e) {
+            logger.info(">>>>Error Occurred:  " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
+        }
+    }
+
 
     @GetMapping("/reactions")
     @PreAuthorize("@permissionService.canAccessPost(#contentID, authentication.principal.username)")

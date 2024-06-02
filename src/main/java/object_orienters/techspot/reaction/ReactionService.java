@@ -49,6 +49,10 @@ public class ReactionService {
 
     }
 
+    public Page<Reaction> getReactionsByType(Long contentId, String reactionType, int pageNumber, int pageSize) {
+        return reactionRepository.findByContentAndType(contentRepository.findByContentID(contentId).orElseThrow(() -> new ContentNotFoundException(contentId)), Reaction.ReactionType.valueOf(reactionType), PageRequest.of(pageNumber, pageSize, Sort.by("timestamp").descending()));
+    }
+
     @Transactional
     public void deleteReaction(String reactionId) {
         Reaction reaction = reactionRepository.findByReactionID(reactionId)

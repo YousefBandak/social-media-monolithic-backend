@@ -28,7 +28,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/profiles")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class ProfileController {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private final ProfileModelAssembler assembler;
@@ -79,7 +79,11 @@ public class ProfileController {
     // get user followers
     @GetMapping("/{username}/followers")
     public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
+<<<<<<< HEAD
                                        @RequestParam(defaultValue = "10") int size) {
+=======
+            @RequestParam(defaultValue = "10") int size) {
+>>>>>>> a139a33a1e3529f2adbf26f090473c267dbc9059
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
             Page<Profile> followersPage = profileService.getUserFollowersByUsername(username, page, size);
@@ -87,7 +91,10 @@ public class ProfileController {
                     .map(assembler::toModel)
                     .collect(Collectors.toList());
             logger.info(">>>>Followers List Retrieved. " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(PagedModel.of(followers, new PagedModel.PageMetadata(followersPage.getSize(), followersPage.getNumber(), followersPage.getTotalElements(), followersPage.getTotalPages()))
+            return ResponseEntity.ok(PagedModel
+                    .of(followers,
+                            new PagedModel.PageMetadata(followersPage.getSize(), followersPage.getNumber(),
+                                    followersPage.getTotalElements(), followersPage.getTotalPages()))
                     .add(linkTo(methodOn(ProfileController.class).one(username)).withRel("profile"))
                     .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
@@ -98,9 +105,13 @@ public class ProfileController {
     }
 
     // get specific user follower
-    @GetMapping("/{username}/followers/{followerUserName}")
+    @GetMapping("/{username}/follower")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
+<<<<<<< HEAD
                                                  @PathVariable String followerUserName) {
+=======
+            @RequestParam(value = "followerUserName") String followerUserName) {
+>>>>>>> a139a33a1e3529f2adbf26f090473c267dbc9059
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
@@ -124,7 +135,10 @@ public class ProfileController {
                     .map(userModel -> assembler.toModel(userModel))
                     .collect(Collectors.toList());
             logger.info(">>>>Following List Retrieved. " + getTimestamp() + "<<<<");
-            return ResponseEntity.ok(PagedModel.of(following, new PagedModel.PageMetadata(followingPage.getSize(), followingPage.getNumber(), followingPage.getTotalElements(), followingPage.getTotalPages()))
+            return ResponseEntity.ok(PagedModel
+                    .of(following,
+                            new PagedModel.PageMetadata(followingPage.getSize(), followingPage.getNumber(),
+                                    followingPage.getTotalElements(), followingPage.getTotalPages()))
                     .add(linkTo(methodOn(ProfileController.class).one(username)).withRel("profile"))
                     .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
@@ -171,7 +185,7 @@ public class ProfileController {
 
     // delete follower from user
     @DeleteMapping("/{username}/followers")
-    @PreAuthorize("#username == authentication.principal.username")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteFollower(@PathVariable String username, @RequestBody ObjectNode deletedUser) {
         try {
             logger.info(">>>>Deleting Follower... " + getTimestamp() + "<<<<");
@@ -243,6 +257,5 @@ public class ProfileController {
 
         }
     }
-
 
 }

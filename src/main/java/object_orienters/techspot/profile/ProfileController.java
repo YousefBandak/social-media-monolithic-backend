@@ -79,11 +79,8 @@ public class ProfileController {
     // get user followers
     @GetMapping("/{username}/followers")
     public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
-<<<<<<< HEAD
                                        @RequestParam(defaultValue = "10") int size) {
-=======
-            @RequestParam(defaultValue = "10") int size) {
->>>>>>> a139a33a1e3529f2adbf26f090473c267dbc9059
+
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
             Page<Profile> followersPage = profileService.getUserFollowersByUsername(username, page, size);
@@ -107,11 +104,8 @@ public class ProfileController {
     // get specific user follower
     @GetMapping("/{username}/follower")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
-<<<<<<< HEAD
-                                                 @PathVariable String followerUserName) {
-=======
-            @RequestParam(value = "followerUserName") String followerUserName) {
->>>>>>> a139a33a1e3529f2adbf26f090473c267dbc9059
+
+                                                 @RequestParam(value = "followerUserName") String followerUserName) {
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);

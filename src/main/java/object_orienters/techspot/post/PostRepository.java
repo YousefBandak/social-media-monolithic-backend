@@ -30,4 +30,15 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.textData LIKE CONCAT('%```_', :value, '%```%') AND p.privacy = :privacy")
     Page<Post> findAllByCodeAndPrivacy(@Param("value") String value, @Param("privacy") Privacy privacy, Pageable pageable);
 
+
+   @Query(value = "SELECT Post.* FROM Post JOIN (" +
+           "SELECT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(textData, '```', -2), '\n', 1)) AS matched_word " +
+           "FROM Post " +
+           "WHERE Post.textData LIKE '%```%```%' " +
+           ") AS subquery " +
+           "ON subquery.matched_word IN (:values) " +
+           "AND subquery.matched_word = TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(Post.textData, '```', -2), '\n', 1)) " +
+           "AND Post.privacy = 'PUBLIC'", nativeQuery = true)
+    Page<Post> findAllByCodeLanguageAndPrivacy(@Param("values") List<String> values,  Pageable pageable);
+
 }

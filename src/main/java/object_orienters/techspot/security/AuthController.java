@@ -1,10 +1,7 @@
 package object_orienters.techspot.security;
 
 import jakarta.validation.Valid;
-import object_orienters.techspot.exceptions.EmailAlreadyExistsException;
-import object_orienters.techspot.exceptions.TokenRefreshException;
-import object_orienters.techspot.exceptions.UserNotFoundException;
-import object_orienters.techspot.exceptions.UsernameAlreadyExistsException;
+import object_orienters.techspot.exceptions.*;
 import object_orienters.techspot.security.jwt.JwtUtils;
 import object_orienters.techspot.security.model.*;
 import object_orienters.techspot.security.payload.request.LoginRequest;
@@ -16,6 +13,7 @@ import object_orienters.techspot.security.payload.response.TokenRefreshResponse;
 import object_orienters.techspot.security.service.*;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +22,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -57,9 +57,7 @@ public class AuthController {
             return ResponseEntity.ok(jwtResponse);
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: " + e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -72,7 +70,7 @@ public class AuthController {
         if (oAuth2Services.isLogin(userOAuthTemp, Provider.GOOGLE)) {
 
             JwtResponse jwtResponse = oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GOOGLE);
-            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() +"&username=" + jwtResponse.getUsername();
+            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() + "&username=" + jwtResponse.getUsername();
             return new RedirectView(redirectUrl);
         } else {
 
@@ -89,8 +87,8 @@ public class AuthController {
 
         UserOAuthTemp userOAuthTemp = githubOAuth.getUserInfoGithub(accessToken);
         if (oAuth2Services.isLogin(userOAuthTemp, Provider.GITHUB)) {
-            JwtResponse jwtResponse =  oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GITHUB);
-            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() +"&username=" + jwtResponse.getUsername();
+            JwtResponse jwtResponse = oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GITHUB);
+            String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() + "&username=" + jwtResponse.getUsername();
             return new RedirectView(redirectUrl);
 
         } else {
@@ -127,9 +125,8 @@ public class AuthController {
             return ResponseEntity.ok(jwtResponse);
         } catch (UserNotFoundException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: " + e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -167,9 +164,8 @@ public class AuthController {
             return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
         } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
             logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: " + e.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.BAD_REQUEST);
+
         }
     }
 
@@ -201,9 +197,7 @@ public class AuthController {
                 return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
             } catch (UsernameAlreadyExistsException | EmailAlreadyExistsException e) {
                 logger.info(">>>>Error Occurred: " + e.getMessage() + " @ " + getTimestamp() + "<<<<");
-                return ResponseEntity
-                        .badRequest()
-                        .body(new MessageResponse("Error: " + e.getMessage()));
+                return ExceptionsResponse.getErrorResponseEntity(e, HttpStatus.BAD_REQUEST);
             }
         }
         logger.info(">>>>Error Occurred: Unable to Identify Client User. @ " + getTimestamp() + "<<<<");
@@ -234,5 +228,6 @@ public class AuthController {
     private static String getTimestamp() {
         return LocalDateTime.now().format(formatter) + " ";
     }
+
 
 }

@@ -2,6 +2,7 @@ package object_orienters.techspot.profile;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
+import object_orienters.techspot.exceptions.ExceptionsResponse;
 import object_orienters.techspot.exceptions.UserCannotFollowSelfException;
 import object_orienters.techspot.exceptions.UserNotFoundException;
 import org.slf4j.Logger;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.mediatype.problem.Problem;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,8 +54,8 @@ public class ProfileController {
             return ResponseEntity.ok(profileModel);
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -71,15 +71,16 @@ public class ProfileController {
                     .body(assembler.toModel(updatedUser));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
     // get user followers
     @GetMapping("/{username}/followers")
     public ResponseEntity<?> Followers(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+                                       @RequestParam(defaultValue = "10") int size) {
+
         try {
             logger.info(">>>>Retrieving Followers List... " + getTimestamp() + "<<<<");
             Page<Profile> followersPage = profileService.getUserFollowersByUsername(username, page, size);
@@ -95,15 +96,16 @@ public class ProfileController {
                     .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
     // get specific user follower
     @GetMapping("/{username}/follower")
     public ResponseEntity<?> getSpecificFollower(@PathVariable String username,
-            @RequestParam(value = "followerUserName") String followerUserName) {
+
+                                                 @RequestParam(value = "followerUserName") String followerUserName) {
         try {
             logger.info(">>>>Retrieving Follower... " + getTimestamp() + "<<<<");
             Profile follower = profileService.getFollowerByUsername(username, followerUserName);
@@ -111,15 +113,15 @@ public class ProfileController {
             return ResponseEntity.ok(assembler.toModel(follower));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
     // get user followers
     @GetMapping("/{username}/following")
     public ResponseEntity<?> Following(@PathVariable String username, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+                                       @RequestParam(defaultValue = "10") int size) {
         try {
             logger.info(">>>>Retrieving Following List... " + getTimestamp() + "<<<<");
             Page<Profile> followingPage = profileService.getUserFollowingByUsername(username, page, size);
@@ -135,14 +137,14 @@ public class ProfileController {
                     .add(linkTo(methodOn(ProfileController.class).Followers(username, page, size)).withSelfRel()));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
     @GetMapping("/{username}/following/{followingUsername}")
     public ResponseEntity<?> getSpecificFollowing(@PathVariable String username,
-            @PathVariable String followingUsername) {
+                                                  @PathVariable String followingUsername) {
         try {
             logger.info(">>>>Retrieving Following Profile... " + getTimestamp() + "<<<<");
             Profile followingProfile = profileService.getFollowingByUsername(username, followingUsername)
@@ -152,8 +154,7 @@ public class ProfileController {
                     .ok(assembler.toModel(followingProfile));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -167,13 +168,11 @@ public class ProfileController {
             return ResponseEntity.ok(assembler.toModel(newFollower));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
         } catch (UserCannotFollowSelfException ex) {
             logger.info(">>>>Error Occurred: " + ex.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Problem.create().withTitle("Bad Request").withDetail(ex.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(ex, HttpStatus.NOT_FOUND);
+
 
         }
     }
@@ -189,8 +188,8 @@ public class ProfileController {
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
@@ -204,16 +203,16 @@ public class ProfileController {
             return ResponseEntity.noContent().build();
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         }
     }
 
     @PostMapping("/{username}/profilePic")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addProfilePic(@PathVariable String username,
-            @RequestParam(value = "file") MultipartFile file,
-            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+                                           @RequestParam(value = "file") MultipartFile file,
+                                           @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Profile Picture... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addProfilePic(username, file, text);
@@ -221,12 +220,12 @@ public class ProfileController {
             return ResponseEntity.ok(assembler.toModel(profile));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         } catch (IOException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
 
         }
     }
@@ -234,8 +233,8 @@ public class ProfileController {
     @PostMapping("/{username}/backgroundImg")
     @PreAuthorize("#username == authentication.principal.username")
     public ResponseEntity<?> addBackgroundImg(@PathVariable String username,
-            @RequestParam(value = "file") MultipartFile file,
-            @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
+                                              @RequestParam(value = "file") MultipartFile file,
+                                              @RequestParam(value = "text", required = false) String text) throws UserNotFoundException, IOException {
         try {
             logger.info(">>>>Adding Background Image... " + getTimestamp() + "<<<<");
             Profile profile = profileService.addBackgroundImg(username, file, text);
@@ -243,12 +242,12 @@ public class ProfileController {
             return ResponseEntity.ok(assembler.toModel(profile));
         } catch (UserNotFoundException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("User Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
         } catch (IOException exception) {
             logger.info(">>>>Error Occurred:  " + exception.getMessage() + " " + getTimestamp() + "<<<<");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Problem.create().withTitle("File Not Found").withDetail(exception.getMessage()));
+            return ExceptionsResponse.getErrorResponseEntity(exception, HttpStatus.NOT_FOUND);
+
 
         }
     }

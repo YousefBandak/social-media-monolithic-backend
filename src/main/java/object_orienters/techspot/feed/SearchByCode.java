@@ -8,8 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
-public class SearchByCode extends Strategy<Post, String> {
+public class SearchByCode extends Strategy<Post, List<String>> {
 
     @Autowired
     public SearchByCode(PostRepository postRepository) {
@@ -17,7 +19,13 @@ public class SearchByCode extends Strategy<Post, String> {
     }
 
     @Override
-    Page<Post> operate(String factor, int pageNumber, int pageSize) {
-        return postRepository.findAllByCodeAndPrivacy(factor, Privacy.PUBLIC, PageRequest.of(pageNumber, pageSize));
+    Page<Post> operate(List<String> factor, int pageNumber, int pageSize) {
+        System.out.println(factor);
+        if (factor.size() == 0 || factor.get(0).equals("")) {
+            System.out.println("Empty");
+            return postRepository.findAllByCodeAndPrivacy("", Privacy.PUBLIC, PageRequest.of(pageNumber, pageSize));
+        }
+        else
+            return postRepository.findAllByCodeLanguageAndPrivacy(factor, PageRequest.of(pageNumber, pageSize));
     }
 }

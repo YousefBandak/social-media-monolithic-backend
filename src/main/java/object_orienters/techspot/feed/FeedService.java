@@ -15,6 +15,10 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 @Service
 public class FeedService {
 
@@ -82,7 +86,8 @@ public class FeedService {
 //            case REACTIONS:
 //                return reactionsByContent.operate(Long.parseLong(value), pageNumber, pageSize);
             case CODE:
-                Page<Post> code = searchByCode.operate(value.equals("following")? "" : value, pageNumber, pageSize);
+                List<String> languages = Arrays.asList(value.split(","));
+                Page<Post> code = searchByCode.operate(languages, pageNumber, pageSize);
                 return PagedModel.of(code.stream().map(postModelAssembler::toModel).toList(), new PagedModel.PageMetadata(code.getSize(), code.getNumber(), code.getTotalElements(), code.getTotalPages()));
             case PROFILES:
                 Page<Profile> profiles = searchByName.operate(value, pageNumber, pageSize);

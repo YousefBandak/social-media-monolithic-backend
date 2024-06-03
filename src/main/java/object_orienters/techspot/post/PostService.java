@@ -132,6 +132,7 @@ public class PostService {
             allMedia.forEach(media -> {
                 media.setContent(post);
             });
+            tagsUtilities.handleAddTags(text, post);
             dataTypeRepository.saveAll(allMedia);
             postRepository.save(post);
             profileRepository.save(user);

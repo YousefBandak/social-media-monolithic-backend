@@ -66,12 +66,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/login",
-                                "/auth/signup",
-                                "/auth/home",
-                                "/auth/refreshtoken",
-                                "/auth/oauth/signup",
-                                "auth/usernameExists/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/chat/**").permitAll()
+                        .requestMatchers("/messages/**").permitAll()
                         .requestMatchers("/**").permitAll()
                         .requestMatchers("/media_uploads/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()

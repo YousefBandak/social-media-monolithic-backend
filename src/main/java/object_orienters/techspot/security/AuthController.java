@@ -68,12 +68,12 @@ public class AuthController {
         UserOAuthTemp userOAuthTemp = googleOAuth.getUserInfoGoogle(accessToken);
 
         if (oAuth2Services.isLogin(userOAuthTemp, Provider.GOOGLE)) {
-
+            System.out.println("User is already registered");
             JwtResponse jwtResponse = oAuth2Services.loginOAuthUser(userOAuthTemp, Provider.GOOGLE);
             String redirectUrl = "http://localhost:3000/oauth2/login?token=" + jwtResponse.getToken() + "&refreshToken=" + jwtResponse.getRefreshToken() + "&username=" + jwtResponse.getUsername();
             return new RedirectView(redirectUrl);
         } else {
-
+            System.out.println("User is not registered");
             String redirectUrl = oAuth2Services.saveUserOAuthTempAndRedirectURL(userOAuthTemp);
             return new RedirectView(redirectUrl);
         }

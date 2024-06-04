@@ -47,6 +47,7 @@ public class OAuth2Services {
 
     @Transactional
     public String saveUserOAuthTempAndRedirectURL(UserOAuthTemp userOAuthTemp) {
+        userOAuthTempRepository.save(userOAuthTemp);
         String redirectUrl = UriComponentsBuilder.fromHttpUrl(FINAL_FRONTEND_URL)
                 .queryParam("id", userOAuthTemp.getId())
                 .queryParam("provider", userOAuthTemp.getProvider())
@@ -68,7 +69,7 @@ public class OAuth2Services {
 
 
         userOAuthTempRepository.delete(userOAuthTemp);
-
+        System.out.println("enre" + userOAuthTemp.getEmail());
         User user = new User(oAuthDto.getUsername(), userOAuthTemp.getEmail(), oAuthDto.getProvider(), oAuthDto.getId());
         userRepository.save(user);
         profileService.createNewProfile(user.getUsername(), user.getEmail(), userOAuthTemp.getName());

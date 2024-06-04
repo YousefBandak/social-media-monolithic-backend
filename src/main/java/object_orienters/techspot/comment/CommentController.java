@@ -129,7 +129,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentID}")
-    @PreAuthorize("@impleCommentService.isCommentAuthor(authentication.principal.username,#commentID)")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteComment(@PathVariable long contentID, @PathVariable Long commentID) {
         try {
             logger.info(">>>>Comment Added. @ " + getTimestamp() + "<<<<");
